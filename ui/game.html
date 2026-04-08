@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Investigator Lockbox</title>
+  <script src="../cases/index.js"></script>
+  <script src="../cases/ash-creek-route.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -114,6 +116,42 @@
       margin-bottom: 6px;
     }
     .start-actions { display: flex; gap: 12px; align-items: center; margin-top: 32px; }
+
+    /* ===========================
+       CATEGORY LIST SCREEN (accordion)
+    =========================== */
+    .cat-item { border: 1px solid #1e1e1e; background: #111; margin-bottom: 6px; }
+    .cat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 16px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #bbb;
+      user-select: none;
+    }
+    .cat-header:hover { background: #161616; }
+    .cat-item.empty .cat-header { opacity: 0.4; }
+    .cat-arrow { font-size: 0.72rem; color: #555; flex-shrink: 0; }
+    .cat-expand {
+      display: none;
+      padding: 10px 16px 14px;
+      border-top: 1px solid #1a1a1a;
+    }
+    .cat-item.open .cat-expand { display: block; }
+    .cat-desc { font-size: 0.80rem; color: #666; line-height: 1.5; margin-bottom: 10px; margin: 0 0 10px; }
+    .cat-coming-soon { font-size: 0.72rem; color: #444; letter-spacing: 0.06em; text-transform: uppercase; }
+    .cat-case-link {
+      display: block;
+      padding: 7px 0;
+      font-size: 0.84rem;
+      color: #8aaa8a;
+      cursor: pointer;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .cat-case-link:last-child { border-bottom: none; }
+    .cat-case-link:hover { color: #bdb; }
 
     /* ===========================
        BRIEF SCREEN
@@ -265,6 +303,15 @@
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+    }
+    .iview-outer {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     .iview-layout {
       flex: 1;
@@ -465,24 +512,29 @@
   <div class="wrap">
     <div class="start-title">Investigator Lockbox</div>
     <div class="field">
-      <div class="field-label">Case file (.json)</div>
-      <input type="file" id="case-file" accept=".json"
-        style="font-family:monospace;font-size:0.82rem;color:#888;width:100%">
-    </div>
-    <div class="field">
       <div class="field-label">Anthropic API Key</div>
       <input type="password" id="api-key" placeholder="sk-ant-...">
     </div>
     <div class="start-actions">
-      <button class="primary" id="open-case-btn" disabled>Open Case</button>
+      <button class="primary" id="browse-btn" disabled>Browse Cases</button>
       <span id="start-err" class="err"></span>
     </div>
+  </div>
+</div>
+
+<!-- ===================== CATEGORIES ===================== -->
+<div id="s-categories" class="screen">
+  <div class="page">
+    <button class="back-btn" id="cat-back">← Back</button>
+    <h1>Case Library</h1>
+    <div id="cat-body"></div>
   </div>
 </div>
 
 <!-- ===================== BRIEF ===================== -->
 <div id="s-brief" class="screen">
   <div class="page">
+    <button class="back-btn" id="brief-back">← Back to Cases</button>
     <h1>Case Brief</h1>
     <div id="brief-body"></div>
     <div style="margin-top:32px">
@@ -560,6 +612,7 @@
 
 <!-- ===================== INTERVIEW ===================== -->
 <div id="s-interview" class="screen">
+  <div class="iview-outer">
   <div class="iview-layout">
 
     <!-- LEFT: interview -->
@@ -587,6 +640,7 @@
       <textarea class="journal-area" id="journal-area" style="display:none"></textarea>
     </div>
 
+  </div>
   </div>
 </div>
 
@@ -631,6 +685,8 @@ const G = {
   accused:  null,       // name of accused suspect
   tab:      'ev',       // active case-file tab
   journal:  { tabs: [], activeIdx: -1 },  // case-level notes journal
+  index:    null,       // loaded cases/index.json
+  selectedCat: null,    // currently selected category object
 };
 
 // ============================================================
@@ -649,29 +705,75 @@ function esc(s) {
 // ============================================================
 // START
 // ============================================================
-const caseFileEl = document.getElementById('case-file');
-const apiKeyEl   = document.getElementById('api-key');
-const openBtn    = document.getElementById('open-case-btn');
+const apiKeyEl  = document.getElementById('api-key');
+const browseBtn = document.getElementById('browse-btn');
 
-function checkReady() {
-  openBtn.disabled = !(caseFileEl.files.length && apiKeyEl.value.trim().length > 10);
-}
-caseFileEl.addEventListener('change', checkReady);
-apiKeyEl.addEventListener('input', checkReady);
+apiKeyEl.addEventListener('input', () => {
+  browseBtn.disabled = apiKeyEl.value.trim().length <= 10;
+});
 
-openBtn.addEventListener('click', async () => {
+browseBtn.addEventListener('click', () => {
+  const key = apiKeyEl.value.trim();
+  if (!key) return;
+  G.apiKey = key;
   document.getElementById('start-err').textContent = '';
-  const file = caseFileEl.files[0];
-  if (!file) return;
-  let text;
-  try {
-    text = await file.text();
-    G.case = JSON.parse(text);
-  } catch (e) {
-    document.getElementById('start-err').textContent = 'Invalid JSON: ' + e.message;
+  if (!window.CASE_INDEX) {
+    document.getElementById('start-err').textContent = 'Case index not loaded. Check that cases/index.js is present.';
     return;
   }
-  G.apiKey   = apiKeyEl.value.trim();
+  G.index = window.CASE_INDEX;
+  renderCategories();
+  show('categories');
+});
+
+function renderCategories() {
+  const cats = (G.index && G.index.categories) || [];
+  document.getElementById('cat-body').innerHTML = cats.map(cat => {
+    const empty     = (cat.cases || []).length === 0;
+    const casesHtml = empty
+      ? `<span class="cat-coming-soon">Coming soon</span>`
+      : (cat.cases || []).map(c =>
+          `<div class="cat-case-link" data-key="${esc(c.key)}">${esc(c.title)}</div>`
+        ).join('');
+    return `<div class="cat-item${empty ? ' empty' : ''}">
+      <div class="cat-header">
+        <span>${esc(cat.name)}</span>
+        <span class="cat-arrow">▸</span>
+      </div>
+      <div class="cat-expand">
+        <p class="cat-desc">${esc(cat.description || '')}</p>
+        <div class="cat-cases">${casesHtml}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty">No categories found.</div>';
+
+  document.querySelectorAll('#cat-body .cat-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const item    = header.closest('.cat-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('#cat-body .cat-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.cat-arrow').textContent = '▸';
+      });
+      if (!wasOpen) {
+        item.classList.add('open');
+        header.querySelector('.cat-arrow').textContent = '▾';
+      }
+    });
+  });
+
+  document.querySelectorAll('#cat-body .cat-case-link').forEach(el => {
+    el.addEventListener('click', () => loadCase(el.dataset.key));
+  });
+}
+
+function loadCase(key) {
+  const caseData = window.CASES && window.CASES[key];
+  if (!caseData) {
+    console.error('Case data not found for key:', key);
+    return;
+  }
+  G.case     = caseData;
   G.budget   = typeof G.case.budget === 'number' ? G.case.budget : 0;
   G.unlocked = new Set();
   G.chosen   = new Set();
@@ -682,7 +784,7 @@ openBtn.addEventListener('click', async () => {
   G.journal  = { tabs: [], activeIdx: -1 };
   renderBrief();
   show('brief');
-});
+}
 
 // ============================================================
 // BRIEF
@@ -695,6 +797,10 @@ function renderBrief() {
       <div class="brief-label">Case</div>
       <div class="brief-value">${esc(c.title || 'Untitled')}</div>
     </div>
+    ${c.briefing ? `<div class="brief-block">
+      <div class="brief-label">Briefing</div>
+      <p style="color:#bbb;font-size:0.85rem;line-height:1.7;margin:0">${esc(c.briefing)}</p>
+    </div>` : ''}
     <div class="brief-block">
       <div class="brief-label">Victim</div>
       <div class="brief-value">${esc(v.name || '—')}</div>
@@ -746,9 +852,11 @@ document.getElementById('nav-casefile') .addEventListener('click', () => { rende
 document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });
 document.getElementById('nav-accuse')   .addEventListener('click', () => { renderAccuse();    show('accuse'); });
 
+document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
+document.getElementById('brief-back').addEventListener('click', () => show('categories'));
 document.getElementById('dec-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('cf-back')   .addEventListener('click', () => { renderHub(); show('hub'); });
-document.getElementById('sus-back')  .addEventListener('click', () => { renderSuspects(); show('suspects'); });
+document.getElementById('sus-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('iview-back').addEventListener('click', () => { renderSuspects(); show('suspects'); });
 document.getElementById('acc-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 
@@ -1158,11 +1266,19 @@ document.getElementById('acc-confirm').addEventListener('click', () => {
 });
 
 document.getElementById('res-restart').addEventListener('click', () => {
-  caseFileEl.value = '';
-  apiKeyEl.value   = '';
-  openBtn.disabled = true;
+  G.case       = null;
+  G.index      = null;
+  G.selectedCat = null;
+  apiKeyEl.value    = '';
+  browseBtn.disabled = true;
   document.getElementById('start-err').textContent = '';
   show('start');
+});
+
+window.addEventListener('beforeunload', function(e) {
+  if (!G.case) return;
+  e.preventDefault();
+  e.returnValue = '';
 });
 </script>
 </body>

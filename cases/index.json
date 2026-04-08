@@ -1,0 +1,158 @@
+{
+  "categories": [
+    {
+      "name": "Medical Deception",
+      "cases": []
+    },
+    {
+      "name": "Corporate Malfeasance",
+      "cases": []
+    },
+    {
+      "name": "Wilderness Rescue / Disappearance",
+      "cases": [
+        { "title": "Ash Creek Route", "file": "ash-creek-route.json" }
+      ]
+    },
+    {
+      "name": "School / Academy Scandal",
+      "cases": []
+    },
+    {
+      "name": "Private Surveillance Job",
+      "cases": []
+    },
+    {
+      "name": "Cold Case Reopen",
+      "cases": []
+    },
+    {
+      "name": "Artifact Theft / Historical Mystery",
+      "cases": []
+    },
+    {
+      "name": "High-Strangeness Containment",
+      "cases": []
+    },
+    {
+      "name": "Insurance Fraud",
+      "cases": []
+    },
+    {
+      "name": "Custody / Family Disappearance",
+      "cases": []
+    },
+    {
+      "name": "Serial Arson Pattern",
+      "cases": []
+    },
+    {
+      "name": "Blackmail / Extortion",
+      "cases": []
+    },
+    {
+      "name": "Political Corruption",
+      "cases": []
+    },
+    {
+      "name": "Cult / Coercive Group Escape",
+      "cases": []
+    },
+    {
+      "name": "Human Trafficking / Recruitment Ring",
+      "cases": []
+    },
+    {
+      "name": "Witness Intimidation",
+      "cases": []
+    },
+    {
+      "name": "Smuggling Network",
+      "cases": []
+    },
+    {
+      "name": "Identity Theft / Impersonation",
+      "cases": []
+    },
+    {
+      "name": "False Imprisonment",
+      "cases": []
+    },
+    {
+      "name": "Environmental Crime",
+      "cases": []
+    },
+    {
+      "name": "Labor Camp / Forced Work Abuse",
+      "cases": []
+    },
+    {
+      "name": "Missing Journalist",
+      "cases": []
+    },
+    {
+      "name": "Prison / Jailhouse Conspiracy",
+      "cases": []
+    },
+    {
+      "name": "Election Sabotage",
+      "cases": []
+    },
+    {
+      "name": "Charity Fraud",
+      "cases": []
+    },
+    {
+      "name": "Tech Sabotage / Data Theft",
+      "cases": []
+    },
+    {
+      "name": "Religious Institution Cover-Up",
+      "cases": []
+    },
+    {
+      "name": "Border Crossing Disappearance",
+      "cases": []
+    },
+    {
+      "name": "Runaway or Staged Disappearance",
+      "cases": []
+    },
+    {
+      "name": "Financial Elder Abuse",
+      "cases": []
+    },
+    {
+      "name": "Murder-for-Hire Setup",
+      "cases": []
+    },
+    {
+      "name": "Internal Affairs / Dirty Cop Case",
+      "cases": []
+    },
+    {
+      "name": "Gang Feud Spillover",
+      "cases": []
+    },
+    {
+      "name": "Biohazard Leak / Suppressed Exposure",
+      "cases": []
+    },
+    {
+      "name": "Deepfake / Reputation Destruction",
+      "cases": []
+    },
+    {
+      "name": "Inheritance Manipulation",
+      "cases": []
+    },
+    {
+      "name": "Disaster Aftermath Looting / Missing Persons",
+      "cases": []
+    },
+    {
+      "name": "Ritual Panic / False Occult Narrative",
+      "cases": []
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "title": "Ash Creek Route",
+  "solution": "Lena Mercer was abducted by Calvin Rusk, owner of Rusk Recovery & Salvage. During her rural mail route she noticed Rusk using the closed Ash Creek weigh station near Mile Marker 12 to offload stolen farm equipment. Rusk intercepted her, removed the SD card from the postal truck dashcam, forced her into his rollback tow truck, and hid her alive inside a locked parts-storage container at his salvage yard. The case is solved by linking the last scanner ping, orange clay transfer, gas station video, the empty dashcam slot, and Rusk's false poker alibi.",
+  "victim": {
+    "name": "Lena Mercer",
+    "age": "29",
+    "occupation": "Rural mail carrier"
+  },
+  "suspect_count": 4,
+  "suspects": [
+    {
+      "name": "Noah Pike",
+      "relationship_to_victim": "Ex-boyfriend",
+      "guilty": false,
+      "alibi": "Working late shift at Pike Auto Parts from 6:00 PM to 10:15 PM",
+      "alibi_verifiable": true,
+      "motive": "Jealousy over the breakup and unresolved debt Lena refused to cover",
+      "what_they_know": [
+        "Lena said she was scared by something she saw near Ash Creek earlier that week",
+        "Lena had recently started saving screenshots and notes about unusual vehicles on her route"
+      ],
+      "what_they_lie_about": [
+        "He claims he had no contact with Lena that day, but he called her twice before noon",
+        "He downplays how angry he was about her refusing to lend him money"
+      ]
+    },
+    {
+      "name": "Dana Blevins",
+      "relationship_to_victim": "Route supervisor",
+      "guilty": false,
+      "alibi": "At the county mail annex handling sort errors and dispatch logs until after 8:00 PM",
+      "alibi_verifiable": true,
+      "motive": "Lena had threatened to file a safety complaint about route changes Dana approved without inspection",
+      "what_they_know": [
+        "Lena reported a tow truck parked near the closed weigh station two days before she vanished",
+        "Dana redirected Lena to cover the Ash Creek stretch because another carrier called in sick"
+      ],
+      "what_they_lie_about": [
+        "Dana says Lena never raised a safety concern about the route",
+        "Dana omits that she told Lena to finish the route instead of returning early"
+      ]
+    },
+    {
+      "name": "Elias Voss",
+      "relationship_to_victim": "Route customer and local drone hobbyist",
+      "guilty": false,
+      "alibi": "Flying his drone near the gravel pit west of the creek around sundown",
+      "alibi_verifiable": false,
+      "motive": "Unwanted fascination with Lena and resentment after she told him to stop waiting for her on route days",
+      "what_they_know": [
+        "He saw a white rollback truck on County Road 8 shortly after Lena's postal vehicle passed",
+        "He noticed Lena pulled over near Mile Marker 12 with her driver door open"
+      ],
+      "what_they_lie_about": [
+        "He first says he was nowhere near Lena's route that evening",
+        "He hides that he followed her truck with his drone for several minutes"
+      ]
+    },
+    {
+      "name": "Calvin Rusk",
+      "relationship_to_victim": "Owner of Rusk Recovery & Salvage; occasional route customer",
+      "guilty": true,
+      "alibi": "Playing cards at the Rusted Rail Bar from 6:30 PM to 9:30 PM",
+      "alibi_verifiable": false,
+      "motive": "Lena witnessed him offloading stolen farm equipment and he abducted her to silence a witness and avoid a probation violation",
+      "what_they_know": [
+        "He removed the dashcam SD card from Lena's postal truck",
+        "He moved Lena from his tow truck to a locked storage container at his salvage yard",
+        "He left his phone at the bar with an associate to support a false alibi"
+      ],
+      "what_they_lie_about": [
+        "He says he was never near Ash Creek that evening",
+        "He says his rollback truck was out of service due to a hydraulic leak",
+        "He denies knowing Lena beyond routine mail deliveries"
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "datetime": "2026-09-14T07:18:00",
+      "event": "Lena begins Route 17A and signs out vehicle RM-214",
+      "location": "Cottonwood County Mail Annex",
+      "source": "Postal dispatch log"
+    },
+    {
+      "datetime": "2026-09-14T11:42:00",
+      "event": "Lena tells Noah by phone that she may report something strange she has been seeing near the closed Ash Creek weigh station",
+      "location": "Outbound phone call",
+      "source": "Call log"
+    },
+    {
+      "datetime": "2026-09-14T15:55:00",
+      "event": "Dana instructs Lena to cover the Ash Creek stretch because another carrier called in sick",
+      "location": "Mail annex",
+      "source": "Supervisor message record"
+    },
+    {
+      "datetime": "2026-09-14T18:07:00",
+      "event": "Lena scans a certified envelope at the Harlow farm mailbox",
+      "location": "County Road 8",
+      "source": "Postal scanner log"
+    },
+    {
+      "datetime": "2026-09-14T18:19:00",
+      "event": "Elias sees Lena's postal truck stopped near Mile Marker 12 with a white rollback truck approaching from behind",
+      "location": "Ash Creek Road shoulder",
+      "source": "Witness statement"
+    },
+    {
+      "datetime": "2026-09-14T18:23:00",
+      "event": "Last known scanner ping from Lena's route device",
+      "location": "Closed Ash Creek weigh station",
+      "source": "Scanner telemetry"
+    },
+    {
+      "datetime": "2026-09-14T18:24:00",
+      "event": "Unsent draft text created on Lena's phone: 'Tow truck again. If I do not come back check mile 12'",
+      "location": "Victim phone",
+      "source": "Device extraction"
+    },
+    {
+      "datetime": "2026-09-14T18:31:00",
+      "event": "Gas station camera captures Calvin Rusk's rollback truck traveling east toward Ash Creek",
+      "location": "QuickFuel on Route 6",
+      "source": "Security video"
+    },
+    {
+      "datetime": "2026-09-14T19:04:00",
+      "event": "Rusk's phone appears active at the Rusted Rail Bar while his truck is later seen entering the salvage yard",
+      "location": "Rusted Rail Bar and Rusk Recovery & Salvage",
+      "source": "Cell record and distant camera review"
+    },
+    {
+      "datetime": "2026-09-14T22:11:00",
+      "event": "Lena is reported overdue when RM-214 is found abandoned with mail tubs intact",
+      "location": "Ash Creek turnout",
+      "source": "Deputy incident report"
+    },
+    {
+      "datetime": "2026-09-15T09:40:00",
+      "event": "Investigators discover orange clay, a missing dashcam SD card, and strap marks on the postal truck bumper",
+      "location": "Impound lot examination bay",
+      "source": "Forensic field notes"
+    },
+    {
+      "datetime": "2026-09-15T16:20:00",
+      "event": "Warrant team locates Lena alive inside a locked parts-storage container behind Bay 3 at Rusk Recovery & Salvage",
+      "location": "Rusk Recovery & Salvage",
+      "source": "Warrant return"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "type": "telemetry",
+      "description": "Route scanner shows the final ping at the closed Ash Creek weigh station at 6:23 PM",
+      "points_to": "The disappearance occurred on-route near Mile Marker 12, not after Lena voluntarily left work",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-02",
+      "type": "forensic trace",
+      "description": "Orange clay and salvage-yard metal dust found on the driver's step and rear bumper of RM-214",
+      "points_to": "Contact with a vehicle or location consistent with Rusk Recovery & Salvage",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-03",
+      "type": "video",
+      "description": "QuickFuel security clip shows Calvin Rusk's white rollback truck heading toward Ash Creek minutes before the last scanner ping",
+      "points_to": "Calvin Rusk",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-04",
+      "type": "vehicle examination",
+      "description": "Postal truck dashcam slot is empty and shows recent tool marks where the SD card was removed",
+      "points_to": "Evidence was deliberately taken to conceal contact at the scene",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-05",
+      "type": "digital extraction",
+      "description": "Unsent phone draft reads: 'Tow truck again. If I do not come back check mile 12'",
+      "points_to": "Lena feared a specific recurring tow truck and anticipated danger",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-06",
+      "type": "witness statement",
+      "description": "Elias Voss reports seeing Lena stopped with a white rollback truck approaching shortly before sunset",
+      "points_to": "A tow truck encounter at the disappearance window",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-07",
+      "type": "cell analysis",
+      "description": "Rusk's phone remained active at the Rusted Rail Bar while another device linked to his truck moved toward the salvage yard",
+      "points_to": "Calvin Rusk's alibi was staged",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-08",
+      "type": "fiber and restraint marks",
+      "description": "Parallel abrasion marks and strap fibers on the postal truck bumper match the commercial ratchet straps used on rollback tow trucks",
+      "points_to": "Victim or equipment was transferred using a rollback truck",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-09",
+      "type": "warrant search",
+      "description": "Recovered dashcam SD card is found in a burn barrel behind Bay 3; partial footage shows Rusk's truck entering the turnout",
+      "points_to": "Calvin Rusk",
+      "available_at_phase": 3
+    },
+    {
+      "id": "E-10",
+      "type": "live recovery",
+      "description": "Lena is located alive inside a locked parts-storage container with duct tape residue and mail tray plastic nearby",
+      "points_to": "Victim was concealed at Rusk Recovery & Salvage",
+      "available_at_phase": 3
+    }
+  ],
+  "documents": [
+    {
+      "id": "D-01",
+      "type": "missing_person_report",
+      "content": "Reporting party: Dana Blevins. Subject overdue on Route 17A. Postal vehicle located at Ash Creek turnout. Wallet and route tubs present. No sign of voluntary departure.",
+      "phase": 1
+    },
+    {
+      "id": "D-02",
+      "type": "interview_summary",
+      "content": "Noah Pike states Lena was avoiding him and did not mention any danger. Call log later contradicts part of that claim and shows two calls with Lena before noon.",
+      "phase": 1
+    },
+    {
+      "id": "D-03",
+      "type": "supervisor_message_log",
+      "content": "Dana to Lena at 3:55 PM: Need you to finish the Ash Creek stretch today. Stay on schedule and note any road issues after route close.",
+      "phase": 1
+    },
+    {
+      "id": "D-04",
+      "type": "witness_interview",
+      "content": "Elias Voss initially denies being near the route, then admits he saw Lena stopped near Mile Marker 12 and a white rollback truck coming up behind her.",
+      "phase": 2
+    },
+    {
+      "id": "D-05",
+      "type": "forensic_note",
+      "content": "Field exam of RM-214 found orange clay, ferrous dust, and empty dashcam card slot. Pattern suggests deliberate evidence removal rather than routine loss.",
+      "phase": 2
+    },
+    {
+      "id": "D-06",
+      "type": "bar_receipt_and_statement",
+      "content": "Rusted Rail cashier recalls Calvin arriving briefly, leaving his phone on the table, and stepping outside after 6:40 PM. Card tab remained open with another patron.",
+      "phase": 2
+    },
+    {
+      "id": "D-07",
+      "type": "warrant_return",
+      "content": "Search of Rusk Recovery & Salvage located a burn barrel with melted plastic, a damaged SD card, and a locked parts-storage container behind Bay 3 containing the missing victim alive.",
+      "phase": 3
+    }
+  ],
+  "decision_points": [
+    {
+      "id": "DP-01",
+      "options": [
+        { "label": "Focus first on Lena's personal circle", "cost": 200, "leads_to": ["D-02"] },
+        { "label": "Canvass the route and last scanner location", "cost": 200, "leads_to": ["E-01"] },
+        { "label": "Pull digital records immediately", "cost": 200, "leads_to": ["E-05"] }
+      ]
+    },
+    {
+      "id": "DP-02",
+      "options": [
+        { "label": "Interview Elias Voss despite weak credibility", "cost": 200, "leads_to": ["D-04"] },
+        { "label": "Review gas station and traffic cameras", "cost": 200, "leads_to": ["E-03"] },
+        { "label": "Pressure Dana about route reassignment", "cost": 200, "leads_to": ["D-03"] }
+      ]
+    },
+    {
+      "id": "DP-03",
+      "options": [
+        { "label": "Test the poker alibi", "cost": 200, "leads_to": ["D-06"] },
+        { "label": "Process the postal vehicle for trace evidence", "cost": 200, "leads_to": ["E-02"] },
+        { "label": "Seek emergency phone and tower analysis", "cost": 200, "leads_to": ["E-07"] }
+      ]
+    },
+    {
+      "id": "DP-04",
+      "options": [
+        { "label": "Apply for a warrant on Rusk Recovery & Salvage", "cost": 200, "leads_to": ["D-07"] },
+        { "label": "Continue broad canvass", "cost": 200, "leads_to": ["E-06"] },
+        { "label": "Re-interview Noah Pike", "cost": 200, "leads_to": ["D-02"] }
+      ]
+    }
+  ],
+  "budget": 3500
+}

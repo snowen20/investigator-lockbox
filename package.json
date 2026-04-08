@@ -1,0 +1,11 @@
+{
+  "name": "investigator-lockbox-prescreener",
+  "version": "1.0.0",
+  "description": "CLI tool to validate Investigator Lockbox case JSON files before they go live",
+  "main": "prescreener.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node prescreener.js test/ash-creek-route.json"
+  },
+  "license": "UNLICENSED"
+}

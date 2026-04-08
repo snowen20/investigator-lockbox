@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Investigator Lockbox</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: monospace;
+      background: #0e0e0e;
+      color: #d0d0d0;
+      min-height: 100vh;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    h1 {
+      font-size: 0.85rem;
+      font-weight: normal;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    p { line-height: 1.6; color: #bbb; margin-bottom: 12px; font-size: 0.85rem; }
+
+    /* --- BUTTONS --- */
+    button {
+      font-family: monospace;
+      font-size: 0.82rem;
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #3a3a3a;
+      padding: 8px 20px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    button:hover:not(:disabled) { background: #222; }
+    button:disabled { opacity: 0.35; cursor: default; }
+    button.primary { background: #0d1f0d; color: #6c6; border-color: #2e5a2e; }
+    button.primary:hover:not(:disabled) { background: #112411; }
+    button.danger { background: #1f0d0d; color: #c66; border-color: #5a2e2e; }
+    button.danger:hover:not(:disabled) { background: #241111; }
+
+    /* --- INPUTS --- */
+    input[type="text"], input[type="password"] {
+      font-family: monospace;
+      font-size: 0.85rem;
+      background: #141414;
+      color: #ccc;
+      border: 1px solid #333;
+      padding: 8px 12px;
+      width: 100%;
+    }
+    input:focus { outline: none; border-color: #555; }
+
+    /* --- BACK BUTTON --- */
+    .back-btn {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #555;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+    .back-btn:hover { color: #888; }
+
+    /* --- MISC --- */
+    .dim { color: #666; font-size: 0.78rem; }
+    .empty { color: #555; font-size: 0.83rem; padding: 16px 0; }
+    .err { color: #c66; font-size: 0.82rem; margin-top: 8px; }
+    .phase-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 1px 5px;
+      border: 1px solid #2a2a2a;
+      color: #555;
+      letter-spacing: 0.04em;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ===========================
+       START SCREEN
+    =========================== */
+    #s-start .wrap {
+      max-width: 460px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+    .start-title {
+      font-size: 0.82rem;
+      color: #888;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+    .field { margin-bottom: 20px; }
+    .field-label {
+      font-size: 0.72rem;
+      color: #666;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .start-actions { display: flex; gap: 12px; align-items: center; margin-top: 32px; }
+
+    /* ===========================
+       BRIEF SCREEN
+    =========================== */
+    .brief-block { margin-bottom: 24px; }
+    .brief-label {
+      font-size: 0.72rem;
+      color: #555;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .brief-value { font-size: 0.85rem; color: #ccc; }
+    .brief-subvalue { font-size: 0.80rem; color: #888; margin-top: 3px; }
+
+    /* ===========================
+       HUB SCREEN
+    =========================== */
+    .hub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    .hub-title { font-size: 0.95rem; color: #ddd; margin-bottom: 4px; }
+    .hub-subtitle { font-size: 0.75rem; color: #555; letter-spacing: 0.05em; text-transform: uppercase; }
+    .budget-label { font-size: 0.72rem; color: #555; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; text-align: right; }
+    .budget-amt { font-size: 1.05rem; color: #7c7; }
+    .budget-amt.low { color: #c77; }
+
+    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nav-tile {
+      background: #111;
+      border: 1px solid #222;
+      border-left: 3px solid #333;
+      padding: 18px 16px;
+      cursor: pointer;
+    }
+    .nav-tile:hover { background: #161616; }
+    .nav-tile.red { border-left-color: #5a2e2e; }
+    .tile-label { font-size: 0.72rem; color: #666; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px; }
+    .tile-val { font-size: 0.83rem; color: #aaa; }
+
+    /* ===========================
+       DECISIONS SCREEN
+    =========================== */
+    .dp-budget-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .dp-budget-bar span { color: #7c7; margin-left: 6px; }
+
+    .dp-block {
+      margin-bottom: 20px;
+      border: 1px solid #1e1e1e;
+      padding: 16px;
+    }
+    .dp-id {
+      font-size: 0.7rem;
+      color: #444;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .opt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #111;
+      border: 1px solid #222;
+      margin-bottom: 6px;
+      cursor: pointer;
+      gap: 12px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #bbb;
+      text-align: left;
+      width: 100%;
+    }
+    .opt-row:hover:not(:disabled) { background: #161616; }
+    .opt-row:disabled { cursor: default; }
+    .opt-row.chosen { background: #0d180d; border-color: #1e3a1e; color: #4a7a4a; }
+    .opt-row.cant-afford { opacity: 0.4; }
+    .opt-cost { font-size: 0.75rem; color: #555; white-space: nowrap; flex-shrink: 0; }
+    .opt-row.chosen .opt-cost { color: #3a5a3a; }
+
+    /* ===========================
+       CASE FILE SCREEN
+    =========================== */
+    .tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 20px; }
+    .tab-btn {
+      font-family: monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #555;
+      padding: 8px 20px;
+      cursor: pointer;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active { color: #bbb; border-bottom-color: #555; }
+    .tab-btn:hover:not(.active) { color: #888; }
+
+    .item-card {
+      padding: 12px 14px;
+      border: 1px solid #1e1e1e;
+      background: #111;
+      margin-bottom: 6px;
+    }
+    .item-card.locked { opacity: 0.3; }
+    .item-id { font-size: 0.75rem; color: #555; margin-bottom: 5px; }
+    .item-type { font-size: 0.7rem; color: #445566; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+    .item-desc { font-size: 0.83rem; color: #bbb; line-height: 1.5; margin-bottom: 5px; }
+    .item-points { font-size: 0.78rem; color: #777; }
+
+    /* ===========================
+       SUSPECTS SCREEN
+    =========================== */
+    .suspect-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border: 1px solid #1e1e1e;
+      background: #111;
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+    .suspect-name { font-size: 0.88rem; color: #ddd; margin-bottom: 3px; }
+    .suspect-role { font-size: 0.75rem; color: #666; margin-bottom: 10px; }
+    .suspect-field { font-size: 0.80rem; color: #999; line-height: 1.5; margin-bottom: 3px; }
+    .suspect-field .lbl { color: #555; }
+    .iview-btn { white-space: nowrap; flex-shrink: 0; }
+
+    /* ===========================
+       INTERVIEW SCREEN (two-panel)
+    =========================== */
+    #s-interview.active {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .iview-layout {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    /* Left panel */
+    .iview-left {
+      flex: 0 0 60%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px 16px;
+      border-right: 1px solid #1e1e1e;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .iview-header { margin-bottom: 10px; flex-shrink: 0; }
+    .iview-name { font-size: 0.95rem; color: #ddd; margin-bottom: 3px; }
+    .iview-role { font-size: 0.75rem; color: #666; }
+
+    /* Collapsible suspect info */
+    .si-toggle-btn {
+      font-family: monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      border-bottom: 1px solid #1e1e1e;
+      color: #555;
+      cursor: pointer;
+      padding: 6px 0;
+      width: 100%;
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .si-toggle-btn:hover { color: #888; }
+    .si-body {
+      padding: 10px 0;
+      border-bottom: 1px solid #1e1e1e;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .si-field { font-size: 0.80rem; color: #999; line-height: 1.7; }
+    .si-field .lbl { color: #555; }
+
+    /* Chat */
+    .chat-window {
+      flex: 1;
+      min-height: 0;
+      background: #0b0b0b;
+      border: 1px solid #1e1e1e;
+      overflow-y: auto;
+      padding: 14px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg { max-width: 80%; padding: 9px 13px; font-size: 0.83rem; line-height: 1.5; }
+    .msg.user    { align-self: flex-end;   background: #151e2a; border: 1px solid #253548; color: #9ab; }
+    .msg.suspect { align-self: flex-start; background: #141414; border: 1px solid #262626; color: #bbb; }
+    .msg.system  { align-self: center; color: #444; font-size: 0.75rem; font-style: italic; }
+    .chat-row { display: flex; gap: 8px; flex-shrink: 0; }
+    .chat-row input { flex: 1; }
+
+    /* Right panel */
+    .iview-right {
+      flex: 0 0 40%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px 16px;
+      background: #0f0f0f;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .journal-heading {
+      font-size: 0.72rem;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .journal-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e1e1e;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .jtab {
+      font-family: monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      padding: 4px 12px;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .jtab:hover:not(.active) { background: #1a1a1a; color: #999; }
+    .jtab.active { background: #1a1a1a; border-color: #555; color: #ccc; }
+    .jtab-new {
+      font-family: monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      background: none;
+      border: 1px dashed #2a2a2a;
+      color: #555;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .jtab-new:hover { color: #888; border-color: #444; }
+    .journal-empty {
+      font-size: 0.80rem;
+      color: #444;
+      padding: 8px 0;
+      flex-shrink: 0;
+    }
+    .journal-area {
+      flex: 1;
+      min-height: 0;
+      resize: none;
+      background: #0b0b0b;
+      border: 1px solid #1e1e1e;
+      color: #bbb;
+      font-family: monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      padding: 12px;
+      outline: none;
+    }
+    .journal-area:focus { border-color: #333; }
+    .journal-area::placeholder { color: #2e2e2e; }
+
+    /* ===========================
+       ACCUSATION SCREEN
+    =========================== */
+    .accuse-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid #1e1e1e;
+      background: #111;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .accuse-card:hover { background: #161616; }
+    .accuse-card.sel { border-color: #3a4060; background: #0f1020; }
+    .radio-dot {
+      width: 10px; height: 10px;
+      border: 1px solid #3a3a3a;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .accuse-card.sel .radio-dot { background: #779; border-color: #779; }
+    .accuse-sname { font-size: 0.85rem; color: #ccc; margin-bottom: 2px; }
+    .accuse-srole { font-size: 0.75rem; color: #666; }
+
+    /* ===========================
+       RESULT SCREEN
+    =========================== */
+    .result-badge {
+      display: inline-block;
+      padding: 3px 14px;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .result-badge.win  { background: #0d2e0d; color: #4caf50; border: 1px solid #2e6b2e; }
+    .result-badge.lose { background: #2e0d0d; color: #f44336; border: 1px solid #6b2e2e; }
+    .result-meta { font-size: 0.83rem; color: #888; margin-bottom: 20px; line-height: 1.6; }
+    .result-solution {
+      background: #111;
+      border: 1px solid #222;
+      border-left: 3px solid #333;
+      padding: 16px;
+      font-size: 0.83rem;
+      color: #bbb;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== START ===================== -->
+<div id="s-start" class="screen active">
+  <div class="wrap">
+    <div class="start-title">Investigator Lockbox</div>
+    <div class="field">
+      <div class="field-label">Case file (.json)</div>
+      <input type="file" id="case-file" accept=".json"
+        style="font-family:monospace;font-size:0.82rem;color:#888;width:100%">
+    </div>
+    <div class="field">
+      <div class="field-label">Anthropic API Key</div>
+      <input type="password" id="api-key" placeholder="sk-ant-...">
+    </div>
+    <div class="start-actions">
+      <button class="primary" id="open-case-btn" disabled>Open Case</button>
+      <span id="start-err" class="err"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BRIEF ===================== -->
+<div id="s-brief" class="screen">
+  <div class="page">
+    <h1>Case Brief</h1>
+    <div id="brief-body"></div>
+    <div style="margin-top:32px">
+      <button class="primary" id="begin-btn">Begin Investigation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HUB ===================== -->
+<div id="s-hub" class="screen">
+  <div class="page">
+    <div class="hub-header">
+      <div>
+        <div class="hub-subtitle">Active Case</div>
+        <div class="hub-title" id="hub-title"></div>
+      </div>
+      <div>
+        <div class="budget-label">Budget</div>
+        <div class="budget-amt" id="hub-budget"></div>
+      </div>
+    </div>
+    <div class="nav-grid">
+      <div class="nav-tile" id="nav-decisions">
+        <div class="tile-label">Decision Points</div>
+        <div class="tile-val" id="nav-d-val"></div>
+      </div>
+      <div class="nav-tile" id="nav-casefile">
+        <div class="tile-label">Case File</div>
+        <div class="tile-val" id="nav-c-val"></div>
+      </div>
+      <div class="nav-tile" id="nav-suspects">
+        <div class="tile-label">Suspects</div>
+        <div class="tile-val" id="nav-s-val"></div>
+      </div>
+      <div class="nav-tile red" id="nav-accuse">
+        <div class="tile-label">Make Accusation</div>
+        <div class="tile-val" style="color:#a66">Commit to a suspect</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DECISIONS ===================== -->
+<div id="s-decisions" class="screen">
+  <div class="page">
+    <button class="back-btn" id="dec-back">← Back</button>
+    <h1>Decision Points</h1>
+    <div class="dp-budget-bar">Budget remaining: <span id="dec-budget"></span></div>
+    <div id="dec-body"></div>
+  </div>
+</div>
+
+<!-- ===================== CASE FILE ===================== -->
+<div id="s-casefile" class="screen">
+  <div class="page">
+    <button class="back-btn" id="cf-back">← Back</button>
+    <h1>Case File</h1>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-ev"  onclick="G.tab='ev';  renderCaseFile()">Evidence</button>
+      <button class="tab-btn"        id="tab-doc" onclick="G.tab='doc'; renderCaseFile()">Documents</button>
+    </div>
+    <div id="cf-ev-list"></div>
+    <div id="cf-doc-list" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===================== SUSPECTS ===================== -->
+<div id="s-suspects" class="screen">
+  <div class="page">
+    <button class="back-btn" id="sus-back">← Back</button>
+    <h1>Suspects</h1>
+    <div id="sus-body"></div>
+  </div>
+</div>
+
+<!-- ===================== INTERVIEW ===================== -->
+<div id="s-interview" class="screen">
+  <div class="iview-layout">
+
+    <!-- LEFT: interview -->
+    <div class="iview-left">
+      <button class="back-btn" id="iview-back">← Back to Suspects</button>
+      <div class="iview-header">
+        <div class="iview-name" id="iview-name"></div>
+        <div class="iview-role" id="iview-role"></div>
+      </div>
+      <button class="si-toggle-btn" id="si-toggle-btn">Suspect Info ▸</button>
+      <div class="si-body" id="si-body" style="display:none"></div>
+      <div class="chat-window" id="chat-win"></div>
+      <div class="chat-row">
+        <input type="text" id="chat-in" placeholder="Ask a question...">
+        <button id="chat-send">Send</button>
+      </div>
+      <div id="iview-err" class="err"></div>
+    </div>
+
+    <!-- RIGHT: notes journal -->
+    <div class="iview-right">
+      <div class="journal-heading">Notes</div>
+      <div class="journal-tabs" id="journal-tabs"></div>
+      <div class="journal-empty" id="journal-empty">No notes yet.</div>
+      <textarea class="journal-area" id="journal-area" style="display:none"></textarea>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== ACCUSATION ===================== -->
+<div id="s-accuse" class="screen">
+  <div class="page">
+    <button class="back-btn" id="acc-back">← Back</button>
+    <h1>Make Your Accusation</h1>
+    <p class="dim" style="margin-bottom:20px">Select the suspect you believe is responsible. This cannot be undone.</p>
+    <div id="acc-body"></div>
+    <button class="danger" id="acc-confirm" disabled style="margin-top:8px">Confirm Accusation</button>
+    <div id="acc-err" class="err"></div>
+  </div>
+</div>
+
+<!-- ===================== RESULT ===================== -->
+<div id="s-result" class="screen">
+  <div class="page">
+    <h1>Case Closed</h1>
+    <div id="res-badge" class="result-badge"></div>
+    <div id="res-meta" class="result-meta"></div>
+    <div class="dim" style="font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Case Solution</div>
+    <div id="res-solution" class="result-solution"></div>
+    <button id="res-restart">New Case</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================
+// STATE
+// ============================================================
+const G = {
+  case:    null,
+  apiKey:  '',
+  budget:  0,
+  unlocked: new Set(),  // IDs of unlocked evidence / documents
+  chosen:   new Set(),  // "DP-XX:N" keys of pursued options
+  chats:    {},         // suspectName -> [{role, content}]
+  suspect:  null,       // currently open interview subject
+  accused:  null,       // name of accused suspect
+  tab:      'ev',       // active case-file tab
+  journal:  { tabs: [], activeIdx: -1 },  // case-level notes journal
+};
+
+// ============================================================
+// SCREEN HELPERS
+// ============================================================
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+}
+
+function esc(s) {
+  if (typeof s !== 'string') s = String(s == null ? '' : s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============================================================
+// START
+// ============================================================
+const caseFileEl = document.getElementById('case-file');
+const apiKeyEl   = document.getElementById('api-key');
+const openBtn    = document.getElementById('open-case-btn');
+
+function checkReady() {
+  openBtn.disabled = !(caseFileEl.files.length && apiKeyEl.value.trim().length > 10);
+}
+caseFileEl.addEventListener('change', checkReady);
+apiKeyEl.addEventListener('input', checkReady);
+
+openBtn.addEventListener('click', async () => {
+  document.getElementById('start-err').textContent = '';
+  const file = caseFileEl.files[0];
+  if (!file) return;
+  let text;
+  try {
+    text = await file.text();
+    G.case = JSON.parse(text);
+  } catch (e) {
+    document.getElementById('start-err').textContent = 'Invalid JSON: ' + e.message;
+    return;
+  }
+  G.apiKey   = apiKeyEl.value.trim();
+  G.budget   = typeof G.case.budget === 'number' ? G.case.budget : 0;
+  G.unlocked = new Set();
+  G.chosen   = new Set();
+  G.chats    = {};
+  G.suspect  = null;
+  G.accused  = null;
+  G.tab      = 'ev';
+  G.journal  = { tabs: [], activeIdx: -1 };
+  renderBrief();
+  show('brief');
+});
+
+// ============================================================
+// BRIEF
+// ============================================================
+function renderBrief() {
+  const c = G.case;
+  const v = c.victim || {};
+  document.getElementById('brief-body').innerHTML = `
+    <div class="brief-block">
+      <div class="brief-label">Case</div>
+      <div class="brief-value">${esc(c.title || 'Untitled')}</div>
+    </div>
+    <div class="brief-block">
+      <div class="brief-label">Victim</div>
+      <div class="brief-value">${esc(v.name || '—')}</div>
+      ${v.age        ? `<div class="brief-subvalue">Age: ${esc(String(v.age))}</div>` : ''}
+      ${v.occupation ? `<div class="brief-subvalue">${esc(v.occupation)}</div>` : ''}
+    </div>
+    <div class="brief-block">
+      <div class="brief-label">Suspects</div>
+      <div class="brief-value">${(c.suspects || []).length} individual(s) of interest</div>
+    </div>
+    <div class="brief-block">
+      <div class="brief-label">Investigation Budget</div>
+      <div class="brief-value" style="color:#7c7">$${G.budget.toLocaleString()}</div>
+    </div>
+    <p class="dim">Use budget to pursue leads and unlock evidence. When you are ready, make your accusation.</p>
+  `;
+}
+
+document.getElementById('begin-btn').addEventListener('click', () => {
+  renderHub();
+  show('hub');
+});
+
+// ============================================================
+// HUB
+// ============================================================
+function renderHub() {
+  const c = G.case;
+  document.getElementById('hub-title').textContent = c.title || 'Untitled';
+
+  const bEl = document.getElementById('hub-budget');
+  bEl.textContent = '$' + G.budget.toLocaleString();
+  bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
+
+  const totalOpts = (c.decision_points || []).reduce((n, dp) =>
+    n + (Array.isArray(dp.options) ? dp.options.length : 0), 0);
+  document.getElementById('nav-d-val').textContent =
+    `${G.chosen.size} / ${totalOpts} options pursued`;
+
+  document.getElementById('nav-c-val').textContent =
+    `${G.unlocked.size} item(s) unlocked`;
+
+  document.getElementById('nav-s-val').textContent =
+    `${(c.suspects || []).length} suspect(s)`;
+}
+
+document.getElementById('nav-decisions').addEventListener('click', () => { renderDecisions(); show('decisions'); });
+document.getElementById('nav-casefile') .addEventListener('click', () => { renderCaseFile();  show('casefile'); });
+document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });
+document.getElementById('nav-accuse')   .addEventListener('click', () => { renderAccuse();    show('accuse'); });
+
+document.getElementById('dec-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
+document.getElementById('cf-back')   .addEventListener('click', () => { renderHub(); show('hub'); });
+document.getElementById('sus-back')  .addEventListener('click', () => { renderSuspects(); show('suspects'); });
+document.getElementById('iview-back').addEventListener('click', () => { renderSuspects(); show('suspects'); });
+document.getElementById('acc-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
+
+// ============================================================
+// DECISIONS
+// ============================================================
+function renderDecisions() {
+  document.getElementById('dec-budget').textContent = '$' + G.budget.toLocaleString();
+
+  const dps = G.case.decision_points || [];
+  if (!dps.length) {
+    document.getElementById('dec-body').innerHTML = '<div class="empty">No decision points in this case.</div>';
+    return;
+  }
+
+  let html = '';
+  dps.forEach(dp => {
+    html += `<div class="dp-block"><div class="dp-id">${esc(dp.id)}</div>`;
+    (dp.options || []).forEach((opt, j) => {
+      const key      = `${dp.id}:${j}`;
+      const done     = G.chosen.has(key);
+      const cost     = typeof opt.cost === 'number' ? opt.cost : 0;
+      const label    = typeof opt.label === 'string' ? opt.label : '(no label)';
+      const canAfford = cost <= G.budget;
+
+      if (done) {
+        html += `<button class="opt-row chosen" disabled>
+          <span>${esc(label)}</span>
+          <span class="opt-cost">DONE</span>
+        </button>`;
+      } else {
+        html += `<button class="opt-row${canAfford ? '' : ' cant-afford'}"
+          data-dp="${esc(dp.id)}" data-idx="${j}"
+          ${canAfford ? '' : 'disabled title="Insufficient budget"'}>
+          <span>${esc(label)}</span>
+          <span class="opt-cost">$${cost.toLocaleString()}</span>
+        </button>`;
+      }
+    });
+    html += `</div>`;
+  });
+
+  document.getElementById('dec-body').innerHTML = html;
+
+  document.querySelectorAll('#dec-body .opt-row:not(.chosen):not([disabled])').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pursueOption(btn.dataset.dp, parseInt(btn.dataset.idx, 10));
+    });
+  });
+}
+
+function pursueOption(dpId, idx) {
+  const dp  = (G.case.decision_points || []).find(d => d.id === dpId);
+  if (!dp) return;
+  const opt = (dp.options || [])[idx];
+  if (!opt) return;
+  const cost = typeof opt.cost === 'number' ? opt.cost : 0;
+  if (cost > G.budget) return;
+
+  G.budget -= cost;
+  G.chosen.add(`${dpId}:${idx}`);
+  if (Array.isArray(opt.leads_to)) opt.leads_to.forEach(id => G.unlocked.add(id));
+
+  renderDecisions();
+}
+
+// ============================================================
+// CASE FILE
+// ============================================================
+function renderCaseFile() {
+  document.getElementById('tab-ev') .classList.toggle('active', G.tab === 'ev');
+  document.getElementById('tab-doc').classList.toggle('active', G.tab === 'doc');
+  document.getElementById('cf-ev-list') .style.display = G.tab === 'ev'  ? '' : 'none';
+  document.getElementById('cf-doc-list').style.display = G.tab === 'doc' ? '' : 'none';
+
+  const evidence  = G.case.evidence  || [];
+  const documents = G.case.documents || [];
+
+  // Evidence
+  let evHtml = evidence.map(e => {
+    const unlocked = G.unlocked.has(e.id);
+    if (unlocked) {
+      return `<div class="item-card">
+        <div class="item-id">${esc(e.id)}<span class="phase-tag">phase ${e.available_at_phase}</span></div>
+        <div class="item-type">${esc(e.type || '')}</div>
+        <div class="item-desc">${esc(e.description || '')}</div>
+        <div class="item-points">→ ${esc(e.points_to || '')}</div>
+      </div>`;
+    }
+    return `<div class="item-card locked">
+      <div class="item-id">${esc(e.id)}<span class="phase-tag">phase ${e.available_at_phase}</span></div>
+      <div class="item-type">LOCKED</div>
+    </div>`;
+  }).join('') || '<div class="empty">No evidence in this case.</div>';
+
+  // Documents
+  let docHtml = documents.map(d => {
+    const unlocked = G.unlocked.has(d.id);
+    if (unlocked) {
+      return `<div class="item-card">
+        <div class="item-id">${esc(d.id)}<span class="phase-tag">phase ${d.phase}</span></div>
+        <div class="item-type">${esc(d.type || '')}</div>
+        <div class="item-desc">${esc(d.content || '')}</div>
+      </div>`;
+    }
+    return `<div class="item-card locked">
+      <div class="item-id">${esc(d.id)}<span class="phase-tag">phase ${d.phase}</span></div>
+      <div class="item-type">LOCKED</div>
+    </div>`;
+  }).join('') || '<div class="empty">No documents in this case.</div>';
+
+  document.getElementById('cf-ev-list') .innerHTML = evHtml;
+  document.getElementById('cf-doc-list').innerHTML = docHtml;
+}
+
+// ============================================================
+// SUSPECTS
+// ============================================================
+function renderSuspects() {
+  const suspects = G.case.suspects || [];
+  document.getElementById('sus-body').innerHTML = suspects.map(s => `
+    <div class="suspect-card">
+      <div style="flex:1">
+        <div class="suspect-name">${esc(s.name)}</div>
+        <div class="suspect-role">${esc(s.relationship_to_victim || '')}</div>
+        <div class="suspect-field"><span class="lbl">Alibi: </span>${esc(s.alibi || '—')}</div>
+        <div class="suspect-field"><span class="lbl">Verifiable: </span>${s.alibi_verifiable ? 'Yes' : 'No'}</div>
+        <div class="suspect-field"><span class="lbl">Motive: </span>${esc(s.motive || '—')}</div>
+      </div>
+      <button class="iview-btn" data-name="${esc(s.name)}">Interview</button>
+    </div>
+  `).join('') || '<div class="empty">No suspects in this case.</div>';
+
+  document.querySelectorAll('.iview-btn').forEach(btn => {
+    btn.addEventListener('click', () => openInterview(btn.dataset.name));
+  });
+}
+
+// ============================================================
+// INTERVIEW
+// ============================================================
+function openInterview(name) {
+  const suspect = (G.case.suspects || []).find(s => s.name === name);
+  if (!suspect) return;
+  G.suspect = suspect;
+  if (!G.chats[name]) G.chats[name] = [];
+
+  document.getElementById('iview-name').textContent = suspect.name;
+  document.getElementById('iview-role').textContent = suspect.relationship_to_victim || '';
+  document.getElementById('iview-err').textContent  = '';
+  document.getElementById('chat-in').value = '';
+
+  // Populate collapsible suspect info; start collapsed
+  document.getElementById('si-body').innerHTML = `
+    <div class="si-field"><span class="lbl">Alibi: </span>${esc(suspect.alibi || '—')}</div>
+    <div class="si-field"><span class="lbl">Verifiable: </span>${suspect.alibi_verifiable ? 'Yes' : 'No'}</div>
+    <div class="si-field"><span class="lbl">Motive: </span>${esc(suspect.motive || '—')}</div>
+  `;
+  document.getElementById('si-body').style.display      = 'none';
+  document.getElementById('si-toggle-btn').textContent  = 'Suspect Info ▸';
+
+  renderChatWindow();
+  renderJournal();
+  show('interview');
+}
+
+function renderChatWindow() {
+  const history = G.chats[G.suspect.name] || [];
+  const chatEl  = document.getElementById('chat-win');
+
+  if (!history.length) {
+    chatEl.innerHTML = `<div class="msg system">Interview started. What do you want to ask ${esc(G.suspect.name)}?</div>`;
+    return;
+  }
+
+  chatEl.innerHTML = history.map(m =>
+    `<div class="msg ${m.role === 'user' ? 'user' : 'suspect'}">${esc(m.content)}</div>`
+  ).join('');
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+document.getElementById('si-toggle-btn').addEventListener('click', () => {
+  const body = document.getElementById('si-body');
+  const btn  = document.getElementById('si-toggle-btn');
+  const open = body.style.display !== 'none';
+  body.style.display   = open ? 'none' : 'block';
+  btn.textContent      = open ? 'Suspect Info ▸' : 'Suspect Info ▾';
+});
+
+// ============================================================
+// JOURNAL
+// ============================================================
+function renderJournal() {
+  const { tabs, activeIdx } = G.journal;
+  const tabsEl  = document.getElementById('journal-tabs');
+  const emptyEl = document.getElementById('journal-empty');
+  const areaEl  = document.getElementById('journal-area');
+
+  let html = tabs.map((tab, i) =>
+    `<button class="jtab${i === activeIdx ? ' active' : ''}" data-idx="${i}">${esc(tab.name)}</button>`
+  ).join('');
+  html += `<button class="jtab-new" id="journal-new-tab">+ New Tab</button>`;
+  tabsEl.innerHTML = html;
+
+  tabsEl.querySelectorAll('.jtab[data-idx]').forEach(btn => {
+    btn.addEventListener('click', () => selectJournalTab(parseInt(btn.dataset.idx, 10)));
+  });
+  document.getElementById('journal-new-tab').addEventListener('click', createJournalTab);
+
+  if (activeIdx >= 0 && tabs[activeIdx]) {
+    emptyEl.style.display = 'none';
+    areaEl.style.display  = '';
+    areaEl.value = tabs[activeIdx].content;
+  } else {
+    emptyEl.style.display = '';
+    areaEl.style.display  = 'none';
+  }
+}
+
+function syncJournalContent() {
+  const { tabs, activeIdx } = G.journal;
+  if (activeIdx >= 0 && tabs[activeIdx]) {
+    tabs[activeIdx].content = document.getElementById('journal-area').value;
+  }
+}
+
+function createJournalTab() {
+  const name = (window.prompt('Tab name:') || '').trim();
+  if (!name) return;
+  syncJournalContent();
+  G.journal.tabs.push({ name, content: '' });
+  G.journal.activeIdx = G.journal.tabs.length - 1;
+  renderJournal();
+  document.getElementById('journal-area').focus();
+}
+
+function selectJournalTab(idx) {
+  if (idx === G.journal.activeIdx) return;
+  syncJournalContent();
+  G.journal.activeIdx = idx;
+  renderJournal();
+  document.getElementById('journal-area').focus();
+}
+
+document.getElementById('journal-area').addEventListener('input', syncJournalContent);
+
+document.getElementById('chat-send').addEventListener('click', sendMessage);
+document.getElementById('chat-in').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+async function sendMessage() {
+  const inputEl  = document.getElementById('chat-in');
+  const sendBtn  = document.getElementById('chat-send');
+  const errorEl  = document.getElementById('iview-err');
+  const question = inputEl.value.trim();
+  if (!question || !G.suspect) return;
+
+  inputEl.value   = '';
+  inputEl.disabled = true;
+  sendBtn.disabled = true;
+  errorEl.textContent = '';
+
+  const name = G.suspect.name;
+  G.chats[name].push({ role: 'user', content: question });
+
+  const chatEl = document.getElementById('chat-win');
+  chatEl.innerHTML += `<div class="msg system" id="typing-indicator">thinking...</div>`;
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  try {
+    const reply = await callClaude(G.suspect, G.chats[name]);
+    const loader = document.getElementById('typing-indicator');
+    if (loader) loader.remove();
+    G.chats[name].push({ role: 'assistant', content: reply });
+    renderChatWindow();
+  } catch (e) {
+    const loader = document.getElementById('typing-indicator');
+    if (loader) loader.remove();
+    G.chats[name].pop(); // undo the user message
+    errorEl.textContent = 'API error — ' + e.message;
+    inputEl.value = question;
+    renderChatWindow();
+  } finally {
+    inputEl.disabled = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function callClaude(suspect, history) {
+  const c = G.case;
+
+  const evLines = (c.evidence || [])
+    .filter(e => G.unlocked.has(e.id))
+    .map(e => `  [${e.id}] ${e.description}`)
+    .join('\n') || '  (none unlocked yet)';
+
+  const docLines = (c.documents || [])
+    .filter(d => G.unlocked.has(d.id))
+    .map(d => `  [${d.id}] ${d.content}`)
+    .join('\n') || '  (none unlocked yet)';
+
+  const system = [
+    `You are ${suspect.name} being interviewed by a detective in the case: "${c.title}".`,
+    `Victim: ${c.victim ? c.victim.name : 'unknown'}.`,
+    '',
+    `YOUR CHARACTER:`,
+    `- Relationship to victim: ${suspect.relationship_to_victim}`,
+    `- Guilty: ${suspect.guilty ? 'YES — you committed the crime' : 'NO — you are innocent'}`,
+    `- Alibi: ${suspect.alibi}`,
+    `- Alibi verifiable: ${suspect.alibi_verifiable ? 'yes' : 'no'}`,
+    `- Motive: ${suspect.motive}`,
+    '',
+    `WHAT YOU KNOW (you can hint at these if pressed):`,
+    ...(suspect.what_they_know || []).map(k => `- ${k}`),
+    '',
+    `WHAT YOU CONCEAL OR LIE ABOUT (do NOT reveal directly):`,
+    ...(suspect.what_they_lie_about || []).map(l => `- ${l}`),
+    '',
+    `EVIDENCE THE INVESTIGATOR HAS SEEN:`,
+    evLines,
+    '',
+    `DOCUMENTS THE INVESTIGATOR HAS SEEN:`,
+    docLines,
+    '',
+    `INSTRUCTIONS: Stay fully in character. Answer in 2–4 sentences. Be evasive or defensive about things you conceal. If innocent you may be cooperative but still have your own secrets. If guilty you should deny or deflect accusations. Do not acknowledge this is a game or break character.`,
+  ].join('\n');
+
+  const messages = history.map(m => ({
+    role:    m.role === 'user' ? 'user' : 'assistant',
+    content: m.content,
+  }));
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key':                              G.apiKey,
+      'anthropic-version':                      '2023-06-01',
+      'content-type':                           'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-6',
+      max_tokens: 300,
+      system:     system,
+      messages:   messages,
+    }),
+  });
+
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { msg = (await res.json()).error.message; } catch {}
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ============================================================
+// ACCUSATION
+// ============================================================
+function renderAccuse() {
+  G.accused = null;
+  document.getElementById('acc-confirm').disabled = true;
+  document.getElementById('acc-err').textContent  = '';
+
+  const suspects = G.case.suspects || [];
+  document.getElementById('acc-body').innerHTML = suspects.map(s => `
+    <div class="accuse-card" data-name="${esc(s.name)}">
+      <div class="radio-dot"></div>
+      <div>
+        <div class="accuse-sname">${esc(s.name)}</div>
+        <div class="accuse-srole">${esc(s.relationship_to_victim || '')}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.accuse-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.accuse-card').forEach(c => c.classList.remove('sel'));
+      card.classList.add('sel');
+      G.accused = card.dataset.name;
+      document.getElementById('acc-confirm').disabled = false;
+    });
+  });
+}
+
+document.getElementById('acc-confirm').addEventListener('click', () => {
+  if (!G.accused) return;
+  const suspect = (G.case.suspects || []).find(s => s.name === G.accused);
+  if (!suspect) return;
+
+  const correct    = suspect.guilty === true;
+  const spent      = (G.case.budget || 0) - G.budget;
+
+  document.getElementById('res-badge').textContent = correct ? 'CASE CLOSED' : 'WRONG SUSPECT';
+  document.getElementById('res-badge').className   = 'result-badge ' + (correct ? 'win' : 'lose');
+
+  document.getElementById('res-meta').innerHTML = correct
+    ? `You correctly identified <strong style="color:#ddd">${esc(G.accused)}</strong> as the perpetrator.<br>
+       Budget spent: $${spent.toLocaleString()} &nbsp;|&nbsp; Remaining: $${G.budget.toLocaleString()}`
+    : `<strong style="color:#ddd">${esc(G.accused)}</strong> is not the perpetrator. The case remains open.`;
+
+  document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+
+  show('result');
+});
+
+document.getElementById('res-restart').addEventListener('click', () => {
+  caseFileEl.value = '';
+  apiKeyEl.value   = '';
+  openBtn.disabled = true;
+  document.getElementById('start-err').textContent = '';
+  show('start');
+});
+</script>
+</body>
+</html>

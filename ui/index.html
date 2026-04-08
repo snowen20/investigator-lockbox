@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Case Prescreener</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: monospace;
+      background: #0e0e0e;
+      color: #d0d0d0;
+      max-width: 860px;
+      margin: 48px auto;
+      padding: 0 24px 64px;
+    }
+
+    h1 {
+      font-size: 1rem;
+      font-weight: normal;
+      color: #888;
+      margin-bottom: 28px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    input[type="file"] {
+      color: #aaa;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    button {
+      padding: 6px 18px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      background: #1e1e1e;
+      color: #ccc;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+    button:hover { background: #2a2a2a; }
+    button:disabled { opacity: 0.4; cursor: default; }
+
+    #status {
+      display: none;
+      padding: 3px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      border-radius: 2px;
+    }
+    #status.pass { background: #0d2e0d; color: #4caf50; border: 1px solid #2e6b2e; }
+    #status.fail { background: #2e0d0d; color: #f44336; border: 1px solid #6b2e2e; }
+
+    #summary {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 16px;
+      min-height: 1.2em;
+    }
+
+    #issues { display: flex; flex-direction: column; gap: 6px; }
+
+    .issue {
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .issue.error   { background: #1e0f0f; border-left: 3px solid #c0392b; }
+    .issue.warning { background: #1e1800; border-left: 3px solid #b8860b; }
+
+    .issue-header {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 3px;
+    }
+    .rule-id { font-weight: bold; color: #e0e0e0; }
+    .severity-tag { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .issue.error   .severity-tag { color: #c0392b; }
+    .issue.warning .severity-tag { color: #b8860b; }
+
+    .location { color: #666; font-size: 0.78rem; margin-bottom: 2px; }
+    .description { color: #bbb; }
+
+    .no-issues { color: #4caf50; font-size: 0.85rem; padding: 10px 0; }
+
+    #parse-error {
+      display: none;
+      color: #f44336;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Investigator Lockbox — Case Prescreener</h1>
+
+  <div class="controls">
+    <input type="file" id="file-input" accept=".json">
+    <button id="run-btn">Run Check</button>
+    <span id="status"></span>
+  </div>
+
+  <div id="parse-error"></div>
+  <div id="summary"></div>
+  <div id="issues"></div>
+
+  <script>
+    const fileInput  = document.getElementById('file-input');
+    const runBtn     = document.getElementById('run-btn');
+    const statusEl   = document.getElementById('status');
+    const summaryEl  = document.getElementById('summary');
+    const issuesEl   = document.getElementById('issues');
+    const parseErrEl = document.getElementById('parse-error');
+
+    function reset() {
+      statusEl.style.display = 'none';
+      statusEl.className = '';
+      summaryEl.textContent = '';
+      issuesEl.innerHTML = '';
+      parseErrEl.style.display = 'none';
+      parseErrEl.textContent = '';
+    }
+
+    function showError(msg) {
+      parseErrEl.textContent = msg;
+      parseErrEl.style.display = 'block';
+    }
+
+    function renderReport(report) {
+      // Status badge
+      statusEl.textContent = report.status.toUpperCase();
+      statusEl.className = report.status;
+      statusEl.style.display = 'inline-block';
+
+      // Summary line
+      const errors   = report.issues.filter(i => i.severity === 'error').length;
+      const warnings = report.issues.filter(i => i.severity === 'warning').length;
+      summaryEl.textContent = report.issues.length === 0
+        ? 'No issues found.'
+        : `${report.issues.length} issue(s) — ${errors} error(s), ${warnings} warning(s)`;
+
+      // Issue rows
+      if (report.issues.length === 0) {
+        issuesEl.innerHTML = '<div class="no-issues">Clean pass. No issues detected.</div>';
+        return;
+      }
+
+      issuesEl.innerHTML = report.issues.map(i => `
+        <div class="issue ${i.severity}">
+          <div class="issue-header">
+            <span class="rule-id">${i.rule_id}</span>
+            <span class="severity-tag">${i.severity}</span>
+          </div>
+          <div class="location">${i.location}</div>
+          <div class="description">${i.description}</div>
+        </div>
+      `).join('');
+    }
+
+    runBtn.addEventListener('click', async () => {
+      reset();
+
+      const file = fileInput.files[0];
+      if (!file) { showError('Select a JSON file first.'); return; }
+
+      let text;
+      try {
+        text = await file.text();
+        JSON.parse(text); // validate client-side before sending
+      } catch (e) {
+        showError('File is not valid JSON — ' + e.message);
+        return;
+      }
+
+      runBtn.disabled = true;
+      summaryEl.textContent = 'Running…';
+
+      let report;
+      try {
+        const res = await fetch('/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: text
+        });
+        report = await res.json();
+      } catch (e) {
+        summaryEl.textContent = '';
+        showError('Request failed — ' + e.message);
+        runBtn.disabled = false;
+        return;
+      }
+
+      runBtn.disabled = false;
+
+      if (report.error) {
+        showError(report.error);
+        return;
+      }
+
+      renderReport(report);
+    });
+  </script>
+
+</body>
+</html>

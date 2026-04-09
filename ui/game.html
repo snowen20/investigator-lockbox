@@ -483,10 +483,39 @@
       flex: 0 0 40%;
       display: flex;
       flex-direction: column;
-      padding: 20px 24px 16px;
       background: rgba(5, 5, 5, 0.95);
       min-height: 0;
       overflow: hidden;
+    }
+    .iview-notes {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px 12px;
+      border-bottom: 1px solid var(--green-lo);
+      overflow: hidden;
+    }
+    .iview-briefing {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 24px 16px;
+      overflow: hidden;
+    }
+    .briefing-content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      background: rgba(5, 5, 5, 0.9);
+      border: 1px solid var(--green-lo);
+      color: var(--green);
+      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+      font-size: 1rem;
+      line-height: 1.6;
+      padding: 12px;
+      white-space: pre-wrap;
     }
     .journal-heading {
       font-size: 1rem;
@@ -732,12 +761,18 @@
       <div id="iview-err" class="err"></div>
     </div>
 
-    <!-- RIGHT: notes journal -->
+    <!-- RIGHT: notes journal + case briefing -->
     <div class="iview-right">
-      <div class="journal-heading">Notes</div>
-      <div class="journal-tabs" id="journal-tabs"></div>
-      <div class="journal-empty" id="journal-empty">No notes yet.</div>
-      <textarea class="journal-area" id="journal-area" style="display:none"></textarea>
+      <div class="iview-notes">
+        <div class="journal-heading">Notes</div>
+        <div class="journal-tabs" id="journal-tabs"></div>
+        <div class="journal-empty" id="journal-empty">No notes yet.</div>
+        <textarea class="journal-area" id="journal-area" style="display:none"></textarea>
+      </div>
+      <div class="iview-briefing">
+        <div class="journal-heading">Case Briefing</div>
+        <div class="briefing-content" id="briefing-content"></div>
+      </div>
     </div>
 
   </div>
@@ -1176,6 +1211,8 @@ function openInterview(name) {
   `;
   document.getElementById('si-body').style.display      = 'none';
   document.getElementById('si-toggle-btn').textContent  = 'Suspect Info ▸';
+
+  document.getElementById('briefing-content').textContent = G.case.briefing || '';
 
   renderChatWindow();
   renderJournal();

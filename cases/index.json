@@ -9,7 +9,7 @@
       "cases": []
     },
     {
-      "name": "Wilderness Rescue / Disappearance",
+      "name": "Human Disappearance / Abduction",
       "cases": [
         { "title": "Ash Creek Route", "file": "ash-creek-route.json" }
       ]
@@ -36,10 +36,6 @@
     },
     {
       "name": "Insurance Fraud",
-      "cases": []
-    },
-    {
-      "name": "Custody / Family Disappearance",
       "cases": []
     },
     {
@@ -87,10 +83,6 @@
       "cases": []
     },
     {
-      "name": "Missing Journalist",
-      "cases": []
-    },
-    {
       "name": "Prison / Jailhouse Conspiracy",
       "cases": []
     },
@@ -108,14 +100,6 @@
     },
     {
       "name": "Religious Institution Cover-Up",
-      "cases": []
-    },
-    {
-      "name": "Border Crossing Disappearance",
-      "cases": []
-    },
-    {
-      "name": "Runaway or Staged Disappearance",
       "cases": []
     },
     {

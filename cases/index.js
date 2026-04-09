@@ -2,7 +2,7 @@ window.CASE_INDEX = {
   "categories": [
     { "name": "Medical Deception",                        "description": "Illness, treatment, or death is being faked or misrepresented.",                            "cases": [] },
     { "name": "Corporate Malfeasance",                    "description": "A company is hiding fraud, abuse, or internal wrongdoing.",                                 "cases": [] },
-    { "name": "Wilderness Rescue / Disappearance",        "description": "Someone vanishes in remote terrain and time is critical.",                                  "cases": [
+    { "name": "Human Disappearance / Abduction",           "description": "A person has gone missing or been taken under suspicious, unknown, or coercive circumstances.", "cases": [
         { "title": "Ash Creek Route", "key": "ash-creek-route" }
     ]},
     { "name": "School / Academy Scandal",                 "description": "Misconduct, cover-up, or abuse inside an educational institution.",                         "cases": [] },
@@ -11,7 +11,6 @@ window.CASE_INDEX = {
     { "name": "Artifact Theft / Historical Mystery",      "description": "A stolen object is tied to buried history or secrets.",                                     "cases": [] },
     { "name": "High-Strangeness Containment",             "description": "Investigators confront anomalous events with uncertain cause.",                             "cases": [] },
     { "name": "Insurance Fraud",                          "description": "A claim may be staged, inflated, or completely false.",                                     "cases": [] },
-    { "name": "Custody / Family Disappearance",           "description": "A missing-person case rooted in family conflict or custody struggle.",                      "cases": [] },
     { "name": "Serial Arson Pattern",                     "description": "Multiple fires suggest a connected offender or motive.",                                    "cases": [] },
     { "name": "Blackmail / Extortion",                    "description": "Someone is being threatened, coerced, or financially squeezed.",                           "cases": [] },
     { "name": "Political Corruption",                     "description": "Public power is being used for hidden gain or protection.",                                 "cases": [] },
@@ -23,14 +22,11 @@ window.CASE_INDEX = {
     { "name": "False Imprisonment",                       "description": "A person is being unlawfully held, hidden, or confined.",                                  "cases": [] },
     { "name": "Environmental Crime",                      "description": "Pollution, dumping, or ecological harm is being concealed.",                                "cases": [] },
     { "name": "Labor Camp / Forced Work Abuse",           "description": "Workers are being trapped, exploited, or controlled.",                                     "cases": [] },
-    { "name": "Missing Journalist",                       "description": "A reporter disappears while digging into sensitive information.",                           "cases": [] },
     { "name": "Prison / Jailhouse Conspiracy",            "description": "Hidden coordination, abuse, or corruption inside confinement systems.",                    "cases": [] },
     { "name": "Election Sabotage",                        "description": "An effort is underway to disrupt or manipulate an election process.",                      "cases": [] },
     { "name": "Charity Fraud",                            "description": "A supposed good cause is being used as a front for theft.",                                "cases": [] },
     { "name": "Tech Sabotage / Data Theft",               "description": "Systems are being disrupted or sensitive information is being stolen.",                    "cases": [] },
     { "name": "Religious Institution Cover-Up",           "description": "Abuse, secrecy, or misconduct is being hidden inside a faith institution.",                "cases": [] },
-    { "name": "Border Crossing Disappearance",            "description": "Someone vanishes during or around a border transit.",                                      "cases": [] },
-    { "name": "Runaway or Staged Disappearance",          "description": "A disappearance may be voluntary, deceptive, or deliberately staged.",                    "cases": [] },
     { "name": "Financial Elder Abuse",                    "description": "An older person is being manipulated or drained for money.",                               "cases": [] },
     { "name": "Murder-for-Hire Setup",                    "description": "A killing is planned, outsourced, or framed through intermediaries.",                     "cases": [] },
     { "name": "Internal Affairs / Dirty Cop Case",        "description": "Misconduct inside law enforcement is under investigation.",                                "cases": [] },

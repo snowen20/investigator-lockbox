@@ -10,12 +10,22 @@
 
     body {
       font-family: monospace;
-      background: #0e0e0e;
+      background: #0e0e0e url('../images/background.png') center center / cover fixed;
       color: #d0d0d0;
       min-height: 100vh;
     }
 
-    .screen { display: none; }
+    #bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: center center / cover no-repeat;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .screen { display: none; position: relative; z-index: 1; }
     .screen.active { display: block; }
 
     .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -281,13 +291,37 @@
     =========================== */
     .suspect-card {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
+      align-items: stretch;
+      gap: 0;
       border: 1px solid #1e1e1e;
       background: #111;
-      padding: 14px;
+      padding: 0;
       margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .suspect-avatar-wrap {
+      width: 120px;
+      min-width: 120px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .suspect-avatar-wrap img {
+      width: 120px;
+      height: 100%;
+      min-height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    .suspect-avatar-ph {
+      width: 120px;
+      height: 100%;
+      min-height: 120px;
+      background: #2a2a2e;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #888;
+      font-family: monospace;
     }
     .suspect-name { font-size: 0.88rem; color: #ddd; margin-bottom: 3px; }
     .suspect-role { font-size: 0.75rem; color: #666; margin-bottom: 10px; }
@@ -377,6 +411,41 @@
     .msg.user    { align-self: flex-end;   background: #151e2a; border: 1px solid #253548; color: #9ab; }
     .msg.suspect { align-self: flex-start; background: #141414; border: 1px solid #262626; color: #bbb; }
     .msg.system  { align-self: center; color: #444; font-size: 0.75rem; font-style: italic; }
+    .suspect-bubble-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      align-self: flex-start;
+      max-width: 85%;
+    }
+    .suspect-bubble-row .msg.suspect {
+      align-self: auto;
+      max-width: 100%;
+      flex: 1;
+      min-width: 0;
+    }
+    .chat-avatar {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 4px;
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+    }
+    .chat-avatar-ph {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      background: #2a2a2e;
+      border-radius: 4px;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #888;
+      font-family: monospace;
+      flex-shrink: 0;
+    }
     .chat-row { display: flex; gap: 8px; flex-shrink: 0; }
     .chat-row input { flex: 1; }
 
@@ -506,6 +575,8 @@
   </style>
 </head>
 <body>
+
+<div id="bg-layer"></div>
 
 <!-- ===================== START ===================== -->
 <div id="s-start" class="screen active">
@@ -695,11 +766,58 @@ const G = {
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('s-' + id).classList.add('active');
+  if (id !== 'categories') setCategoryBg(null);
 }
 
 function esc(s) {
   if (typeof s !== 'string') s = String(s == null ? '' : s);
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function suspectKey(name) {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+// ============================================================
+// CATEGORY BACKGROUNDS
+// ============================================================
+const CATEGORY_BACKGROUNDS = {
+  'Medical Deception':                   "../images/background images/medical-deception.jpg",
+  'Corporate Malfeasance':               "../images/background images/corporate-malfeasance.jpg",
+  'Human Disappearance / Abduction':     "../images/background images/wilderness-rescue.jpg",
+  'School / Academy Scandal':            "../images/background images/school-scandal.jpg",
+  'Private Surveillance Job':            "../images/background images/Private-surveillance.jpg",
+  'Cold Case Reopen':                    "../images/background images/cold-case.jpg",
+  'Artifact Theft / Historical Mystery': "../images/background images/artifact-theft.jpg",
+};
+
+const FADE_MS = 500; // must match CSS transition duration
+let _bgTimer  = null;
+
+function setCategoryBg(catName) {
+  const layer          = document.getElementById('bg-layer');
+  const img            = catName && CATEGORY_BACKGROUNDS[catName];
+  const currentOpacity = parseFloat(window.getComputedStyle(layer).opacity);
+
+  clearTimeout(_bgTimer);
+  _bgTimer = null;
+
+  if (img) {
+    if (currentOpacity > 0.01) {
+      // Layer is visible — fade out, swap image, fade back in
+      layer.style.opacity = '0';
+      _bgTimer = setTimeout(() => {
+        layer.style.backgroundImage = `url('${img}')`;
+        layer.style.opacity = '0.3';
+        _bgTimer = null;
+      }, FADE_MS);
+    } else {
+      layer.style.backgroundImage = `url('${img}')`;
+      layer.style.opacity = '0.3';
+    }
+  } else {
+    layer.style.opacity = '0';
+  }
 }
 
 // ============================================================
@@ -758,6 +876,9 @@ function renderCategories() {
       if (!wasOpen) {
         item.classList.add('open');
         header.querySelector('.cat-arrow').textContent = '▾';
+        setCategoryBg(header.querySelector('span').textContent);
+      } else {
+        setCategoryBg(null);
       }
     });
   });
@@ -977,18 +1098,27 @@ function renderCaseFile() {
 // ============================================================
 function renderSuspects() {
   const suspects = G.case.suspects || [];
-  document.getElementById('sus-body').innerHTML = suspects.map(s => `
-    <div class="suspect-card">
-      <div style="flex:1">
+  document.getElementById('sus-body').innerHTML = suspects.map(s => {
+    const key     = suspectKey(s.name);
+    const initial = esc(s.name.trim()[0]);
+    return `<div class="suspect-card">
+      <div class="suspect-avatar-wrap">
+        <img src="../images/Avatars_120x120/${key}.png" width="120" height="120" alt="${esc(s.name)}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="suspect-avatar-ph" style="display:none">${initial}</div>
+      </div>
+      <div style="flex:1;padding:14px;min-width:0">
         <div class="suspect-name">${esc(s.name)}</div>
         <div class="suspect-role">${esc(s.relationship_to_victim || '')}</div>
         <div class="suspect-field"><span class="lbl">Alibi: </span>${esc(s.alibi || '—')}</div>
         <div class="suspect-field"><span class="lbl">Verifiable: </span>${s.alibi_verifiable ? 'Yes' : 'No'}</div>
         <div class="suspect-field"><span class="lbl">Motive: </span>${esc(s.motive || '—')}</div>
       </div>
-      <button class="iview-btn" data-name="${esc(s.name)}">Interview</button>
-    </div>
-  `).join('') || '<div class="empty">No suspects in this case.</div>';
+      <div style="display:flex;align-items:center;padding:0 14px 0 0;flex-shrink:0">
+        <button class="iview-btn" data-name="${esc(s.name)}">Interview</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty">No suspects in this case.</div>';
 
   document.querySelectorAll('.iview-btn').forEach(btn => {
     btn.addEventListener('click', () => openInterview(btn.dataset.name));
@@ -1032,9 +1162,20 @@ function renderChatWindow() {
     return;
   }
 
-  chatEl.innerHTML = history.map(m =>
-    `<div class="msg ${m.role === 'user' ? 'user' : 'suspect'}">${esc(m.content)}</div>`
-  ).join('');
+  chatEl.innerHTML = history.map(m => {
+    if (m.role === 'user') {
+      return `<div class="msg user">${esc(m.content)}</div>`;
+    }
+    const key     = suspectKey(G.suspect.name);
+    const initial = esc(G.suspect.name.trim()[0]);
+    return `<div class="suspect-bubble-row">
+      <img class="chat-avatar" src="../images/Avatars_48x48/${key}.png"
+           width="48" height="48" alt="${esc(G.suspect.name)}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="chat-avatar-ph" style="display:none">${initial}</div>
+      <div class="msg suspect">${esc(m.content)}</div>
+    </div>`;
+  }).join('');
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 

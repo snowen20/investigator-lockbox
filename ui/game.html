@@ -649,6 +649,123 @@
       line-height: 1.7;
       margin-bottom: 24px;
     }
+
+    /* ===========================
+       SETUP SCREEN
+    =========================== */
+    .setup-section { margin-bottom: 32px; }
+    .setup-section-label {
+      font-size: 1rem;
+      color: var(--green-dim);
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--green-lo);
+    }
+    .setup-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--green-lo);
+      background: var(--panel-bg);
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .setup-option:hover { background: rgba(20,50,20,0.5); }
+    .setup-option.selected { border-color: var(--green); background: rgba(10,30,10,0.85); }
+    .setup-option input[type="radio"] { display: none; }
+    .setup-radio-dot {
+      width: 10px; height: 10px; min-width: 10px;
+      border: 1px solid var(--green-dim);
+      border-radius: 50%;
+      margin-top: 4px;
+    }
+    .setup-option.selected .setup-radio-dot { background: var(--green); border-color: var(--green); box-shadow: 0 0 4px var(--green); }
+    .setup-option-label { font-size: 1rem; color: var(--green); margin-bottom: 2px; }
+    .setup-option-desc { font-size: 1rem; color: var(--green-dim); line-height: 1.5; }
+    .setup-advisor-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--green-lo);
+      background: var(--panel-bg);
+    }
+    .setup-advisor-row.disabled { opacity: 0.35; pointer-events: none; }
+    .advisor-toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      flex-shrink: 0;
+    }
+    .advisor-toggle input { opacity: 0; width: 0; height: 0; }
+    .advisor-toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--green-lo);
+      border: 1px solid var(--green-dim);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .advisor-toggle-slider::before {
+      content: '';
+      position: absolute;
+      left: 2px; top: 2px;
+      width: 16px; height: 16px;
+      background: var(--green-dim);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .advisor-toggle input:checked + .advisor-toggle-slider { background: rgba(10,40,10,0.9); border-color: var(--green); }
+    .advisor-toggle input:checked + .advisor-toggle-slider::before { transform: translateX(18px); background: var(--green); }
+    .setup-advisor-label { font-size: 1rem; color: var(--green); }
+    .setup-advisor-note { font-size: 1rem; color: var(--green-dim); margin-left: auto; }
+
+    /* ===========================
+       ADVISOR SYSTEM
+    =========================== */
+    .advisor-prompt {
+      flex-shrink: 0;
+      padding: 10px 0 4px;
+      border-top: 1px solid var(--green-lo);
+    }
+    .advisor-prompt-label {
+      font-size: 1rem;
+      color: var(--green-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .advisor-btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .advisor-btn {
+      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+      font-size: 1rem;
+      background: rgba(10,10,10,0.9);
+      color: var(--green-dim);
+      border: 1px solid var(--green-dim);
+      padding: 6px 14px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    .advisor-btn:hover { background: rgba(20,50,20,0.85); color: var(--green); border-color: var(--green); }
+    .advisor-btn.skip { border-color: var(--green-lo); color: var(--green-lo); }
+    .advisor-btn.skip:hover { color: var(--green-dim); border-color: var(--green-dim); background: none; }
+    .msg.advisor {
+      align-self: stretch;
+      background: rgba(5,10,5,0.95);
+      border: 1px solid var(--green-dim);
+      border-left: 3px solid var(--green-dim);
+      color: var(--green-dim);
+      font-size: 1rem;
+      padding: 9px 13px;
+    }
+    .advisor-role-tag {
+      display: inline-block;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -687,6 +804,43 @@
     <div id="brief-body"></div>
     <div style="margin-top:32px">
       <button class="primary" id="begin-btn">Begin Investigation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SETUP ===================== -->
+<div id="s-setup" class="screen">
+  <div class="page">
+    <button class="back-btn" id="setup-back">← Back to Cases</button>
+    <h1>Case Setup</h1>
+
+    <!-- Delivery Format -->
+    <div class="setup-section">
+      <div class="setup-section-label">Delivery Format</div>
+      <div id="setup-format-opts"></div>
+    </div>
+
+    <!-- Investigator Structure -->
+    <div class="setup-section">
+      <div class="setup-section-label">Investigator Structure</div>
+      <div id="setup-struct-opts"></div>
+    </div>
+
+    <!-- Advisor Toggle -->
+    <div class="setup-section">
+      <div class="setup-section-label">Advisor</div>
+      <div class="setup-advisor-row" id="setup-advisor-row">
+        <label class="advisor-toggle">
+          <input type="checkbox" id="setup-advisor-toggle" checked>
+          <span class="advisor-toggle-slider"></span>
+        </label>
+        <span class="setup-advisor-label">Advisor support</span>
+        <span class="setup-advisor-note" id="setup-advisor-note">Consultation buttons appear after qualifying events.</span>
+      </div>
+    </div>
+
+    <div style="margin-top:8px">
+      <button class="primary" id="setup-begin-btn">Begin Case</button>
     </div>
   </div>
 </div>
@@ -735,6 +889,11 @@
     <h1>Decision Points</h1>
     <div class="dp-budget-bar">Budget remaining: <span id="dec-budget"></span></div>
     <div id="dec-body"></div>
+    <div id="advisor-prompt-dec" class="advisor-prompt" style="display:none;margin-top:16px">
+      <div class="advisor-prompt-label">Advisor consultation available</div>
+      <div id="advisor-btn-row-dec" class="advisor-btn-row"></div>
+    </div>
+    <div id="advisor-response-dec" style="display:none;margin-top:12px"></div>
   </div>
 </div>
 
@@ -776,6 +935,10 @@
       <button class="si-toggle-btn" id="si-toggle-btn">Suspect Info ▸</button>
       <div class="si-body" id="si-body" style="display:none"></div>
       <div class="chat-window" id="chat-win"></div>
+      <div class="advisor-prompt" id="advisor-prompt" style="display:none">
+        <div class="advisor-prompt-label">Advisor consultation available</div>
+        <div class="advisor-btn-row" id="advisor-btn-row"></div>
+      </div>
       <div class="chat-row">
         <input type="text" id="chat-in" placeholder="Ask a question...">
         <button id="chat-send">Send</button>
@@ -837,13 +1000,26 @@ const G = {
   budget:  0,
   unlocked: new Set(),  // IDs of unlocked evidence / documents
   chosen:   new Set(),  // "DP-XX:N" keys of pursued options
-  chats:    {},         // suspectName -> [{role, content}]
+  chats:    {},         // suspectName -> [{role, content, advisor_role?}]
   suspect:  null,       // currently open interview subject
   accused:  null,       // name of accused suspect
   tab:      'ev',       // active case-file tab
   journal:  { tabs: [], activeIdx: -1 },  // case-level notes journal
   index:    null,       // loaded cases/index.json
   selectedCat: null,    // currently selected category object
+  // Setup options (chosen on setup screen)
+  setupFormat:    'briefing',   // selected delivery format key
+  setupStructure: 'lone-wolf',  // 'lone-wolf' | 'single-partner' | 'multi-agent'
+  setupAdvisor:   true,         // advisor toggle (overridden OFF by lone-wolf)
+  // Discovered information registry
+  discoveredInfo: {
+    names: [], locations: [], times: [],
+    evidence_ids: [], document_ids: [],
+    raw_statements: {},  // suspectName -> [raw response string, ...]
+  },
+  entityRegistry: { names: [], locations: [], times: [] },
+  pendingAdvisorContext: null,  // set when advisor buttons are shown
+  advisedDPs: new Set(),        // "dp-advised:DP-XX:N" — DPs already shown advisor for
 };
 
 // ============================================================
@@ -989,26 +1165,79 @@ function loadCase(key) {
   G.accused  = null;
   G.tab      = 'ev';
   G.journal  = { tabs: [], activeIdx: -1 };
-  renderBrief();
-  show('brief');
+  // Reset setup to defaults
+  G.setupFormat    = 'briefing';
+  G.setupStructure = 'lone-wolf';
+  G.setupAdvisor   = true;
+  // Reset discovered info
+  G.discoveredInfo = {
+    names: [], locations: [], times: [],
+    evidence_ids: [], document_ids: [],
+    raw_statements: {},
+  };
+  G.pendingAdvisorContext = null;
+  G.advisedDPs = new Set();
+  // Build entity registry from case data
+  G.entityRegistry = buildEntityRegistry();
+  renderSetup();
+  show('setup');
 }
 
 // ============================================================
-// BRIEF
+// BRIEF + FORMAT RENDERER
 // ============================================================
 function renderBrief() {
-  const c = G.case;
+  const c   = G.case;
+  const fmt = G.setupFormat || 'briefing';
+  const withheld = ((c.format_templates || {})[fmt] || {}).withheld_until_play || [];
+
+  let html = `<div class="brief-block">
+    <div class="brief-label">Case</div>
+    <div class="brief-value">${esc(c.title || 'Untitled')}</div>
+  </div>`;
+
+  html += renderCaseOpening();
+
+  html += `<div class="brief-block">
+    <div class="brief-label">Investigation Budget</div>
+    <div class="brief-value" style="color:#7c7">$${G.budget.toLocaleString()}</div>
+  </div>
+  <p class="dim">${withheld.includes('briefing') ? 'Begin your investigation. The case will reveal itself.' : 'Use budget to pursue leads and unlock evidence. When you are ready, make your accusation.'}</p>`;
+
+  document.getElementById('brief-body').innerHTML = html;
+}
+
+function renderCaseOpening() {
+  const c   = G.case;
+  const fmt = G.setupFormat || 'briefing';
+  const tpl = ((c.format_templates || {})[fmt]) || {};
+
+  switch (fmt) {
+    case 'dossier':          return renderFmtDossier(tpl);
+    case 'narrative':        return renderFmtNarrative(tpl);
+    case 'mysterious_message': return renderFmtMysteriousMessage(tpl);
+    case 'email_chains':     return renderFmtEmailChains(tpl);
+    case 'text_messages':    return renderFmtTextMessages(tpl, 'all');
+    case 'mix':              return renderFmtMix(tpl);
+    case 'briefing':
+    default:                 return renderFmtBriefing('all');
+  }
+}
+
+function renderFmtBriefing(scope) {
+  const c    = G.case;
+  const text = c.briefing || '';
+  const body = (scope === 'opening_only' || scope === 'summary_only')
+    ? text.split(/[.!?]\s+/)[0] + '.'
+    : text;
   const v = c.victim || {};
-  document.getElementById('brief-body').innerHTML = `
-    <div class="brief-block">
-      <div class="brief-label">Case</div>
-      <div class="brief-value">${esc(c.title || 'Untitled')}</div>
-    </div>
-    ${c.briefing ? `<div class="brief-block">
-      <div class="brief-label">Briefing</div>
-      <p style="line-height:1.7;margin:0">${esc(c.briefing)}</p>
-    </div>` : ''}
-    <div class="brief-block">
+  let html = '';
+  if (body) html += `<div class="brief-block">
+    <div class="brief-label">Briefing</div>
+    <p style="line-height:1.7;margin:0">${esc(body)}</p>
+  </div>`;
+  if (scope === 'all') {
+    html += `<div class="brief-block">
       <div class="brief-label">Victim</div>
       <div class="brief-value">${esc(v.name || '—')}</div>
       ${v.age        ? `<div class="brief-subvalue">Age: ${esc(String(v.age))}</div>` : ''}
@@ -1017,19 +1246,307 @@ function renderBrief() {
     <div class="brief-block">
       <div class="brief-label">Suspects</div>
       <div class="brief-value">${(c.suspects || []).length} individual(s) of interest</div>
-    </div>
-    <div class="brief-block">
-      <div class="brief-label">Investigation Budget</div>
-      <div class="brief-value" style="color:#7c7">$${G.budget.toLocaleString()}</div>
-    </div>
-    <p class="dim">Use budget to pursue leads and unlock evidence. When you are ready, make your accusation.</p>
-  `;
+    </div>`;
+  }
+  return html;
+}
+
+function renderFmtDossier(tpl) {
+  const c = G.case;
+  let html = `<div class="brief-block"><div class="brief-value" style="letter-spacing:0.1em;border-bottom:1px solid var(--green-lo);padding-bottom:10px;margin-bottom:4px">${esc(tpl.header || 'CASE FILE')}</div></div>`;
+  (tpl.sections || []).forEach(section => {
+    let content = '';
+    const f = section.source_field;
+    if (f === 'briefing') {
+      content = `<p style="line-height:1.7;margin:0">${esc(c.briefing || '')}</p>`;
+    } else if (f === 'victim') {
+      const v = c.victim || {};
+      content = `${esc(v.name || '—')}${v.age ? ', Age ' + esc(String(v.age)) : ''}${v.occupation ? ' — ' + esc(v.occupation) : ''}`;
+    } else if (f === 'suspects' && section.render === 'name_and_relationship_list') {
+      content = (c.suspects || []).map(s =>
+        `<div style="margin-bottom:4px">${esc(s.name)} — <span style="color:var(--green-dim)">${esc(s.relationship_to_victim || '')}</span></div>`
+      ).join('');
+    } else if (f === 'evidence') {
+      let ev = c.evidence || [];
+      if (section.filter) {
+        const { field: ff, value: fv } = section.filter;
+        ev = ev.filter(e => e[ff] === fv);
+      }
+      content = ev.map(e =>
+        `<div style="margin-bottom:6px"><span style="color:var(--green-dim)">[${esc(e.id)}]</span> ${esc(e.description)}</div>`
+      ).join('') || '<span style="color:var(--green-lo)">None</span>';
+    } else if (f === 'budget') {
+      content = `$${(c.budget || 0).toLocaleString()}`;
+    }
+    html += `<div class="brief-block">
+      <div class="brief-label">${esc(section.label || '')}</div>
+      <div class="brief-value">${content}</div>
+    </div>`;
+  });
+  return html;
+}
+
+function renderFmtNarrative(tpl) {
+  const c = G.case;
+  let html = '';
+  if (tpl.opening_scene) {
+    html += `<div class="brief-block">
+      <p style="line-height:1.9;font-style:italic;border-left:2px solid var(--green-dim);padding-left:16px;color:var(--green)">${esc(tpl.opening_scene)}</p>
+    </div>`;
+  }
+  (tpl.reveal_fields || []).forEach(field => {
+    if (field === 'victim') {
+      const v = c.victim || {};
+      html += `<div class="brief-block">
+        <div class="brief-label">Subject</div>
+        <div class="brief-value">${esc(v.name || '—')}</div>
+        ${v.occupation ? `<div class="brief-subvalue">${esc(v.occupation)}</div>` : ''}
+      </div>`;
+    } else if (field === 'briefing') {
+      html += `<div class="brief-block">
+        <p style="line-height:1.7;margin:0">${esc(c.briefing || '')}</p>
+      </div>`;
+    }
+  });
+  if ((tpl.withheld_until_play || []).length > 0) {
+    html += `<div style="color:var(--green-lo);font-size:1rem;margin-top:12px;border:1px dashed var(--green-lo);padding:10px">
+      [Suspects and evidence withheld — revealed as you investigate]
+    </div>`;
+  }
+  return html;
+}
+
+function renderFmtMysteriousMessage(tpl) {
+  const typeLabel = { text: 'TEXT MESSAGE', voicemail: 'VOICEMAIL', email: 'EMAIL', note: 'HANDWRITTEN NOTE' }[tpl.message_type] || 'MESSAGE';
+  return `<div class="brief-block">
+    <div class="brief-label">${esc(typeLabel)}</div>
+    <div style="background:rgba(5,5,5,0.9);border:1px solid var(--green-dim);padding:18px;margin-top:8px;font-size:1rem;line-height:1.9;color:var(--green)">${esc(tpl.message_content || '')}</div>
+    <div class="brief-subvalue" style="margin-top:8px">[Source and context unknown]</div>
+  </div>`;
+}
+
+function renderFmtEmailChains(tpl, scope) {
+  const threads = tpl.threads || [];
+  if (!threads.length) return '<div class="empty">No email threads in template.</div>';
+  const visible = (scope === 'opening_only' || scope === 'first_clue_only') ? threads.slice(0, 1) : threads;
+  if (scope === 'summary_only') {
+    return visible.map(t => {
+      const dt = t.timestamp ? new Date(t.timestamp).toLocaleDateString() : '';
+      return `<div style="color:var(--green-dim);padding:4px 0;border-bottom:1px solid var(--green-lo)">
+        <span style="color:var(--green)">${esc(t.from || '')}</span> → ${esc(t.to || '')} &nbsp; ${esc(t.subject || '')} &nbsp; <span style="color:var(--green-lo)">${esc(dt)}</span>
+      </div>`;
+    }).join('');
+  }
+  return visible.map(t => {
+    const dt = t.timestamp ? new Date(t.timestamp).toLocaleString() : '';
+    return `<div class="brief-block" style="border:1px solid var(--green-lo);padding:12px 14px">
+      <div style="color:var(--green-dim);font-size:1rem;margin-bottom:8px;line-height:1.8">
+        <span style="color:var(--green-lo);letter-spacing:0.05em;text-transform:uppercase">From:</span> ${esc(t.from || '')}<br>
+        <span style="color:var(--green-lo);letter-spacing:0.05em;text-transform:uppercase">To:</span> ${esc(t.to || '')}<br>
+        <span style="color:var(--green-lo);letter-spacing:0.05em;text-transform:uppercase">Subject:</span> ${esc(t.subject || '')}<br>
+        <span style="color:var(--green-lo);letter-spacing:0.05em;text-transform:uppercase">Sent:</span> ${esc(dt)}
+      </div>
+      <div style="padding-top:10px;border-top:1px solid var(--green-lo);line-height:1.75;color:var(--green)">${esc(t.body || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFmtTextMessages(tpl, scope) {
+  let msgs = tpl.messages || [];
+  if (scope === 'opening_only') msgs = msgs.slice(0, 1);
+  if (scope === 'first_clue_only') msgs = msgs.slice(0, 1);
+  if (scope === 'summary_only') {
+    return `<div class="brief-block">` + msgs.map(m => {
+      const dt = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<div style="color:var(--green-dim);padding:3px 0">${esc(m.sender || '')} <span style="color:var(--green-lo)">${esc(dt)}</span></div>`;
+    }).join('') + `</div>`;
+  }
+  const victimName = (G.case.victim || {}).name || '';
+  return `<div class="brief-block"><div style="display:flex;flex-direction:column;gap:10px">` +
+    msgs.map(m => {
+      const right = m.sender === victimName;
+      const dt = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<div style="display:flex;flex-direction:column;align-items:${right ? 'flex-end' : 'flex-start'}">
+        <div style="font-size:0.9rem;color:var(--green-dim);margin-bottom:3px">${esc(m.sender || '')} &nbsp; ${esc(dt)}</div>
+        <div style="background:${right ? 'rgba(10,30,10,0.9)' : 'rgba(5,15,5,0.9)'};border:1px solid ${right ? 'var(--green-dim)' : 'var(--green-lo)'};padding:8px 14px;max-width:85%;line-height:1.65;color:var(--green)">${esc(m.body || '')}</div>
+      </div>`;
+    }).join('') + `</div></div>`;
+}
+
+function renderFmtMix(tpl) {
+  const sequence = tpl.sequence || [];
+  if (!sequence.length) return '<div class="empty">No content in mix sequence.</div>';
+  const c = G.case;
+  let html = '';
+  sequence.forEach(item => {
+    const subTpl = ((c.format_templates || {})[item.format]) || {};
+    switch (item.format) {
+      case 'briefing':      html += renderFmtBriefing(item.scope || 'all'); break;
+      case 'text_messages': html += renderFmtTextMessages(subTpl, item.scope || 'all'); break;
+      case 'email_chains':  html += renderFmtEmailChains(subTpl, item.scope || 'all'); break;
+      case 'narrative':     html += renderFmtNarrative(subTpl); break;
+      case 'dossier':       html += renderFmtDossier(subTpl); break;
+    }
+  });
+  return html || '<div class="empty">No renderable content in mix sequence.</div>';
 }
 
 document.getElementById('begin-btn').addEventListener('click', () => {
   renderHub();
   show('hub');
 });
+
+document.getElementById('setup-begin-btn').addEventListener('click', () => {
+  renderBrief();
+  show('brief');
+});
+
+// ============================================================
+// ENTITY REGISTRY & DISCOVERED INFO
+// ============================================================
+function buildEntityRegistry() {
+  const c = G.case;
+  const names     = new Set();
+  const locations = new Set();
+  const times     = new Set();
+
+  if (c.victim && c.victim.name) names.add(c.victim.name);
+  (c.suspects || []).forEach(s => { if (s.name) names.add(s.name); });
+
+  (c.timeline || []).forEach(evt => {
+    if (evt.location) locations.add(evt.location);
+    // Extract HH:MM time from ISO datetime
+    const m = evt.datetime && evt.datetime.match(/T(\d{2}:\d{2})/);
+    if (m) times.add(m[1]);
+  });
+
+  // Extract time patterns from evidence/doc text and suspect alibis
+  const timeRe = /\b\d{1,2}:\d{2}\s*(?:am|pm|AM|PM)?\b|\b\d{1,2}\s*(?:am|pm|AM|PM)\b/g;
+  function scanTimes(text) {
+    const matches = text.match(timeRe) || [];
+    matches.forEach(t => times.add(t.trim().toLowerCase()));
+  }
+  (c.suspects || []).forEach(s => { if (s.alibi) scanTimes(s.alibi); });
+  (c.evidence || []).forEach(e => { if (e.description) scanTimes(e.description); });
+  (c.documents || []).forEach(d => { if (d.content) scanTimes(d.content); });
+
+  return { names: [...names], locations: [...locations], times: [...times] };
+}
+
+function extractEntitiesFromText(text) {
+  if (!text) return;
+  const lower = text.toLowerCase();
+  G.entityRegistry.names.forEach(name => {
+    if (!G.discoveredInfo.names.includes(name) && lower.includes(name.toLowerCase()))
+      G.discoveredInfo.names.push(name);
+  });
+  G.entityRegistry.locations.forEach(loc => {
+    if (!G.discoveredInfo.locations.includes(loc) && lower.includes(loc.toLowerCase()))
+      G.discoveredInfo.locations.push(loc);
+  });
+  G.entityRegistry.times.forEach(t => {
+    if (!G.discoveredInfo.times.includes(t) && lower.includes(t.toLowerCase()))
+      G.discoveredInfo.times.push(t);
+  });
+}
+
+function updateDiscoveredFromUnlocked() {
+  (G.case.evidence || []).forEach(e => {
+    if (G.unlocked.has(e.id) && !G.discoveredInfo.evidence_ids.includes(e.id)) {
+      G.discoveredInfo.evidence_ids.push(e.id);
+      extractEntitiesFromText(e.description);
+      extractEntitiesFromText(e.points_to);
+    }
+  });
+  (G.case.documents || []).forEach(d => {
+    if (G.unlocked.has(d.id) && !G.discoveredInfo.document_ids.includes(d.id)) {
+      G.discoveredInfo.document_ids.push(d.id);
+      extractEntitiesFromText(d.content);
+    }
+  });
+}
+
+// ============================================================
+// SETUP SCREEN
+// ============================================================
+const FORMAT_OPTIONS = [
+  { key: 'briefing',          label: 'Briefing',          desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
+  { key: 'dossier',           label: 'Dossier',           desc: 'Case file style. Organized summary: incident, names, dates, locations, evidence notes, known facts. For structured thinkers.' },
+  { key: 'narrative',         label: 'Narrative',         desc: 'Scene-based opening. Player is dropped into events as they unfold. For immersion.' },
+  { key: 'mysterious_message',label: 'Mysterious Message',desc: 'Begins with something incomplete — anonymous text, voicemail, cryptic note. Player must figure out what the case even is. For discovery.' },
+  { key: 'email_chains',      label: 'Email Chains',      desc: 'Information fragmented across email threads, replies, forwards, contradictions. For white-collar, institutional, conspiracy cases.' },
+  { key: 'text_messages',     label: 'Text Messages',     desc: 'Opens through texts or chat logs. Informal, immediate. For disappearances, interpersonal conflict, modern feel.' },
+  { key: 'mix',               label: 'Mix',               desc: 'Multiple formats combined in sequence. For realism and variety.' },
+];
+
+const STRUCTURE_OPTIONS = [
+  { key: 'lone-wolf',     label: 'Lone Wolf',          desc: 'Player is the sole investigator. No active support. Advisor is forced OFF.' },
+  { key: 'single-partner',label: 'Single AI Partner',  desc: 'One general-purpose advisor. When advisor buttons surface, only one appears: Consult Partner. Partner can comment on any domain.' },
+  { key: 'multi-agent',   label: 'Multi-Agent Team',   desc: 'Full advisor panel. All four role-bounded advisors available per trigger rules.' },
+];
+
+function renderSetup() {
+  // Format options
+  document.getElementById('setup-format-opts').innerHTML = FORMAT_OPTIONS.map(opt =>
+    `<div class="setup-option${G.setupFormat === opt.key ? ' selected' : ''}" data-fmt="${esc(opt.key)}">
+      <span class="setup-radio-dot"></span>
+      <div>
+        <div class="setup-option-label">${esc(opt.label)}</div>
+        <div class="setup-option-desc">${esc(opt.desc)}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  // Structure options
+  document.getElementById('setup-struct-opts').innerHTML = STRUCTURE_OPTIONS.map(opt =>
+    `<div class="setup-option${G.setupStructure === opt.key ? ' selected' : ''}" data-struct="${esc(opt.key)}">
+      <span class="setup-radio-dot"></span>
+      <div>
+        <div class="setup-option-label">${esc(opt.label)}</div>
+        <div class="setup-option-desc">${esc(opt.desc)}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  // Advisor toggle state
+  const toggle = document.getElementById('setup-advisor-toggle');
+  const row    = document.getElementById('setup-advisor-row');
+  const note   = document.getElementById('setup-advisor-note');
+  toggle.checked = G.setupAdvisor;
+  if (G.setupStructure === 'lone-wolf') {
+    row.classList.add('disabled');
+    note.textContent = 'Forced OFF — Lone Wolf mode.';
+  } else {
+    row.classList.remove('disabled');
+    note.textContent = G.setupAdvisor
+      ? 'Consultation buttons appear after qualifying events.'
+      : 'No advisor support. Player works alone.';
+  }
+
+  // Format option clicks
+  document.querySelectorAll('#setup-format-opts .setup-option').forEach(el => {
+    el.addEventListener('click', () => {
+      G.setupFormat = el.dataset.fmt;
+      renderSetup();
+    });
+  });
+
+  // Structure option clicks
+  document.querySelectorAll('#setup-struct-opts .setup-option').forEach(el => {
+    el.addEventListener('click', () => {
+      G.setupStructure = el.dataset.struct;
+      renderSetup();
+    });
+  });
+
+  // Advisor toggle
+  toggle.addEventListener('change', () => {
+    if (G.setupStructure !== 'lone-wolf') {
+      G.setupAdvisor = toggle.checked;
+      renderSetup();
+    }
+  });
+}
 
 // ============================================================
 // HUB
@@ -1061,7 +1578,8 @@ document.getElementById('nav-accuse')   .addEventListener('click', () => { rende
 
 document.getElementById('hub-home')  .addEventListener('click', () => show('categories'));
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
-document.getElementById('brief-back').addEventListener('click', () => show('categories'));
+document.getElementById('setup-back').addEventListener('click', () => show('categories'));
+document.getElementById('brief-back').addEventListener('click', () => { renderSetup(); show('setup'); });
 document.getElementById('dec-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('cf-back')   .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('sus-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
@@ -1072,6 +1590,24 @@ document.getElementById('acc-back')  .addEventListener('click', () => { renderHu
 // DECISIONS
 // ============================================================
 function renderDecisions() {
+  // Evaluate decision-point advisor trigger — show once per DP option, not on every re-render
+  if (advisorActive() && !G.pendingAdvisorContext) {
+    let triggered = false;
+    for (const dp of (G.case.decision_points || [])) {
+      if (triggered) break;
+      for (let idx = 0; idx < (dp.options || []).length; idx++) {
+        const key = `dp-advised:${dp.id}:${idx}`;
+        if (!G.chosen.has(`${dp.id}:${idx}`) && !G.advisedDPs.has(key) && evalDecisionPointTrigger(dp, idx)) {
+          G.advisedDPs.add(key);
+          const opt = dp.options[idx];
+          const context = `Decision Point: ${dp.id}\nOption under consideration: "${opt.label}" ($${opt.cost || 0})`;
+          buildAdvisorButtons(context);
+          triggered = true;
+          break;
+        }
+      }
+    }
+  }
   document.getElementById('dec-budget').textContent = '$' + G.budget.toLocaleString();
 
   const dps = G.case.decision_points || [];
@@ -1126,7 +1662,35 @@ function pursueOption(dpId, idx) {
 
   G.budget -= cost;
   G.chosen.add(`${dpId}:${idx}`);
-  if (Array.isArray(opt.leads_to)) opt.leads_to.forEach(id => G.unlocked.add(id));
+
+  // Track newly unlocked items for evidence-reveal trigger evaluation
+  const newlyUnlocked = [];
+  if (Array.isArray(opt.leads_to)) {
+    opt.leads_to.forEach(id => {
+      if (!G.unlocked.has(id)) newlyUnlocked.push(id);
+      G.unlocked.add(id);
+    });
+  }
+
+  // Clear previous decisions-screen advisor response when a new option is pursued
+  const prevResp = document.getElementById('advisor-response-dec');
+  if (prevResp) { prevResp.style.display = 'none'; prevResp.innerHTML = ''; }
+
+  updateDiscoveredFromUnlocked();
+
+  // Evaluate evidence-reveal advisor triggers (in decisions context)
+  if (advisorActive()) {
+    newlyUnlocked.forEach(id => {
+      if (evalEvidenceRevealTrigger(id)) {
+        const item =
+          (G.case.evidence  || []).find(e => e.id === id) ||
+          (G.case.documents || []).find(d => d.id === id);
+        const desc = item ? (item.description || item.content || id) : id;
+        const context = `Decision: "${opt.label}"\nNewly revealed item [${id}]: ${desc}`;
+        buildAdvisorButtons(context);
+      }
+    });
+  }
 
   renderDecisions();
 }
@@ -1135,6 +1699,7 @@ function pursueOption(dpId, idx) {
 // CASE FILE
 // ============================================================
 function renderCaseFile() {
+  updateDiscoveredFromUnlocked();
   document.getElementById('tab-ev') .classList.toggle('active', G.tab === 'ev');
   document.getElementById('tab-doc').classList.toggle('active', G.tab === 'doc');
   document.getElementById('cf-ev-list') .style.display = G.tab === 'ev'  ? '' : 'none';
@@ -1221,6 +1786,7 @@ function openInterview(name) {
   G.suspect = suspect;
   if (!G.chats[name]) G.chats[name] = [];
 
+  hideAdvisorPrompt();
   document.getElementById('iview-name').textContent = suspect.name;
   document.getElementById('iview-role').textContent = suspect.relationship_to_victim || '';
   document.getElementById('iview-err').textContent  = '';
@@ -1251,12 +1817,17 @@ function renderChatWindow() {
     return;
   }
 
+  const key     = suspectKey(G.suspect.name);
+  const initial = esc(G.suspect.name.trim()[0]);
+
   chatEl.innerHTML = history.map(m => {
     if (m.role === 'user') {
       return `<div class="msg user">${esc(m.content)}</div>`;
     }
-    const key     = suspectKey(G.suspect.name);
-    const initial = esc(G.suspect.name.trim()[0]);
+    if (m.role === 'advisor') {
+      const tag = (ADVISOR_TAGS[m.advisor_role] || m.advisor_role || 'ADVISOR').toUpperCase();
+      return `<div class="msg advisor"><div class="advisor-role-tag">[${esc(tag)}]</div>${esc(m.content.replace(/^\[[A-Z]+\]\s*/, ''))}</div>`;
+    }
     return `<div class="suspect-bubble-row">
       <img class="chat-avatar" src="../images/Avatars_48x48/${key}.png"
            width="48" height="48" alt="${esc(G.suspect.name)}"
@@ -1343,7 +1914,10 @@ async function sendMessage() {
   const question = inputEl.value.trim();
   if (!question || !G.suspect) return;
 
-  inputEl.value   = '';
+  // Hide any pending advisor prompt when player types a new message
+  hideAdvisorPrompt();
+
+  inputEl.value    = '';
   inputEl.disabled = true;
   sendBtn.disabled = true;
   errorEl.textContent = '';
@@ -1360,7 +1934,21 @@ async function sendMessage() {
     const loader = document.getElementById('typing-indicator');
     if (loader) loader.remove();
     G.chats[name].push({ role: 'assistant', content: reply });
+
+    // Store raw statement in discoveredInfo
+    if (!G.discoveredInfo.raw_statements[name]) G.discoveredInfo.raw_statements[name] = [];
+    G.discoveredInfo.raw_statements[name].push(reply);
+
     renderChatWindow();
+
+    // Evaluate advisor triggers
+    if (advisorActive()) {
+      const triggered = evalSuspectExchangeTrigger(G.suspect, question, reply);
+      if (triggered) {
+        const context = `Suspect: ${name}\nPlayer asked: "${question}"\nSuspect responded: "${reply}"`;
+        buildAdvisorButtons(context);
+      }
+    }
   } catch (e) {
     const loader = document.getElementById('typing-indicator');
     if (loader) loader.remove();
@@ -1414,10 +2002,10 @@ async function callClaude(suspect, history) {
     `INSTRUCTIONS: Stay fully in character. Answer in 2–4 sentences. Be evasive or defensive about things you conceal. If innocent you may be cooperative but still have your own secrets. If guilty you should deny or deflect accusations. Do not acknowledge this is a game or break character.`,
   ].join('\n');
 
-  const messages = history.map(m => ({
-    role:    m.role === 'user' ? 'user' : 'assistant',
-    content: m.content,
-  }));
+  // Only pass user/assistant turns to Claude; exclude advisor messages
+  const messages = history
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .map(m => ({ role: m.role, content: m.content }));
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1443,6 +2031,297 @@ async function callClaude(suspect, history) {
 
   const data = await res.json();
   return data.content[0].text;
+}
+
+// ============================================================
+// ADVISOR SYSTEM
+// ============================================================
+
+// Returns true if advisor is active for current session
+function advisorActive() {
+  return G.setupStructure !== 'lone-wolf' && G.setupAdvisor;
+}
+
+// --- Trigger evaluation ---
+
+const ACCUSATION_RE   = /\b(accuse|accused|you did it|you're guilty|you are guilty|responsible for|you took her|you abducted)\b/i;
+const EVIDENCE_ASK_RE = /\b(evidence|E-\d+|dashcam|scanner|clay|footage|fiber|strap|draft|text|phone|SD card)\b/i;
+
+function checkEvidenceReference(response) {
+  // Keyword overlap against viewed evidence descriptions (connection detection — spec-approved)
+  const lower = response.toLowerCase();
+  return (G.case.evidence || []).some(e => {
+    if (!G.discoveredInfo.evidence_ids.includes(e.id)) return false;
+    const desc = (e.description || '').toLowerCase();
+    // Find significant words (>5 chars) from the evidence description
+    const words = desc.split(/\W+/).filter(w => w.length > 5);
+    return words.some(w => lower.includes(w));
+  });
+}
+
+function checkContradiction(suspect, response) {
+  // Amendment 2: deterministic field-level comparison only.
+  // Check if response re-states alibi claim (time/location from suspect.alibi field),
+  // AND we have unlocked evidence whose points_to value says that suspect's alibi is false.
+  const alibi       = (suspect.alibi || '').toLowerCase();
+  const responseLow = response.toLowerCase();
+
+  // Extract time patterns from alibi
+  const alibiTimes = (alibi.match(/\b\d{1,2}:\d{2}\s*(?:am|pm)?\b|\b\d{1,2}\s*(?:am|pm)\b/gi) || [])
+    .map(t => t.trim().toLowerCase());
+  // Extract location tokens from alibi using known locations
+  const alibiLocs = G.entityRegistry.locations.filter(loc =>
+    alibi.includes(loc.toLowerCase())
+  );
+
+  // Suspect must be affirming their alibi in the response
+  const affirmsTime = alibiTimes.some(t => responseLow.includes(t));
+  const affirmsLoc  = alibiLocs.some(l => responseLow.includes(l.toLowerCase()));
+  if (!affirmsTime && !affirmsLoc) return false;
+
+  // Check for unlocked evidence that explicitly undermines this suspect's alibi
+  const firstName = suspect.name.split(' ')[0].toLowerCase();
+  return (G.case.evidence || []).some(e => {
+    if (!G.discoveredInfo.evidence_ids.includes(e.id)) return false;
+    const pt = (e.points_to || '').toLowerCase();
+    return pt.includes(firstName) &&
+           (pt.includes('alibi') || pt.includes('staged') || pt.includes('false'));
+  });
+}
+
+function checkNewInfo(response) {
+  // Suspect introduces name/location/time not yet in discoveredInfo
+  const lower = response.toLowerCase();
+  const newName = G.entityRegistry.names.some(n =>
+    !G.discoveredInfo.names.includes(n) && lower.includes(n.toLowerCase())
+  );
+  const newLoc = G.entityRegistry.locations.some(l =>
+    !G.discoveredInfo.locations.includes(l) && lower.includes(l.toLowerCase())
+  );
+  // Also check for raw time patterns in response not yet discovered
+  const responseTimePats = (response.match(/\b\d{1,2}:\d{2}\s*(?:am|pm)?\b|\b\d{1,2}\s*(?:am|pm)\b/gi) || [])
+    .map(t => t.trim().toLowerCase());
+  const newTime = responseTimePats.some(t => !G.discoveredInfo.times.includes(t));
+  return newName || newLoc || newTime;
+}
+
+function evalSuspectExchangeTrigger(suspect, playerMsg, response) {
+  if (checkEvidenceReference(response))        return true;  // evidence reference in response
+  if (checkContradiction(suspect, response))   return true;  // contradiction (Amendment 2)
+  if (checkNewInfo(response))                  return true;  // new name/location/time
+  if (EVIDENCE_ASK_RE.test(playerMsg))         return true;  // player asked about evidence
+  if (ACCUSATION_RE.test(playerMsg))           return true;  // player made accusation
+  return false;
+}
+
+function evalEvidenceRevealTrigger(newlyUnlockedId) {
+  const ev = G.case.evidence || [];
+  const newEv = ev.find(e => e.id === newlyUnlockedId);
+  if (!newEv) return false;
+
+  // Contradicts or connects to prior raw statement
+  const statements = Object.values(G.discoveredInfo.raw_statements).flat();
+  if (statements.length) {
+    const descWords = (newEv.description || '').toLowerCase().split(/\W+/).filter(w => w.length > 5);
+    if (descWords.some(w => statements.some(s => s.toLowerCase().includes(w)))) return true;
+  }
+
+  // Contains new entity
+  const newEvText = (newEv.description + ' ' + (newEv.points_to || '')).toLowerCase();
+  const hasNewName = G.entityRegistry.names.some(n =>
+    !G.discoveredInfo.names.includes(n) && newEvText.includes(n.toLowerCase())
+  );
+  const hasNewLoc = G.entityRegistry.locations.some(l =>
+    !G.discoveredInfo.locations.includes(l) && newEvText.includes(l.toLowerCase())
+  );
+  if (hasNewName || hasNewLoc) return true;
+
+  // Two or more unlocked evidence items share the same points_to value (exact string match)
+  const pt = newEv.points_to;
+  if (pt) {
+    const samePointsTo = ev.filter(e =>
+      e.id !== newlyUnlockedId && G.discoveredInfo.evidence_ids.includes(e.id) && e.points_to === pt
+    );
+    if (samePointsTo.length >= 1) return true;  // new item + existing = 2+ total
+  }
+
+  return false;
+}
+
+function evalDecisionPointTrigger(dp, optIdx) {
+  const opt = (dp.options || [])[optIdx];
+  if (!opt) return false;
+  const label = (opt.label || '').toLowerCase();
+  const legalRe = /\b(warrant|re-interview|formal|accusation|accuse|admissib|rights|legal)\b/i;
+  if (legalRe.test(label)) return true;
+  if (typeof opt.cost === 'number' && opt.cost > G.budget * 0.5) return true;
+  return false;
+}
+
+// --- Advisor button rendering ---
+
+function activeAdvisorScreen() {
+  // Returns 'interview' or 'decisions' depending on which screen is currently active
+  const iv = document.getElementById('s-interview');
+  return (iv && iv.classList.contains('active')) ? 'interview' : 'decisions';
+}
+
+function buildAdvisorButtons(context) {
+  G.pendingAdvisorContext = context;
+  const screen = activeAdvisorScreen();
+  const rowId    = screen === 'interview' ? 'advisor-btn-row'     : 'advisor-btn-row-dec';
+  const promptId = screen === 'interview' ? 'advisor-prompt'      : 'advisor-prompt-dec';
+  const row    = document.getElementById(rowId);
+  const prompt = document.getElementById(promptId);
+  if (!row || !prompt) return;
+
+  let btns = '';
+  if (G.setupStructure === 'multi-agent') {
+    btns = `
+      <button class="advisor-btn" data-role="forensic">Consult Forensics</button>
+      <button class="advisor-btn" data-role="behavioral">Get Behavioral Read</button>
+      <button class="advisor-btn" data-role="legal">Ask Legal</button>
+      <button class="advisor-btn" data-role="ops">Check with Ops</button>
+      <button class="advisor-btn skip" data-role="skip">Proceed without advisor input</button>
+    `;
+  } else if (G.setupStructure === 'single-partner') {
+    btns = `
+      <button class="advisor-btn" data-role="partner">Consult Partner</button>
+      <button class="advisor-btn skip" data-role="skip">Proceed without advisor input</button>
+    `;
+  }
+
+  row.innerHTML        = btns;
+  prompt.style.display = '';
+
+  row.querySelectorAll('.advisor-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const role = btn.dataset.role;
+      prompt.style.display = 'none';
+      G.pendingAdvisorContext = null;
+      if (role === 'skip') return;
+      await fireAdvisorCall(role, context, screen);
+    });
+  });
+}
+
+function hideAdvisorPrompt() {
+  ['advisor-prompt', 'advisor-prompt-dec'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  G.pendingAdvisorContext = null;
+}
+
+// --- Advisor API call ---
+
+const ADVISOR_SYSTEM_PROMPTS = {
+  forensic:   'You are a forensic advisor supporting a lead investigator. Respond only about physical evidence, trace analysis, chain of custody, and physical plausibility. Be concise. One to three sentences. Do not speculate about motive or legal strategy.',
+  behavioral: 'You are a behavioral analyst supporting a lead investigator. Respond only about suspect behavior, deception indicators, motive patterns, and interpersonal dynamics. Be concise. One to three sentences. Do not speculate about physical evidence or legal strategy.',
+  legal:      'You are a legal and procedural advisor supporting a lead investigator. Respond only about warrants, admissibility, rights, procedural exposure, and legal risk. Be concise. One to three sentences. Do not speculate about physical evidence or behavioral analysis.',
+  ops:        'You are an operations advisor supporting a lead investigator. Respond only about surveillance options, timing, budget implications, and logistical decisions. Be concise. One to three sentences. Do not speculate about evidence interpretation or legal strategy.',
+  partner:    'You are a general investigative partner supporting a lead investigator. You may comment on evidence, behavior, legal risk, or logistics — whatever is most relevant to what just happened. Be concise. One to three sentences. Prioritize the single most useful observation.',
+};
+
+const ADVISOR_TAGS = {
+  forensic:   'FORENSIC',
+  behavioral: 'BEHAVIORAL',
+  legal:      'LEGAL',
+  ops:        'OPS',
+  partner:    'PARTNER',
+};
+
+async function fireAdvisorCall(role, context, screen) {
+  screen = screen || activeAdvisorScreen();
+  const inInterview = (screen === 'interview');
+  const name    = G.suspect ? G.suspect.name : null;
+  const chatEl  = inInterview ? document.getElementById('chat-win') : null;
+  const errEl   = document.getElementById(inInterview ? 'iview-err' : 'dec-budget');
+
+  // Show typing indicator
+  const typingId = 'advisor-typing-' + Date.now();
+  const tag = ADVISOR_TAGS[role] || role.toUpperCase();
+  if (inInterview && chatEl) {
+    chatEl.innerHTML += `<div class="msg system" id="${typingId}">[${tag}] thinking...</div>`;
+    chatEl.scrollTop = chatEl.scrollHeight;
+  } else {
+    const respEl = document.getElementById('advisor-response-dec');
+    if (respEl) {
+      respEl.style.display = '';
+      respEl.innerHTML = `<div class="msg advisor" id="${typingId}"><div class="advisor-role-tag">[${tag}]</div> thinking...</div>`;
+    }
+  }
+
+  const c = G.case;
+  const evLines = (c.evidence || [])
+    .filter(e => G.discoveredInfo.evidence_ids.includes(e.id))
+    .map(e => `  [${e.id}] ${e.description} → ${e.points_to}`)
+    .join('\n') || '  (none viewed yet)';
+  const docLines = (c.documents || [])
+    .filter(d => G.discoveredInfo.document_ids.includes(d.id))
+    .map(d => `  [${d.id}] ${d.content}`)
+    .join('\n') || '  (none viewed yet)';
+
+  const userMsg = `CASE: ${c.title}\n\nCONTEXT:\n${context}\n\nEVIDENCE SEEN BY INVESTIGATOR:\n${evLines}\n\nDOCUMENTS SEEN BY INVESTIGATOR:\n${docLines}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': G.apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 150,
+        system:     ADVISOR_SYSTEM_PROMPTS[role] || ADVISOR_SYSTEM_PROMPTS.partner,
+        messages:   [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    const loader = document.getElementById(typingId);
+    if (loader) loader.remove();
+
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { msg = (await res.json()).error.message; } catch {}
+      throw new Error(msg);
+    }
+
+    const data     = await res.json();
+    const reply    = data.content[0].text;
+    const fullTag  = ADVISOR_TAGS[role] || role.toUpperCase();
+    const fullReply = `[${fullTag}] ${reply}`;
+
+    if (inInterview) {
+      // Store in chat history and re-render chat
+      if (name) {
+        G.chats[name].push({ role: 'advisor', advisor_role: role, content: fullReply });
+      }
+      renderChatWindow();
+    } else {
+      // Render inline in decisions screen
+      const respEl = document.getElementById('advisor-response-dec');
+      if (respEl) {
+        respEl.style.display = '';
+        respEl.innerHTML = `<div class="msg advisor"><div class="advisor-role-tag">[${esc(fullTag)}]</div>${esc(reply)}</div>`;
+      }
+    }
+
+  } catch (e) {
+    const loader = document.getElementById(typingId);
+    if (loader) loader.remove();
+    // Show error appropriately per screen
+    if (inInterview) {
+      const el = document.getElementById('iview-err');
+      if (el) el.textContent = 'Advisor error — ' + e.message;
+    } else {
+      const respEl = document.getElementById('advisor-response-dec');
+      if (respEl) { respEl.style.display = ''; respEl.innerHTML = `<div class="err">Advisor error — ${esc(e.message)}</div>`; }
+    }
+  }
 }
 
 // ============================================================

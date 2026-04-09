@@ -300,5 +300,84 @@
       ]
     }
   ],
-  "budget": 3500
+  "budget": 3500,
+  "format_templates": {
+    "dossier": {
+      "header": "CASE FILE — Ash Creek Route",
+      "sections": [
+        { "label": "Incident Summary", "source_field": "briefing" },
+        { "label": "Victim", "source_field": "victim" },
+        { "label": "Known Suspects", "source_field": "suspects", "render": "name_and_relationship_list" },
+        { "label": "Initial Evidence", "source_field": "evidence", "filter": { "field": "available_at_phase", "value": 1 } },
+        { "label": "Budget Allocation", "source_field": "budget" }
+      ]
+    },
+    "narrative": {
+      "opening_scene": "The call comes in at 10:47 PM — RM-214 found abandoned at a dirt turnout near Ash Creek, engine cold, wallet still on the seat. Lena Mercer signed out of the annex at seven-eighteen that morning and was supposed to be back by six. Nobody reported her missing for four hours. Now it's your case.",
+      "reveal_fields": ["victim", "briefing"],
+      "withheld_until_play": ["suspects", "evidence"]
+    },
+    "mysterious_message": {
+      "message_type": "text",
+      "message_content": "Tow truck again. If I do not come back check mile 12",
+      "reveal_fields": [],
+      "withheld_until_play": ["victim", "suspects", "briefing", "evidence"]
+    },
+    "briefing": {
+      "source_field": "briefing"
+    },
+    "email_chains": {
+      "threads": [
+        {
+          "from": "dana.blevins@cottonwoodcountymail.gov",
+          "to": "lena.mercer@cottonwoodcountymail.gov",
+          "subject": "Route adjustment — today",
+          "body": "Lena — Darren called in sick. You are covering the Ash Creek stretch today. Finish the full route before returning to the annex. Note any road conditions in the log. Do not come back early.",
+          "timestamp": "2026-09-14T15:55:00"
+        },
+        {
+          "from": "lena.mercer@cottonwoodcountymail.gov",
+          "to": "noah.pike@pikeauto.com",
+          "subject": "Stop calling me while I am on route",
+          "body": "I told you the answer is no on the money. And there is something going on near the Ash Creek stretch that has me nervous. I will call you after I finish today but please do not call while I am driving.",
+          "timestamp": "2026-09-14T11:47:00"
+        }
+      ]
+    },
+    "text_messages": {
+      "messages": [
+        {
+          "sender": "Noah Pike",
+          "body": "Hey can we talk today? About the 400.",
+          "timestamp": "2026-09-14T09:12:00"
+        },
+        {
+          "sender": "Lena Mercer",
+          "body": "Not now. I am on route.",
+          "timestamp": "2026-09-14T09:15:00"
+        },
+        {
+          "sender": "Noah Pike",
+          "body": "I just need 10 minutes. It is important.",
+          "timestamp": "2026-09-14T09:23:00"
+        },
+        {
+          "sender": "Lena Mercer",
+          "body": "No. I will call you when I am done today.",
+          "timestamp": "2026-09-14T09:26:00"
+        },
+        {
+          "sender": "Lena Mercer",
+          "body": "[DRAFT — UNSENT] Tow truck again. If I do not come back check mile 12",
+          "timestamp": "2026-09-14T18:24:00"
+        }
+      ]
+    },
+    "mix": {
+      "sequence": [
+        { "format": "briefing", "scope": "opening_only" },
+        { "format": "text_messages", "scope": "all" }
+      ]
+    }
+  }
 }

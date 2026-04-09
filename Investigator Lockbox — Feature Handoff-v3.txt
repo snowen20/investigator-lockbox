@@ -1,0 +1,327 @@
+# Investigator Lockbox — Feature Handoff: Setup Options v3
+
+**Date:** April 9, 2026
+**Scope:** Delivery Format, Advisor Toggle, Investigator Structure
+**Roles:** Cameron = Architect | Claude (chat) = Prompt Engineer | Claude Code = Construction Crew
+
+---
+
+## Overview
+
+Three new player-facing options added to case setup. These modify **presentation, system prompt behavior, and case rendering** — not core case data. The canonical case object is never forked. One case, many shells.
+
+---
+
+## 1. Delivery Format
+
+### Principle
+Delivery format changes the **entry vector** only. The underlying case truth, suspects, evidence, decision points, and timeline do not change. Only the opening presentation layer varies.
+
+### Options
+| Format | Description |
+|--------|-------------|
+| Dossier | Case file style. Organized summary: incident, names, dates, locations, evidence notes, known facts. For structured thinkers. |
+| Narrative | Scene-based opening. Player is dropped into events as they unfold. For immersion. |
+| Mysterious Message | Begins with something incomplete — anonymous text, voicemail, cryptic note. Player must figure out what the case even is. For discovery. |
+| Briefing | Direct mission-style. Situation, role, objective, limits. Compressed and operational. |
+| Email Chains | Information fragmented across email threads, replies, forwards, contradictions. For white-collar, institutional, conspiracy cases. |
+| Text Messages | Opens through texts or chat logs. Informal, immediate. For disappearances, interpersonal conflict, modern feel. |
+| Mix | Multiple formats combined in sequence. For realism and variety. |
+
+### Schema Addition
+
+Add a `format_templates` object to the case schema:
+
+```json
+"format_templates": {
+  "dossier": {
+    "header": "CASE FILE — [title]",
+    "sections": [
+      { "label": "Incident Summary", "source_field": "briefing" },
+      { "label": "Victim", "source_field": "victim" },
+      { "label": "Known Suspects", "source_field": "suspects", "render": "name_and_relationship_list" },
+      { "label": "Initial Evidence", "source_field": "evidence", "filter": { "field": "available_at_phase", "value": 1 } },
+      { "label": "Budget Allocation", "source_field": "budget" }
+    ]
+  },
+  "narrative": {
+    "opening_scene": "A string written per case. 2-4 sentences. Drops the player into the moment the case breaks open.",
+    "reveal_fields": ["victim", "briefing"],
+    "withheld_until_play": ["suspects", "evidence"]
+  },
+  "mysterious_message": {
+    "message_type": "text|voicemail|email|note",
+    "message_content": "A short cryptic string written per case. The only thing the player sees at start.",
+    "reveal_fields": [],
+    "withheld_until_play": ["victim", "suspects", "briefing", "evidence"]
+  },
+  "briefing": {
+    "source_field": "briefing"
+  },
+  "email_chains": {
+    "threads": [
+      {
+        "from": "string",
+        "to": "string",
+        "subject": "string",
+        "body": "string",
+        "timestamp": "ISO datetime"
+      }
+    ]
+  },
+  "text_messages": {
+    "messages": [
+      {
+        "sender": "string",
+        "body": "string",
+        "timestamp": "ISO datetime"
+      }
+    ]
+  },
+  "mix": {
+    "sequence": [
+      { "format": "briefing", "scope": "opening_only" },
+      { "format": "text_messages", "scope": "all" }
+    ]
+  }
+}
+```
+
+### Mix Format Scope Enum
+
+| Scope | Definition |
+|-------|-----------|
+| `opening_only` | First section or element only of that format's template |
+| `first_clue_only` | First evidence item, message, or thread item only |
+| `summary_only` | Section headers and first sentence of each section, no full content |
+| `all` | Complete template as defined |
+
+### Per-Format Render-Unit Definitions
+
+| Format | opening_only | first_clue_only | summary_only | all |
+|--------|-------------|-----------------|-------------|-----|
+| Dossier | Incident Summary section only | First evidence item from filtered list | All section headers + first sentence each | Full template |
+| Narrative | opening_scene string only | opening_scene + first reveal_field | opening_scene truncated to first sentence | Full template |
+| Briefing | briefing text only | Same as opening_only | First sentence of briefing | Full template |
+| Email Chains | First thread only | First email in first thread | Sender/subject/timestamp of all threads, no body | All threads, all emails |
+| Text Messages | First message only | Same as opening_only | Sender/timestamp of all messages, no body | All messages |
+| Mysterious Message | N/A — format is already minimal by design | Same as all | Same as all | message_content string |
+
+### Authoring Notes
+- `briefing`, `dossier`, and `mix` can be rendered entirely from existing case fields with no additional writing.
+- `narrative`, `mysterious_message`, `email_chains`, and `text_messages` require a small amount of per-case authored content (1-5 short strings each).
+- The renderer reads the selected format key, pulls the matching template, and builds the opening screen from it.
+- Downstream gameplay is identical regardless of format.
+
+---
+
+## 2. Advisor Toggle
+
+### Principle
+Advisor on/off is the difficulty mechanic. When advisors are off, the player must generate their own investigative angles, reasoning paths, and cross-correlations. The absence of advisor prompts removes entire lines of inquiry the player might not think to pursue on their own. That is genuine difficulty — not artificial friction.
+
+No separate difficulty tiers. No evasiveness sliders. No budget multipliers. Advisor on/off is the toggle.
+
+### Options
+
+| Setting | Description |
+|---------|-------------|
+| Advisor ON | After qualifying events, advisor consultation buttons appear. Player chooses whether to engage. |
+| Advisor OFF | No advisor support. Player works entirely from their own reasoning. |
+
+### Advisor Interaction Flow
+
+1. An event occurs (suspect exchange, evidence reveal, or decision point selection)
+2. Game engine evaluates trigger rules for that event type
+3. If triggered AND advisor is ON, advisor buttons appear:
+   - `Consult Forensics`
+   - `Ask Legal`
+   - `Get Behavioral Read`
+   - `Check with Ops`
+   - `Proceed without advisor input`
+4. Player chooses one or skips
+5. **Only if the player selects an advisor** does the API call fire for that role
+6. If no trigger condition is met, no buttons appear
+7. If advisor is OFF, no buttons ever appear
+
+### Trigger Rules by Event Type
+
+#### Suspect Exchange Triggers
+Advisor options appear when ANY of these are true in the suspect's response:
+
+- Suspect references a piece of evidence by name or description
+- Suspect contradicts a previously established fact (from evidence, documents, or another suspect's raw statement)
+- Suspect introduces a new name, location, or time not yet in the `discoveredInfo` registry
+- Player explicitly asks the suspect about a specific evidence item or document
+- Player makes an accusation or directly accuses the suspect
+
+Advisor options do NOT appear for:
+
+- Greetings, small talk, or rapport-building exchanges
+- Suspect responses that are purely evasive with no new information
+- Repeat questions that cover already-discussed ground
+
+#### Evidence Reveal Triggers
+Advisor options appear when ANY of these are true:
+
+- Newly revealed evidence contradicts or directly connects to a suspect's prior raw statement
+- Evidence contains a name, location, or time not yet in the `discoveredInfo` registry
+- Two or more viewed evidence items now share the same `points_to` value as an exact string match
+
+#### Decision Point Triggers
+Advisor options appear when ANY of these are true:
+
+- The decision point contains an option with legal or procedural implications (warrants, re-interviews, formal accusations)
+- The decision point option costs exceed 50% of remaining budget
+
+### Discovered Information Registry
+
+The game engine maintains a `discoveredInfo` state object:
+
+```json
+{
+  "names": [],
+  "locations": [],
+  "times": [],
+  "evidence_ids": [],
+  "document_ids": [],
+  "raw_statements": {}
+}
+```
+
+**Update rules:**
+
+- `names` — added when a name appears in any evidence `description`, document `content`, or suspect response that the player has viewed or received. Stored as exact string match from case data fields. Not extracted from free-text AI responses.
+- `locations` — same rule, pulled from evidence/document fields only.
+- `times` — same rule.
+- `evidence_ids` — added when player opens/views an evidence item.
+- `document_ids` — added when player opens/views a document.
+- `raw_statements` — keyed by suspect name, value is an array of raw suspect response strings. Added after each interview exchange. Stored as the suspect's full raw response text, not parsed or normalized.
+
+**"New information" for trigger purposes** means: a name, location, or time appears in the suspect's response that does not exist in `discoveredInfo.names`, `discoveredInfo.locations`, or `discoveredInfo.times`. The check is keyword match against the known lists, not NLP or semantic matching.
+
+**Contradiction detection** compares suspect raw response text against evidence `description` and `points_to` fields using simple keyword overlap, not semantic matching.
+
+This keeps the system deterministic and prevents drift.
+
+### Advisor Roles
+
+| Role | Button Label | Perspective |
+|------|-------------|------------|
+| Forensic | Consult Forensics | Evidence, chain of custody, physical plausibility |
+| Behavioral | Get Behavioral Read | Motive, deception patterns, interpersonal dynamics |
+| Legal/Procedure | Ask Legal | Warrants, admissibility, rights, exposure |
+| Operations | Check with Ops | Surveillance, timing, budget, logistics |
+
+### Advisor API Call
+
+When the player selects an advisor, a single API call is made with:
+
+- The current context (last suspect exchange, evidence just revealed, or decision point being evaluated)
+- The advisor's role-specific system prompt
+- The case data relevant to that role's perspective
+
+Response is rendered below the triggering content, tagged by role:
+
+```
+[FORENSIC] The orange clay trace is consistent with salvage yard soil — worth confirming with a site sample.
+```
+
+### Advisor System Prompts
+
+**Forensic:**
+`You are a forensic advisor supporting a lead investigator. Respond only about physical evidence, trace analysis, chain of custody, and physical plausibility. Be concise. One to three sentences. Do not speculate about motive or legal strategy.`
+
+**Behavioral:**
+`You are a behavioral analyst supporting a lead investigator. Respond only about suspect behavior, deception indicators, motive patterns, and interpersonal dynamics. Be concise. One to three sentences. Do not speculate about physical evidence or legal strategy.`
+
+**Legal/Procedure:**
+`You are a legal and procedural advisor supporting a lead investigator. Respond only about warrants, admissibility, rights, procedural exposure, and legal risk. Be concise. One to three sentences. Do not speculate about physical evidence or behavioral analysis.`
+
+**Operations:**
+`You are an operations advisor supporting a lead investigator. Respond only about surveillance options, timing, budget implications, and logistical decisions. Be concise. One to three sentences. Do not speculate about evidence interpretation or legal strategy.`
+
+---
+
+## 3. Investigator Structure
+
+### Principle
+"Multi-Agent Team" is an **interaction format**, not a backend architecture requirement. One model simulates multiple investigator-support roles in a single thread. No separate API calls, concurrent execution, or agent-switching UI unless explicitly upgraded later.
+
+### Options
+
+| Mode | Description |
+|------|-------------|
+| Lone Wolf | Player is the sole investigator. No active support. Advisor is forced OFF. |
+| Single AI Partner | One general-purpose advisor. When advisor buttons would surface, only one appears: "Consult Partner". Partner can comment on any domain. |
+| Multi-Agent Team | Full advisor panel. All four role-bounded advisors available per trigger rules. |
+
+### Interaction Between Advisor Toggle and Investigator Structure
+
+| Structure | Advisor ON | Advisor OFF |
+|-----------|-----------|-------------|
+| Lone Wolf | Advisor forced OFF regardless of toggle | No advisors |
+| Single AI Partner | One general "Consult Partner" button on triggers | No advisors |
+| Multi-Agent Team | Full four-button advisor panel on triggers | No advisors |
+
+**Note:** Lone Wolf overrides advisor toggle to OFF. If player selects Lone Wolf, the advisor toggle is grayed out or hidden.
+
+### Single AI Partner System Prompt
+
+`You are a general investigative partner supporting a lead investigator. You may comment on evidence, behavior, legal risk, or logistics — whatever is most relevant to what just happened. Be concise. One to three sentences. Prioritize the single most useful observation.`
+
+---
+
+## Setup Screen UI
+
+Add a setup screen between case selection and case briefing. Three selections:
+
+1. **Delivery Format** — radio buttons, one selection (default: Briefing)
+2. **Investigator Structure** — radio buttons, one selection (default: Lone Wolf)
+3. **Advisor** — on/off toggle (default: ON). Grayed out and forced OFF if Lone Wolf is selected.
+
+Each option shows its short description on selection. A "Begin Case" button proceeds to the case opening rendered per the selected format.
+
+---
+
+## File Changes Required
+
+| File | Change |
+|------|--------|
+| `cases/ash-creek-route.js` | Add `format_templates` with authored content for narrative, mysterious_message, email_chains, text_messages |
+| `cases/ash-creek-route.json` | Same additions (keep JS and JSON copies in sync) |
+| `ui/game.html` | Add setup screen UI, format renderer, advisor button system with trigger rules, advisor API call logic, post-event render step for advisor responses, investigator structure toggle logic, `discoveredInfo` state object and update logic |
+| `cases/index.js` | No change |
+| `prescreener/` | **DO NOT TOUCH** — prescreener rules may need updating later to validate new schema fields |
+
+---
+
+## Architecture Decisions (New)
+
+| Decision | Ruling | Reason |
+|----------|--------|--------|
+| Difficulty mechanic | Advisor on/off | Absence of advisor prompts removes reasoning paths — genuine difficulty, not artificial friction |
+| Advisor invocation | Player-triggered, not auto-fired | Advisor buttons surface on trigger conditions; API call only fires if player selects one |
+| Advisor trigger detection | Keyword match, not semantic/NLP | Deterministic, prevents drift |
+| Discovered info tracking | `discoveredInfo` state object with names, locations, times, evidence_ids, document_ids, raw_statements | Source of truth for trigger evaluation |
+| Advisor API cost | One extra call per player-invoked consult | Acceptable; player controls frequency |
+| Multi-Agent Team | Role-differentiated prompts, single model | Interaction format, not backend architecture |
+| Delivery format | One case, many shells | Case truth never forks; only opening presentation varies |
+| Format authoring | Hybrid — template + light per-case authored content | Briefing/dossier auto-render from fields; narrative/mysterious_message/email/text need short authored strings |
+| Mix scope | Defined enum with per-format render-unit definitions | Prevents Claude Code from guessing what partial rendering means |
+| Raw statements | Stored as full raw suspect response strings, not summaries | No normalization, no parsing, no terminology mismatch |
+| Evidence convergence | "Two or more items point to same suspect" means matching `points_to` value as exact string match | Deterministic check |
+
+---
+
+## Rules for Claude Code
+
+- Cameron is the architect. This document is the spec.
+- Do not improvise mechanics beyond what is specified here.
+- If something is ambiguous, flag it and ask — do not guess.
+- Do not modify the prescreener.
+- Test that existing gameplay still works after changes.
+- Advisor buttons are player-invoked. Never auto-generate advisor commentary.
+- Delivery format rendering must work from existing case fields where specified. Do not call the API to dynamically generate openings unless the format template explicitly requires it (none currently do).
+- Trigger detection uses keyword matching against `discoveredInfo` lists. Do not implement semantic matching, NLP, or fuzzy logic.
+- `raw_statements` are stored as-is. Do not summarize, normalize, or parse them.

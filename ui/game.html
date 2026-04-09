@@ -820,12 +820,6 @@
       <div id="setup-format-opts"></div>
     </div>
 
-    <!-- Investigator Structure -->
-    <div class="setup-section">
-      <div class="setup-section-label">Investigator Structure</div>
-      <div id="setup-struct-opts"></div>
-    </div>
-
     <!-- Advisor Toggle -->
     <div class="setup-section">
       <div class="setup-section-label">Advisor</div>
@@ -834,8 +828,8 @@
           <input type="checkbox" id="setup-advisor-toggle" checked>
           <span class="advisor-toggle-slider"></span>
         </label>
-        <span class="setup-advisor-label">Advisor support</span>
-        <span class="setup-advisor-note" id="setup-advisor-note">Consultation buttons appear after qualifying events.</span>
+        <span class="setup-advisor-label" id="setup-advisor-label">Advisor ON</span>
+        <span class="setup-advisor-note" id="setup-advisor-note">An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.</span>
       </div>
     </div>
 
@@ -1008,9 +1002,8 @@ const G = {
   index:    null,       // loaded cases/index.json
   selectedCat: null,    // currently selected category object
   // Setup options (chosen on setup screen)
-  setupFormat:    'briefing',   // selected delivery format key
-  setupStructure: 'lone-wolf',  // 'lone-wolf' | 'single-partner' | 'multi-agent'
-  setupAdvisor:   true,         // advisor toggle (overridden OFF by lone-wolf)
+  setupFormat:  'briefing',  // selected delivery format key
+  setupAdvisor: true,        // advisor on/off toggle
   // Discovered information registry
   discoveredInfo: {
     names: [], locations: [], times: [],
@@ -1166,9 +1159,8 @@ function loadCase(key) {
   G.tab      = 'ev';
   G.journal  = { tabs: [], activeIdx: -1 };
   // Reset setup to defaults
-  G.setupFormat    = 'briefing';
-  G.setupStructure = 'lone-wolf';
-  G.setupAdvisor   = true;
+  G.setupFormat  = 'briefing';
+  G.setupAdvisor = true;
   // Reset discovered info
   G.discoveredInfo = {
     names: [], locations: [], times: [],
@@ -1479,12 +1471,6 @@ const FORMAT_OPTIONS = [
   { key: 'mix',               label: 'Mix',               desc: 'Multiple formats combined in sequence. For realism and variety.' },
 ];
 
-const STRUCTURE_OPTIONS = [
-  { key: 'lone-wolf',     label: 'Lone Wolf',          desc: 'Player is the sole investigator. No active support. Advisor is forced OFF.' },
-  { key: 'single-partner',label: 'Single AI Partner',  desc: 'One general-purpose advisor. When advisor buttons surface, only one appears: Consult Partner. Partner can comment on any domain.' },
-  { key: 'multi-agent',   label: 'Multi-Agent Team',   desc: 'Full advisor panel. All four role-bounded advisors available per trigger rules.' },
-];
-
 function renderSetup() {
   // Format options
   document.getElementById('setup-format-opts').innerHTML = FORMAT_OPTIONS.map(opt =>
@@ -1497,31 +1483,15 @@ function renderSetup() {
     </div>`
   ).join('');
 
-  // Structure options
-  document.getElementById('setup-struct-opts').innerHTML = STRUCTURE_OPTIONS.map(opt =>
-    `<div class="setup-option${G.setupStructure === opt.key ? ' selected' : ''}" data-struct="${esc(opt.key)}">
-      <span class="setup-radio-dot"></span>
-      <div>
-        <div class="setup-option-label">${esc(opt.label)}</div>
-        <div class="setup-option-desc">${esc(opt.desc)}</div>
-      </div>
-    </div>`
-  ).join('');
-
   // Advisor toggle state
   const toggle = document.getElementById('setup-advisor-toggle');
-  const row    = document.getElementById('setup-advisor-row');
+  const label  = document.getElementById('setup-advisor-label');
   const note   = document.getElementById('setup-advisor-note');
-  toggle.checked = G.setupAdvisor;
-  if (G.setupStructure === 'lone-wolf') {
-    row.classList.add('disabled');
-    note.textContent = 'Forced OFF — Lone Wolf mode.';
-  } else {
-    row.classList.remove('disabled');
-    note.textContent = G.setupAdvisor
-      ? 'Consultation buttons appear after qualifying events.'
-      : 'No advisor support. Player works alone.';
-  }
+  toggle.checked  = G.setupAdvisor;
+  label.textContent = G.setupAdvisor ? 'Advisor ON' : 'Advisor OFF';
+  note.textContent  = G.setupAdvisor
+    ? 'An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.'
+    : "You're on your own. No one to bounce ideas off of. Every call is yours.";
 
   // Format option clicks
   document.querySelectorAll('#setup-format-opts .setup-option').forEach(el => {
@@ -1531,20 +1501,10 @@ function renderSetup() {
     });
   });
 
-  // Structure option clicks
-  document.querySelectorAll('#setup-struct-opts .setup-option').forEach(el => {
-    el.addEventListener('click', () => {
-      G.setupStructure = el.dataset.struct;
-      renderSetup();
-    });
-  });
-
   // Advisor toggle
   toggle.addEventListener('change', () => {
-    if (G.setupStructure !== 'lone-wolf') {
-      G.setupAdvisor = toggle.checked;
-      renderSetup();
-    }
+    G.setupAdvisor = toggle.checked;
+    renderSetup();
   });
 }
 
@@ -1825,8 +1785,7 @@ function renderChatWindow() {
       return `<div class="msg user">${esc(m.content)}</div>`;
     }
     if (m.role === 'advisor') {
-      const tag = (ADVISOR_TAGS[m.advisor_role] || m.advisor_role || 'ADVISOR').toUpperCase();
-      return `<div class="msg advisor"><div class="advisor-role-tag">[${esc(tag)}]</div>${esc(m.content.replace(/^\[[A-Z]+\]\s*/, ''))}</div>`;
+      return `<div class="msg advisor"><div class="advisor-role-tag">[ADVISOR]</div>${esc(m.content.replace(/^\[ADVISOR\]\s*/, ''))}</div>`;
     }
     return `<div class="suspect-bubble-row">
       <img class="chat-avatar" src="../images/Avatars_48x48/${key}.png"
@@ -2039,7 +1998,7 @@ async function callClaude(suspect, history) {
 
 // Returns true if advisor is active for current session
 function advisorActive() {
-  return G.setupStructure !== 'lone-wolf' && G.setupAdvisor;
+  return G.setupAdvisor;
 }
 
 // --- Trigger evaluation ---
@@ -2175,21 +2134,10 @@ function buildAdvisorButtons(context) {
   const prompt = document.getElementById(promptId);
   if (!row || !prompt) return;
 
-  let btns = '';
-  if (G.setupStructure === 'multi-agent') {
-    btns = `
-      <button class="advisor-btn" data-role="forensic">Consult Forensics</button>
-      <button class="advisor-btn" data-role="behavioral">Get Behavioral Read</button>
-      <button class="advisor-btn" data-role="legal">Ask Legal</button>
-      <button class="advisor-btn" data-role="ops">Check with Ops</button>
-      <button class="advisor-btn skip" data-role="skip">Proceed without advisor input</button>
-    `;
-  } else if (G.setupStructure === 'single-partner') {
-    btns = `
-      <button class="advisor-btn" data-role="partner">Consult Partner</button>
-      <button class="advisor-btn skip" data-role="skip">Proceed without advisor input</button>
-    `;
-  }
+  const btns = `
+    <button class="advisor-btn" data-role="advisor">Consult Advisor</button>
+    <button class="advisor-btn skip" data-role="skip">Continue without advisor</button>
+  `;
 
   row.innerHTML        = btns;
   prompt.style.display = '';
@@ -2215,21 +2163,7 @@ function hideAdvisorPrompt() {
 
 // --- Advisor API call ---
 
-const ADVISOR_SYSTEM_PROMPTS = {
-  forensic:   'You are a forensic advisor supporting a lead investigator. Respond only about physical evidence, trace analysis, chain of custody, and physical plausibility. Be concise. One to three sentences. Do not speculate about motive or legal strategy.',
-  behavioral: 'You are a behavioral analyst supporting a lead investigator. Respond only about suspect behavior, deception indicators, motive patterns, and interpersonal dynamics. Be concise. One to three sentences. Do not speculate about physical evidence or legal strategy.',
-  legal:      'You are a legal and procedural advisor supporting a lead investigator. Respond only about warrants, admissibility, rights, procedural exposure, and legal risk. Be concise. One to three sentences. Do not speculate about physical evidence or behavioral analysis.',
-  ops:        'You are an operations advisor supporting a lead investigator. Respond only about surveillance options, timing, budget implications, and logistical decisions. Be concise. One to three sentences. Do not speculate about evidence interpretation or legal strategy.',
-  partner:    'You are a general investigative partner supporting a lead investigator. You may comment on evidence, behavior, legal risk, or logistics — whatever is most relevant to what just happened. Be concise. One to three sentences. Prioritize the single most useful observation.',
-};
-
-const ADVISOR_TAGS = {
-  forensic:   'FORENSIC',
-  behavioral: 'BEHAVIORAL',
-  legal:      'LEGAL',
-  ops:        'OPS',
-  partner:    'PARTNER',
-};
+const ADVISOR_SYSTEM_PROMPT = 'You are an investigative partner supporting a lead investigator. You may comment on evidence, suspect behavior, legal risk, or logistics — whatever is most relevant to what just happened. Be concise. One to three sentences. Prioritize the single most useful observation.';
 
 async function fireAdvisorCall(role, context, screen) {
   screen = screen || activeAdvisorScreen();
@@ -2240,7 +2174,7 @@ async function fireAdvisorCall(role, context, screen) {
 
   // Show typing indicator
   const typingId = 'advisor-typing-' + Date.now();
-  const tag = ADVISOR_TAGS[role] || role.toUpperCase();
+  const tag = 'ADVISOR';
   if (inInterview && chatEl) {
     chatEl.innerHTML += `<div class="msg system" id="${typingId}">[${tag}] thinking...</div>`;
     chatEl.scrollTop = chatEl.scrollHeight;
@@ -2276,7 +2210,7 @@ async function fireAdvisorCall(role, context, screen) {
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
         max_tokens: 150,
-        system:     ADVISOR_SYSTEM_PROMPTS[role] || ADVISOR_SYSTEM_PROMPTS.partner,
+        system:     ADVISOR_SYSTEM_PROMPT,
         messages:   [{ role: 'user', content: userMsg }],
       }),
     });
@@ -2292,13 +2226,12 @@ async function fireAdvisorCall(role, context, screen) {
 
     const data     = await res.json();
     const reply    = data.content[0].text;
-    const fullTag  = ADVISOR_TAGS[role] || role.toUpperCase();
-    const fullReply = `[${fullTag}] ${reply}`;
+    const fullReply = `[ADVISOR] ${reply}`;
 
     if (inInterview) {
       // Store in chat history and re-render chat
       if (name) {
-        G.chats[name].push({ role: 'advisor', advisor_role: role, content: fullReply });
+        G.chats[name].push({ role: 'advisor', advisor_role: 'advisor', content: fullReply });
       }
       renderChatWindow();
     } else {
@@ -2306,7 +2239,7 @@ async function fireAdvisorCall(role, context, screen) {
       const respEl = document.getElementById('advisor-response-dec');
       if (respEl) {
         respEl.style.display = '';
-        respEl.innerHTML = `<div class="msg advisor"><div class="advisor-role-tag">[${esc(fullTag)}]</div>${esc(reply)}</div>`;
+        respEl.innerHTML = `<div class="msg advisor"><div class="advisor-role-tag">[ADVISOR]</div>${esc(reply)}</div>`;
       }
     }
 

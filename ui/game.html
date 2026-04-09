@@ -115,6 +115,25 @@
     }
     .back-btn:hover { color: var(--green); background: none; }
 
+    .home-btn {
+      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+      font-size: 1rem;
+      color: var(--green-dim);
+      background: none;
+      border: 1px solid var(--green-lo);
+      padding: 4px 14px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .home-btn:hover { background: rgba(10, 30, 10, 0.5); color: var(--green); border-color: var(--green-dim); }
+
+    .hub-topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+
     /* --- MISC --- */
     .dim { color: var(--green-dim); font-size: 1rem; }
     .empty { color: var(--green-lo); font-size: 1rem; padding: 16px 0; }
@@ -675,6 +694,9 @@
 <!-- ===================== HUB ===================== -->
 <div id="s-hub" class="screen">
   <div class="page">
+    <div class="hub-topbar">
+      <button class="home-btn" id="hub-home">⌂ Case Library</button>
+    </div>
     <div class="hub-header">
       <div>
         <div class="hub-subtitle">Active Case</div>
@@ -1037,6 +1059,7 @@ document.getElementById('nav-casefile') .addEventListener('click', () => { rende
 document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });
 document.getElementById('nav-accuse')   .addEventListener('click', () => { renderAccuse();    show('accuse'); });
 
+document.getElementById('hub-home')  .addEventListener('click', () => show('categories'));
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
 document.getElementById('brief-back').addEventListener('click', () => show('categories'));
 document.getElementById('dec-back')  .addEventListener('click', () => { renderHub(); show('hub'); });

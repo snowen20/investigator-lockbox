@@ -20,6 +20,8 @@
       --green-lo:  #1a3a1a;
       --green-hi:  #66ff66;
       --mono:      'Consolas', 'Menlo', 'Monaco', monospace;
+      --cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='24'%3E%3Cpath d='M1 1 L1 19 L5 15 L8 23 L10 22 L7 14 L13 14 Z' fill='%2333ff33' stroke='%23001a00' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1 1, default;
+      --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='24'%3E%3Cpath d='M1 1 L1 19 L5 15 L8 23 L10 22 L7 14 L13 14 Z' fill='%2366ff66' stroke='%23001a00' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1 1, pointer;
     }
 
     body {
@@ -30,6 +32,7 @@
       background: #0e0e0e url('../images/background.png') center center / cover fixed;
       color: var(--green);
       min-height: 100vh;
+      cursor: var(--cursor-default);
     }
 
     /* --- BACKGROUND LAYER (do not touch) --- */
@@ -73,11 +76,11 @@
       color: var(--green);
       border: 1px solid var(--green);
       padding: 8px 20px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       letter-spacing: 0.04em;
     }
     button:hover:not(:disabled) { background: var(--green); color: #0a0a0a; }
-    button:disabled { opacity: 0.35; cursor: default; }
+    button:disabled { opacity: 0.35; cursor: var(--cursor-default); }
     button.primary { background: #0a1f0a; color: var(--green); border-color: var(--green); }
     button.primary:hover:not(:disabled) { background: var(--green); color: #0a0a0a; }
     button.danger { background: #1f0a0a; color: #ff5555; border-color: #ff5555; }
@@ -104,7 +107,7 @@
       font-size: 1rem;
       color: var(--green-dim);
       letter-spacing: 0.05em;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       border: none;
       background: none;
       padding: 0;
@@ -120,7 +123,7 @@
       background: none;
       border: 1px solid var(--green-lo);
       padding: 4px 14px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
@@ -181,7 +184,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 13px 16px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       font-size: 1rem;
       color: var(--green);
       user-select: none;
@@ -202,7 +205,7 @@
       padding: 7px 0;
       font-size: 1rem;
       color: var(--green);
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       border-bottom: 1px solid var(--green-lo);
     }
     .cat-case-link:last-child { border-bottom: none; }
@@ -245,7 +248,7 @@
       border: 1px solid var(--green-lo);
       border-left: 3px solid var(--green-dim);
       padding: 18px 16px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
     }
     .nav-tile:hover { background: var(--scanline), rgba(20, 50, 20, 0.85); }
     .nav-tile.red { border-left-color: #5a1a1a; }
@@ -253,50 +256,48 @@
     .tile-val { font-size: 1rem; color: var(--green); }
 
     /* ===========================
-       DECISIONS SCREEN
+       FREE-FORM ACTION INPUT
     =========================== */
-    .dp-budget-bar {
+    .action-input-row {
       display: flex;
-      justify-content: flex-end;
-      margin-bottom: 20px;
-      font-size: 1rem;
-      color: var(--green-dim);
-    }
-    .dp-budget-bar span { color: var(--green); margin-left: 6px; }
-
-    .dp-block {
-      margin-bottom: 20px;
-      border: 1px solid var(--green-lo);
-      padding: 16px;
-      background: var(--scanline), var(--panel-bg);
-    }
-    .dp-id {
-      font-size: 1rem;
-      color: var(--green-dim);
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    .opt-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      background: rgba(10, 10, 10, 0.85);
-      border: 1px solid var(--green-lo);
+      gap: 8px;
       margin-bottom: 6px;
-      cursor: pointer;
-      gap: 12px;
+    }
+    .action-input-row input {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid var(--green-lo);
+      color: var(--green);
       font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
       font-size: 1rem;
-      color: var(--green);
-      text-align: left;
-      width: 100%;
+      padding: 8px 12px;
+      outline: none;
     }
-    .opt-row:hover:not(:disabled) { background: rgba(20, 50, 20, 0.85); }
-    .opt-row:disabled { cursor: default; }
-    .opt-row.chosen { background: #1a3a1a; border-color: var(--green); color: var(--green); }
-    .opt-row.cant-afford { opacity: 0.4; }
+    .action-input-row input::placeholder { color: var(--green-dim); }
+    .action-input-row input:focus { border-color: var(--green); }
+
+    #action-results { margin-bottom: 24px; }
+    .action-card {
+      border: 1px solid var(--green-lo);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      background: var(--scanline), rgba(10, 10, 10, 0.9);
+    }
+    .action-card-header {
+      font-size: 0.85rem;
+      color: var(--green-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .action-card-prompt {
+      color: var(--green-dim);
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+    .action-card-text { color: var(--green); line-height: 1.6; }
+    .action-card-cost { font-size: 0.9rem; color: #ff9900; margin-top: 8px; }
+    .action-card.typing { opacity: 0.6; }
     .opt-cost { font-size: 1rem; color: var(--green-dim); white-space: nowrap; flex-shrink: 0; }
     .opt-row.chosen .opt-cost { color: var(--green); }
 
@@ -314,7 +315,7 @@
       border-bottom: 2px solid transparent;
       color: var(--green-dim);
       padding: 8px 20px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       margin-bottom: -1px;
     }
     .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
@@ -423,7 +424,7 @@
       border: none;
       border-bottom: 1px solid var(--green-lo);
       color: var(--green-dim);
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       padding: 6px 0;
       width: 100%;
       text-align: left;
@@ -559,7 +560,7 @@
       background: rgba(10, 10, 10, 0.85);
       border: 1px solid var(--green-lo);
       color: var(--green-dim);
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       white-space: nowrap;
     }
     .jtab:hover:not(.active) { background: rgba(20, 50, 20, 0.85); color: var(--green); }
@@ -572,7 +573,7 @@
       background: none;
       border: 1px dashed var(--green-dim);
       color: var(--green-dim);
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       white-space: nowrap;
     }
     .jtab-new:hover { color: var(--green); border-color: var(--green); background: none; }
@@ -609,7 +610,7 @@
       border: 1px solid var(--green-lo);
       background: var(--scanline), var(--panel-bg);
       margin-bottom: 6px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
     }
     .accuse-card:hover { background: var(--scanline), rgba(20, 50, 20, 0.85); }
     .accuse-card.sel { border-color: var(--green); background: var(--scanline), rgba(10, 28, 10, 0.85); }
@@ -669,7 +670,7 @@
       border: 1px solid var(--green-lo);
       background: var(--panel-bg);
       margin-bottom: 5px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
     }
     .setup-option:hover { background: rgba(20,50,20,0.5); }
     .setup-option.selected { border-color: var(--green); background: rgba(10,30,10,0.85); }
@@ -703,7 +704,7 @@
       inset: 0;
       background: var(--green-lo);
       border: 1px solid var(--green-dim);
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       transition: background 0.2s;
     }
     .advisor-toggle-slider::before {
@@ -742,7 +743,7 @@
       color: var(--green-dim);
       border: 1px solid var(--green-dim);
       padding: 6px 14px;
-      cursor: pointer;
+      cursor: var(--cursor-pointer);
       letter-spacing: 0.04em;
     }
     .advisor-btn:hover { background: rgba(20,50,20,0.85); color: var(--green); border-color: var(--green); }
@@ -853,11 +854,22 @@
         <div class="budget-amt" id="hub-budget"></div>
       </div>
     </div>
+    <!-- Free-form action input -->
+    <div class="action-input-row">
+      <input type="text" id="action-in" placeholder="What do you want to do next?" autocomplete="off">
+      <button id="action-btn">Investigate</button>
+    </div>
+    <div id="action-err" style="color:#ff5555;font-size:0.9rem;min-height:1.1em;margin-bottom:8px"></div>
+    <!-- Action results feed -->
+    <div id="action-results"></div>
+    <!-- Advisor area (hub context) -->
+    <div id="advisor-prompt-hub" class="advisor-prompt" style="display:none;margin-top:16px">
+      <div class="advisor-prompt-label">Advisor consultation available</div>
+      <div id="advisor-btn-row-hub" class="advisor-btn-row"></div>
+    </div>
+    <div id="advisor-response-hub" style="display:none;margin-top:12px"></div>
+    <!-- Nav tiles -->
     <div class="nav-grid">
-      <div class="nav-tile" id="nav-decisions">
-        <div class="tile-label">Decision Points</div>
-        <div class="tile-val" id="nav-d-val"></div>
-      </div>
       <div class="nav-tile" id="nav-casefile">
         <div class="tile-label">Case File</div>
         <div class="tile-val" id="nav-c-val"></div>
@@ -871,21 +883,6 @@
         <div class="tile-val" style="color:#a66">Commit to a suspect</div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ===================== DECISIONS ===================== -->
-<div id="s-decisions" class="screen">
-  <div class="page">
-    <button class="back-btn" id="dec-back">← Back</button>
-    <h1>Decision Points</h1>
-    <div class="dp-budget-bar">Budget remaining: <span id="dec-budget"></span></div>
-    <div id="dec-body"></div>
-    <div id="advisor-prompt-dec" class="advisor-prompt" style="display:none;margin-top:16px">
-      <div class="advisor-prompt-label">Advisor consultation available</div>
-      <div id="advisor-btn-row-dec" class="advisor-btn-row"></div>
-    </div>
-    <div id="advisor-response-dec" style="display:none;margin-top:12px"></div>
   </div>
 </div>
 
@@ -991,7 +988,7 @@ const G = {
   apiKey:  '',
   budget:  0,
   unlocked: new Set(),  // IDs of unlocked evidence / documents
-  chosen:   new Set(),  // "DP-XX:N" keys of pursued options
+  actions:  [],         // free-form action history [{input, narrative, cost, cost_label}]
   chats:    {},         // suspectName -> [{role, content, advisor_role?}]
   suspect:  null,       // currently open interview subject
   accused:  null,       // name of accused suspect
@@ -1011,7 +1008,6 @@ const G = {
   },
   entityRegistry: { names: [], locations: [], times: [] },
   pendingAdvisorContext: null,  // set when advisor buttons are shown
-  advisedDPs: new Set(),        // "dp-advised:DP-XX:N" — DPs already shown advisor for
 };
 
 // ============================================================
@@ -1179,7 +1175,7 @@ function loadCase(key) {
   G.case     = caseData;
   G.budget   = typeof G.case.budget === 'number' ? G.case.budget : 0;
   G.unlocked = new Set();
-  G.chosen   = new Set();
+  G.actions  = [];
   G.chats    = {};
   G.suspect  = null;
   G.accused  = null;
@@ -1195,7 +1191,6 @@ function loadCase(key) {
     raw_statements: {},
   };
   G.pendingAdvisorContext = null;
-  G.advisedDPs = new Set();
   // Build entity registry from case data
   G.entityRegistry = buildEntityRegistry();
   renderSetup();
@@ -1546,11 +1541,6 @@ function renderHub() {
   bEl.textContent = '$' + G.budget.toLocaleString();
   bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
 
-  const totalOpts = (c.decision_points || []).reduce((n, dp) =>
-    n + (Array.isArray(dp.options) ? dp.options.length : 0), 0);
-  document.getElementById('nav-d-val').textContent =
-    `${G.chosen.size} / ${totalOpts} options pursued`;
-
   document.getElementById('nav-c-val').textContent =
     `${G.unlocked.size} item(s) unlocked`;
 
@@ -1558,7 +1548,6 @@ function renderHub() {
     `${(c.suspects || []).length} suspect(s)`;
 }
 
-document.getElementById('nav-decisions').addEventListener('click', () => { renderDecisions(); show('decisions'); });
 document.getElementById('nav-casefile') .addEventListener('click', () => { renderCaseFile();  show('casefile'); });
 document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });
 document.getElementById('nav-accuse')   .addEventListener('click', () => { renderAccuse();    show('accuse'); });
@@ -1567,120 +1556,233 @@ document.getElementById('hub-home')  .addEventListener('click', () => show('cate
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
 document.getElementById('setup-back').addEventListener('click', () => show('categories'));
 document.getElementById('brief-back').addEventListener('click', () => { renderSetup(); show('setup'); });
-document.getElementById('dec-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('cf-back')   .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('sus-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 document.getElementById('iview-back').addEventListener('click', () => { renderSuspects(); show('suspects'); });
 document.getElementById('acc-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
 
 // ============================================================
-// DECISIONS
+// FREE-FORM ACTION RESOLVER
 // ============================================================
-function renderDecisions() {
-  // Evaluate decision-point advisor trigger — show once per DP option, not on every re-render
-  if (advisorActive() && !G.pendingAdvisorContext) {
-    let triggered = false;
-    for (const dp of (G.case.decision_points || [])) {
-      if (triggered) break;
-      for (let idx = 0; idx < (dp.options || []).length; idx++) {
-        const key = `dp-advised:${dp.id}:${idx}`;
-        if (!G.chosen.has(`${dp.id}:${idx}`) && !G.advisedDPs.has(key) && evalDecisionPointTrigger(dp, idx)) {
-          G.advisedDPs.add(key);
-          const opt = dp.options[idx];
-          const context = `Decision Point: ${dp.id}\nOption under consideration: "${opt.label}" ($${opt.cost || 0})`;
-          buildAdvisorButtons(context);
-          triggered = true;
-          break;
-        }
+
+const ACTION_SYSTEM_PROMPT = `You are the game engine for a detective investigation game. The player is a lead investigator. They have submitted an action they want to take. Your job is to resolve that action against the case data.
+
+RULES:
+1. ONLY return information that exists in or can be directly inferred from the case data. Do not invent evidence, witnesses, locations, or facts not present in the case.
+2. If the action targets something defined in the case data (a location with evidence, a verifiable claim, a named entity), return what the player would realistically find or learn. Use the case data as the source of truth.
+3. If the action targets something NOT in the case data, return a plausible dead-end. Examples: "You check but find nothing relevant." / "The office is closed." / "No one matching that description is available." Do NOT fabricate new information.
+4. If a suspect made a claim (alibi, timeline, fact), and the case data contains the ground truth, the player CAN verify it through a reasonable action. Return whether the claim checks out based on the case data.
+5. Respond in second person, present tense. Concise — 2 to 5 sentences unless the player is discovering a significant evidence item, in which case describe it fully.
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": []}}. If cost is 0 set cost_label to "".
+7. If the action is vague or nonsensical, ask for clarification in the narrative field. Set cost to 0.
+8. Never reveal information the player has not earned through their actions. No freebies.
+9. If the player has already taken this exact action, note it in the narrative and reference the prior result. Set cost to 0.
+10. If the player's budget is $0 and the action would cost money, return: {"narrative": "You don't have the budget for that. You'll need to work with what you've got.", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": []}}
+
+COST GUIDELINES (include cost in response so the game engine can deduct it):
+- Phone calls, conversations, asking questions: $0
+- Visiting a nearby location: $25–75
+- Records requests (phone, financial, employment): $100–150
+- Surveillance / stakeout (per session): $75–150
+- Equipment setup (cameras, monitoring): $200–300
+- Lab analysis / forensic processing: $200–500
+- Expert consultation: $150–300
+- Warrant application: $300–500
+- Multi-person canvass operation: $200–400
+Use your judgment within these ranges. If the action doesn't fit a category, price it reasonably.
+
+You are a resolver, not a storyteller. Do not advance the plot. Do not introduce twists. Report what the player finds based on the case data, nothing more.`;
+
+let _actionInFlight = false;
+
+function renderActionCard(action, idx) {
+  const costLine = (action.cost > 0)
+    ? `<div class="action-card-cost">▸ ${esc(action.cost_label)} — $${action.cost.toLocaleString()}</div>`
+    : '';
+  return `<div class="action-card" data-action-idx="${idx}">
+    <div class="action-card-header">Action ${idx + 1}</div>
+    <div class="action-card-prompt">&gt; ${esc(action.input)}</div>
+    <div class="action-card-text">${esc(action.narrative)}</div>
+    ${costLine}
+  </div>`;
+}
+
+function refreshActionResults() {
+  const el = document.getElementById('action-results');
+  if (!el) return;
+  el.innerHTML = G.actions.map((a, i) => renderActionCard(a, i)).join('');
+}
+
+async function resolveAction(input) {
+  if (_actionInFlight) return;
+  input = input.trim();
+  if (!input) return;
+  if (!G.case) return;
+
+  const errEl    = document.getElementById('action-err');
+  const btn      = document.getElementById('action-btn');
+  const inputEl  = document.getElementById('action-in');
+  errEl.textContent = '';
+  _actionInFlight = true;
+  btn.disabled = true;
+  inputEl.disabled = true;
+
+  // Budget check for obviously-paid actions (rough guard — resolver prices it exactly)
+  // If budget is 0, we still allow free actions; resolver handles the response.
+
+  // Build action history summary for the resolver
+  const actionHistory = G.actions.map((a, i) =>
+    `[Action ${i + 1}] Player: "${a.input}" → Result: "${a.narrative.slice(0, 120)}${a.narrative.length > 120 ? '…' : ''}"${a.cost > 0 ? ` (Cost: $${a.cost})` : ''}`
+  ).join('\n') || '(none yet)';
+
+  // Build discovered info summary
+  const diSummary = [
+    G.discoveredInfo.names.length     ? `Known names: ${G.discoveredInfo.names.join(', ')}`         : '',
+    G.discoveredInfo.locations.length ? `Known locations: ${G.discoveredInfo.locations.join(', ')}` : '',
+    G.discoveredInfo.times.length     ? `Known times: ${G.discoveredInfo.times.join(', ')}`         : '',
+    G.discoveredInfo.evidence_ids.length
+      ? `Evidence seen: ${G.discoveredInfo.evidence_ids.map(id => {
+          const e = (G.case.evidence || []).find(ev => ev.id === id);
+          return e ? `[${id}] ${e.description.slice(0, 80)}` : id;
+        }).join('; ')}`
+      : '',
+  ].filter(Boolean).join('\n') || '(none yet)';
+
+  const userMsg = [
+    `CASE DATA:\n${JSON.stringify(G.case, null, 2)}`,
+    '',
+    `INVESTIGATOR'S DISCOVERED INFORMATION:\n${diSummary}`,
+    '',
+    `ACTION HISTORY:\n${actionHistory}`,
+    '',
+    `REMAINING BUDGET: $${G.budget.toLocaleString()}`,
+    '',
+    `PLAYER'S ACTION: "${input}"`,
+  ].join('\n');
+
+  // Show a typing card
+  const resultsEl = document.getElementById('action-results');
+  const typingCard = document.createElement('div');
+  typingCard.className = 'action-card typing';
+  typingCard.innerHTML = `<div class="action-card-prompt">&gt; ${esc(input)}</div><div class="action-card-text">Investigating...</div>`;
+  if (resultsEl) resultsEl.prepend(typingCard);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key':                              G.apiKey,
+        'anthropic-version':                      '2023-06-01',
+        'content-type':                           'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 600,
+        system:     ACTION_SYSTEM_PROMPT,
+        messages:   [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    typingCard.remove();
+
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { msg = (await res.json()).error.message; } catch {}
+      throw new Error(msg);
+    }
+
+    const data    = await res.json();
+    const rawText = data.content[0].text.trim();
+
+    // Parse JSON response (strip markdown fences if present)
+    let parsed;
+    try {
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
+      parsed = JSON.parse(cleaned);
+    } catch {
+      throw new Error('Resolver returned invalid JSON. Raw: ' + rawText.slice(0, 200));
+    }
+
+    const narrative  = String(parsed.narrative  || '');
+    const cost       = typeof parsed.cost === 'number' ? Math.max(0, Math.round(parsed.cost)) : 0;
+    const cost_label = String(parsed.cost_label || '');
+    const discovered = parsed.discovered || {};
+
+    // Enforce budget cap
+    const actualCost = Math.min(cost, G.budget);
+    G.budget -= actualCost;
+
+    // Update discoveredInfo
+    const addUniq = (arr, items) => {
+      for (const v of (items || [])) {
+        if (v && !arr.includes(v)) arr.push(v);
+      }
+    };
+    addUniq(G.discoveredInfo.names,     discovered.names);
+    addUniq(G.discoveredInfo.locations, discovered.locations);
+    addUniq(G.discoveredInfo.times,     discovered.times);
+
+    // Unlock any evidence IDs the resolver surfaced
+    const newlyUnlocked = [];
+    for (const id of (discovered.evidence_ids || [])) {
+      if (!G.discoveredInfo.evidence_ids.includes(id)) {
+        G.discoveredInfo.evidence_ids.push(id);
+        if (!G.unlocked.has(id)) { G.unlocked.add(id); newlyUnlocked.push(id); }
       }
     }
-  }
-  document.getElementById('dec-budget').textContent = '$' + G.budget.toLocaleString();
 
-  const dps = G.case.decision_points || [];
-  if (!dps.length) {
-    document.getElementById('dec-body').innerHTML = '<div class="empty">No decision points in this case.</div>';
-    return;
-  }
+    // Store raw narrative in discoveredInfo
+    const actionIdx = G.actions.length;
+    if (!G.discoveredInfo.raw_statements[`action_${actionIdx}`])
+      G.discoveredInfo.raw_statements[`action_${actionIdx}`] = [];
+    G.discoveredInfo.raw_statements[`action_${actionIdx}`].push(narrative);
 
-  let html = '';
-  dps.forEach(dp => {
-    html += `<div class="dp-block"><div class="dp-id">${esc(dp.id)}</div>`;
-    (dp.options || []).forEach((opt, j) => {
-      const key      = `${dp.id}:${j}`;
-      const done     = G.chosen.has(key);
-      const cost     = typeof opt.cost === 'number' ? opt.cost : 0;
-      const label    = typeof opt.label === 'string' ? opt.label : '(no label)';
-      const canAfford = cost <= G.budget;
+    // Log action
+    G.actions.push({ input, narrative, cost: actualCost, cost_label });
 
-      if (done) {
-        html += `<button class="opt-row chosen" disabled>
-          <span>${esc(label)}</span>
-          <span class="opt-cost">DONE</span>
-        </button>`;
-      } else {
-        html += `<button class="opt-row${canAfford ? '' : ' cant-afford'}"
-          data-dp="${esc(dp.id)}" data-idx="${j}"
-          ${canAfford ? '' : 'disabled title="Insufficient budget"'}>
-          <span>${esc(label)}</span>
-          <span class="opt-cost">$${cost.toLocaleString()}</span>
-        </button>`;
-      }
-    });
-    html += `</div>`;
-  });
+    // Re-render results + hub budget
+    refreshActionResults();
+    const bEl = document.getElementById('hub-budget');
+    if (bEl) {
+      bEl.textContent = '$' + G.budget.toLocaleString();
+      bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
+    }
 
-  document.getElementById('dec-body').innerHTML = html;
+    // Clear input
+    inputEl.value = '';
 
-  document.querySelectorAll('#dec-body .opt-row:not(.chosen):not([disabled])').forEach(btn => {
-    btn.addEventListener('click', () => {
-      pursueOption(btn.dataset.dp, parseInt(btn.dataset.idx, 10));
-    });
-  });
-}
-
-function pursueOption(dpId, idx) {
-  const dp  = (G.case.decision_points || []).find(d => d.id === dpId);
-  if (!dp) return;
-  const opt = (dp.options || [])[idx];
-  if (!opt) return;
-  const cost = typeof opt.cost === 'number' ? opt.cost : 0;
-  if (cost > G.budget) return;
-
-  G.budget -= cost;
-  G.chosen.add(`${dpId}:${idx}`);
-
-  // Track newly unlocked items for evidence-reveal trigger evaluation
-  const newlyUnlocked = [];
-  if (Array.isArray(opt.leads_to)) {
-    opt.leads_to.forEach(id => {
-      if (!G.unlocked.has(id)) newlyUnlocked.push(id);
-      G.unlocked.add(id);
-    });
-  }
-
-  // Clear previous decisions-screen advisor response when a new option is pursued
-  const prevResp = document.getElementById('advisor-response-dec');
-  if (prevResp) { prevResp.style.display = 'none'; prevResp.innerHTML = ''; }
-
-  updateDiscoveredFromUnlocked();
-
-  // Evaluate evidence-reveal advisor triggers (in decisions context)
-  if (advisorActive()) {
-    newlyUnlocked.forEach(id => {
-      if (evalEvidenceRevealTrigger(id)) {
-        const item =
-          (G.case.evidence  || []).find(e => e.id === id) ||
-          (G.case.documents || []).find(d => d.id === id);
-        const desc = item ? (item.description || item.content || id) : id;
-        const context = `Decision: "${opt.label}"\nNewly revealed item [${id}]: ${desc}`;
+    // Advisor trigger: check same conditions as interview/evidence triggers
+    if (advisorActive() && !G.pendingAdvisorContext) {
+      const lower = narrative.toLowerCase();
+      const hasNewEntity =
+        G.discoveredInfo.names.some(n     => !G.entityRegistry.names.includes(n)) ||
+        G.discoveredInfo.locations.some(l => !G.entityRegistry.locations.includes(l)) ||
+        G.discoveredInfo.times.some(t     => !G.entityRegistry.times.includes(t));
+      const hasEvidenceRef = newlyUnlocked.length > 0 || checkEvidenceReference(narrative);
+      if (hasNewEntity || hasEvidenceRef || actualCost > G.budget * 0.5) {
+        const context = `Free-form action: "${input}"\nResult: "${narrative}"${actualCost > 0 ? `\nCost: $${actualCost} (${cost_label})` : ''}`;
         buildAdvisorButtons(context);
       }
-    });
-  }
+    }
 
-  renderDecisions();
+  } catch (e) {
+    typingCard.remove();
+    errEl.textContent = 'Action failed: ' + e.message;
+  } finally {
+    _actionInFlight = false;
+    btn.disabled    = false;
+    inputEl.disabled = false;
+    inputEl.focus();
+  }
 }
+
+document.getElementById('action-btn').addEventListener('click', () => {
+  resolveAction(document.getElementById('action-in').value);
+});
+document.getElementById('action-in').addEventListener('keydown', e => {
+  if (e.key === 'Enter') resolveAction(e.target.value);
+});
 
 // ============================================================
 // CASE FILE
@@ -1949,46 +2051,97 @@ async function sendMessage() {
   }
 }
 
+// Words too common to use as evidence keyword signals
+const _EV_STOP = new Set([
+  'about','above','after','again','against','being','below','between','could',
+  'their','there','these','those','through','under','until','where','which',
+  'while','would','found','have','that','with','from','into','only','some',
+  'this','when','shows','show','were','been','such','also','both','each',
+  'most','over','same','then','than','they','what','your','does','used',
+  'very','more','also','before','after','during','other','another','first',
+]);
+
+// Build the scoped suspect payload — only what this person knows/is
+function _scopedSuspect(suspect) {
+  return {
+    suspect_name:           suspect.name,
+    relationship_to_victim: suspect.relationship_to_victim,
+    alibi:                  suspect.alibi,
+    motive:                 suspect.motive,
+    what_they_know:         suspect.what_they_know     || [],
+    what_they_lie_about:    suspect.what_they_lie_about || [],
+    guilty:                 suspect.guilty,
+  };
+}
+
+// Detect which evidence items the player has referenced across the conversation.
+// Returns { presented: Evidence[], bluffIds: string[] }
+// presented = discovered items the player mentioned
+// bluffIds  = ID-shaped strings the player mentioned that aren't in discovered set
+function _detectPresentedEvidence(history, caseEvidence, discoveredIds) {
+  const userText = history
+    .filter(m => m.role === 'user')
+    .map(m => m.content.toLowerCase())
+    .join(' ');
+
+  const matched = new Set();
+
+  // 1. Explicit E-ID mentions (e.g. "E-03")
+  for (const id of (userText.match(/\be-\d+\b/gi) || []))
+    matched.add(id.toUpperCase());
+
+  // 2. Keyword match against discovered evidence descriptions (words > 5 chars)
+  const discovered = (caseEvidence || []).filter(e => discoveredIds.includes(e.id));
+  for (const e of discovered) {
+    const words = e.description.toLowerCase().split(/\W+/).filter(w => w.length > 5 && !_EV_STOP.has(w));
+    if (words.some(w => userText.includes(w))) matched.add(e.id);
+  }
+
+  const presented = discovered.filter(e => matched.has(e.id));
+  const bluffIds  = [...matched].filter(id => !discoveredIds.includes(id));
+  return { presented, bluffIds };
+}
+
 async function callClaude(suspect, history) {
-  const c = G.case;
+  const c      = G.case;
+  const scoped = _scopedSuspect(suspect);
+  const { presented, bluffIds } = _detectPresentedEvidence(
+    history, c.evidence, G.discoveredInfo.evidence_ids
+  );
 
-  const evLines = (c.evidence || [])
-    .filter(e => G.unlocked.has(e.id))
-    .map(e => `  [${e.id}] ${e.description}`)
-    .join('\n') || '  (none unlocked yet)';
+  const lines = [
+    `You are roleplaying as ${suspect.name}, a suspect in an investigation. You are being interviewed by the lead investigator.`,
+    '',
+    `Here is everything you know:`,
+    JSON.stringify(scoped, null, 2),
+    '',
+    `RULES:`,
+    `1. Stay in character. You are this person — react naturally, show emotion, be defensive or cooperative as fits the situation.`,
+    `2. You ONLY know what is listed above. Do not reference, imply, or hint at ANY information not contained in your scoped data.`,
+    `3. If the player asks about something outside your knowledge, you don't know. Say so naturally — "I have no idea," "You'd have to ask someone else," "I wouldn't know about that."`,
+    `4. Lie about the items in what_they_lie_about. If the player presses hard or presents contradicting evidence, you can crack, deflect harder, or get angry — but don't just confess immediately.`,
+    `5. Reveal what_they_know items naturally through conversation. Don't dump everything at once. Let the player draw it out.`,
+    `6. Do NOT reference whether the victim is alive or dead unless that fact is explicitly in your what_they_know. You do not know the victim's status.`,
+    `7. Do NOT guess, speculate, or improvise facts about the case beyond your scoped data. You can have opinions and emotions, but not new facts.`,
+    `8. If guilty is true, you are hiding your involvement. If guilty is false, you are genuinely uninvolved but may still be nervous, defensive, or dishonest about the things in what_they_lie_about.`,
+    `9. Keep responses to 2–4 sentences. Do not acknowledge this is a game or break character.`,
+  ];
 
-  const docLines = (c.documents || [])
-    .filter(d => G.unlocked.has(d.id))
-    .map(d => `  [${d.id}] ${d.content}`)
-    .join('\n') || '  (none unlocked yet)';
+  if (presented.length > 0) {
+    lines.push('');
+    lines.push(`EVIDENCE THE INVESTIGATOR HAS PRESENTED TO YOU:`);
+    for (const e of presented) lines.push(`- [${e.id}] ${e.description}`);
+    lines.push(`React to this evidence based on whether it relates to your alibi, lies, or what you know.`);
+  }
 
-  const system = [
-    `You are ${suspect.name} being interviewed by a detective in the case: "${c.title}".`,
-    `Victim: ${c.victim ? c.victim.name : 'unknown'}.`,
-    '',
-    `YOUR CHARACTER:`,
-    `- Relationship to victim: ${suspect.relationship_to_victim}`,
-    `- Guilty: ${suspect.guilty ? 'YES — you committed the crime' : 'NO — you are innocent'}`,
-    `- Alibi: ${suspect.alibi}`,
-    `- Alibi verifiable: ${suspect.alibi_verifiable ? 'yes' : 'no'}`,
-    `- Motive: ${suspect.motive}`,
-    '',
-    `WHAT YOU KNOW (you can hint at these if pressed):`,
-    ...(suspect.what_they_know || []).map(k => `- ${k}`),
-    '',
-    `WHAT YOU CONCEAL OR LIE ABOUT (do NOT reveal directly):`,
-    ...(suspect.what_they_lie_about || []).map(l => `- ${l}`),
-    '',
-    `EVIDENCE THE INVESTIGATOR HAS SEEN:`,
-    evLines,
-    '',
-    `DOCUMENTS THE INVESTIGATOR HAS SEEN:`,
-    docLines,
-    '',
-    `INSTRUCTIONS: Stay fully in character. Answer in 2–4 sentences. Be evasive or defensive about things you conceal. If innocent you may be cooperative but still have your own secrets. If guilty you should deny or deflect accusations. Do not acknowledge this is a game or break character.`,
-  ].join('\n');
+  if (bluffIds.length > 0) {
+    lines.push('');
+    lines.push(`NOTE: The investigator has referenced evidence (${bluffIds.join(', ')}) that they have not produced. This may be a bluff. React with appropriate skepticism — do not fabricate knowledge of what that evidence might contain.`);
+  }
 
-  // Only pass user/assistant turns to Claude; exclude advisor messages
+  const system = lines.join('\n');
+
+  // Only pass user/assistant turns; exclude advisor messages
   const messages = history
     .filter(m => m.role === 'user' || m.role === 'assistant')
     .map(m => ({ role: m.role, content: m.content }));
@@ -2134,29 +2287,18 @@ function evalEvidenceRevealTrigger(newlyUnlockedId) {
   return false;
 }
 
-function evalDecisionPointTrigger(dp, optIdx) {
-  const opt = (dp.options || [])[optIdx];
-  if (!opt) return false;
-  const label = (opt.label || '').toLowerCase();
-  const legalRe = /\b(warrant|re-interview|formal|accusation|accuse|admissib|rights|legal)\b/i;
-  if (legalRe.test(label)) return true;
-  if (typeof opt.cost === 'number' && opt.cost > G.budget * 0.5) return true;
-  return false;
-}
-
 // --- Advisor button rendering ---
 
 function activeAdvisorScreen() {
-  // Returns 'interview' or 'decisions' depending on which screen is currently active
   const iv = document.getElementById('s-interview');
-  return (iv && iv.classList.contains('active')) ? 'interview' : 'decisions';
+  return (iv && iv.classList.contains('active')) ? 'interview' : 'hub';
 }
 
 function buildAdvisorButtons(context) {
   G.pendingAdvisorContext = context;
   const screen = activeAdvisorScreen();
-  const rowId    = screen === 'interview' ? 'advisor-btn-row'     : 'advisor-btn-row-dec';
-  const promptId = screen === 'interview' ? 'advisor-prompt'      : 'advisor-prompt-dec';
+  const rowId    = screen === 'interview' ? 'advisor-btn-row'     : 'advisor-btn-row-hub';
+  const promptId = screen === 'interview' ? 'advisor-prompt'      : 'advisor-prompt-hub';
   const row    = document.getElementById(rowId);
   const prompt = document.getElementById(promptId);
   if (!row || !prompt) return;
@@ -2181,7 +2323,7 @@ function buildAdvisorButtons(context) {
 }
 
 function hideAdvisorPrompt() {
-  ['advisor-prompt', 'advisor-prompt-dec'].forEach(id => {
+  ['advisor-prompt', 'advisor-prompt-hub'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -2197,7 +2339,7 @@ async function fireAdvisorCall(role, context, screen) {
   const inInterview = (screen === 'interview');
   const name    = G.suspect ? G.suspect.name : null;
   const chatEl  = inInterview ? document.getElementById('chat-win') : null;
-  const errEl   = document.getElementById(inInterview ? 'iview-err' : 'dec-budget');
+  const errEl   = document.getElementById(inInterview ? 'iview-err' : 'action-err');
 
   // Show typing indicator
   const typingId = 'advisor-typing-' + Date.now();
@@ -2206,7 +2348,7 @@ async function fireAdvisorCall(role, context, screen) {
     chatEl.innerHTML += `<div class="msg system" id="${typingId}">[${tag}] thinking...</div>`;
     chatEl.scrollTop = chatEl.scrollHeight;
   } else {
-    const respEl = document.getElementById('advisor-response-dec');
+    const respEl = document.getElementById('advisor-response-hub');
     if (respEl) {
       respEl.style.display = '';
       respEl.innerHTML = `<div class="msg advisor" id="${typingId}"><div class="advisor-role-tag">[${tag}]</div> thinking...</div>`;
@@ -2263,7 +2405,7 @@ async function fireAdvisorCall(role, context, screen) {
       renderChatWindow();
     } else {
       // Render inline in decisions screen
-      const respEl = document.getElementById('advisor-response-dec');
+      const respEl = document.getElementById('advisor-response-hub');
       if (respEl) {
         respEl.style.display = '';
         respEl.innerHTML = `<div class="msg advisor"><div class="advisor-role-tag">[ADVISOR]</div>${esc(reply)}</div>`;
@@ -2278,7 +2420,7 @@ async function fireAdvisorCall(role, context, screen) {
       const el = document.getElementById('iview-err');
       if (el) el.textContent = 'Advisor error — ' + e.message;
     } else {
-      const respEl = document.getElementById('advisor-response-dec');
+      const respEl = document.getElementById('advisor-response-hub');
       if (respEl) { respEl.style.display = ''; respEl.innerHTML = `<div class="err">Advisor error — ${esc(e.message)}</div>`; }
     }
   }

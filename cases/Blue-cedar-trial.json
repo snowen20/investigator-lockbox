@@ -266,87 +266,158 @@
       "phase": 3
     }
   ],
-  "decision_points": [
+  "budget": 4200,
+  "locations": [
     {
-      "id": "DP-01",
-      "options": [
-        {
-          "label": "Focus first on Sonia's personal circle",
-          "cost": 200,
-          "leads_to": ["D-01", "D-02"]
-        },
-        {
-          "label": "Lock down clinic access and camera records",
-          "cost": 350,
-          "leads_to": ["E-01", "E-03", "D-03"]
-        },
-        {
-          "label": "Pull Sonia's devices and cloud drafts immediately",
-          "cost": 300,
-          "leads_to": ["E-04", "E-05"]
-        }
-      ]
+      "id": "blue_cedar_clinic",
+      "name": "Blue Cedar Neurology Center",
+      "description": "Private neurology clinic and trial site where Sonia worked and was abducted. Main entrance, infusion unit, and records office are accessible.",
+      "searchable": true,
+      "ambient_details": "Badge access control on all wings. Security cameras at parking garage and main corridor. Staff on duty through the evening."
     },
     {
-      "id": "DP-02",
-      "options": [
-        {
-          "label": "Interview night security despite the shaky first account",
-          "cost": 250,
-          "leads_to": ["D-04", "E-06"]
-        },
-        {
-          "label": "Review parking garage and hallway footage",
-          "cost": 300,
-          "leads_to": ["E-03", "E-06"]
-        },
-        {
-          "label": "Press staff on the freezer and infusion lot discrepancies",
-          "cost": 275,
-          "leads_to": ["E-02", "D-05"]
-        }
-      ]
+      "id": "records_annex_b",
+      "name": "Records Annex B",
+      "description": "Isolated records storage room where Sonia was last seen working and where she was abducted. Benzodiazepine residue, a torn badge lanyard, and scuff marks found here.",
+      "searchable": true,
+      "ambient_details": "No camera inside the room. Badge access log records entries and exits. Signs of struggle on the floor."
     },
     {
-      "id": "DP-03",
-      "options": [
-        {
-          "label": "Test the conference alibi",
-          "cost": 400,
-          "leads_to": ["D-06", "E-07"]
-        },
-        {
-          "label": "Process Records Annex B for trace evidence",
-          "cost": 325,
-          "leads_to": ["E-08"]
-        },
-        {
-          "label": "Audit Sonia's export activity and trial workstation logs",
-          "cost": 225,
-          "leads_to": ["E-04", "D-03"]
-        }
-      ]
+      "id": "blue_cedar_parking",
+      "name": "Blue Cedar Parking Garage",
+      "description": "Clinic parking garage with security camera that captured Dr. Quill's vehicle returning at 6:16 PM — contradicting his alibi.",
+      "searchable": true,
+      "ambient_details": "Camera covers all entry and exit lanes. 60-day footage retention."
     },
     {
-      "id": "DP-04",
-      "options": [
-        {
-          "label": "Apply for a warrant on the lower diagnostic wing and Quill's office",
-          "cost": 900,
-          "leads_to": ["D-07", "E-09", "E-10"]
-        },
-        {
-          "label": "Continue broad staff canvass",
-          "cost": 250,
-          "leads_to": ["D-04", "D-05", "E-02"]
-        },
-        {
-          "label": "Re-interview Eli Rowan",
-          "cost": 150,
-          "leads_to": ["D-02", "E-05"]
-        }
-      ]
+      "id": "trial_records_office",
+      "name": "Trial Records Office",
+      "description": "Office where Sonia worked reconciling adverse-event binders. Workstation audit log shows she copied a spreadsheet to a thumb drive at 5:41 PM.",
+      "searchable": true,
+      "ambient_details": "Workstation audit log accessible. Locked filing cabinet with trial binders. Thumb drive may still be on premises."
+    },
+    {
+      "id": "station_4_ems",
+      "name": "Station 4 (EMS)",
+      "description": "Fire and EMS station where Eli Rowan claims he was on ambulance standby from 5:00 PM to 9:10 PM.",
+      "searchable": true,
+      "ambient_details": "Dispatch logs, check-in/out records, and shift supervisor available."
+    },
+    {
+      "id": "conference_hotel",
+      "name": "Hilton Medical Center Hotel",
+      "description": "Conference venue where Dr. Quill claims to have attended a regional neurology dinner from 6:00 PM to 9:00 PM.",
+      "searchable": true,
+      "ambient_details": "Event staff, sign-in sheets, and hotel cameras. Quill's colleagues recall his badge and phone but cannot confirm he was present continuously."
+    },
+    {
+      "id": "lower_diagnostic_wing",
+      "name": "Lower Diagnostic Wing (Decommissioned)",
+      "description": "Closed section of Blue Cedar where Sonia is being held alive in a locked sleep-study room. Accessible via service elevator with master credential.",
+      "searchable": true,
+      "ambient_details": "Service elevator access log shows master credential used at 7:04 PM. Corridor camera offline but dust marks on floor."
+    },
+    {
+      "id": "infusion_unit",
+      "name": "Infusion Unit / Trial Freezer",
+      "description": "Treatment area with trial drug freezer. Cold-chain logs show relabeled and expired infusion vials. Felix Dorn's initials appear on discrepancy entries.",
+      "searchable": true,
+      "ambient_details": "Freezer access log. Cold-chain inventory sheets. Relabeled vials may still be in stock."
     }
   ],
-  "budget": 4200
+  "verifiable_claims": [
+    {
+      "claim_id": "eli_alibi_station",
+      "source_suspect": "Eli Rowan",
+      "claim": "On ambulance standby at Station 4 from 5:00 PM to 9:10 PM on June 17th",
+      "verification_method": "Check Station 4 dispatch logs, sign-in sheets, or shift supervisor",
+      "ground_truth": "Station 4 dispatch logs confirm Eli was on duty from 4:55 PM through 9:22 PM with no departure recorded. Alibi confirmed.",
+      "discovery_action_keywords": [
+        "eli",
+        "station",
+        "ambulance",
+        "standby",
+        "ems",
+        "alibi",
+        "rowan"
+      ]
+    },
+    {
+      "claim_id": "marisol_charting_alibi",
+      "source_suspect": "Marisol Kent",
+      "claim": "Covering infusion chairs and late charting until after 8:15 PM on June 17th",
+      "verification_method": "Check charting timestamps and infusion unit badge logs",
+      "ground_truth": "Charting timestamps confirm Marisol was entering notes through 8:09 PM. Alibi is mostly consistent, though she directed Sonia to work alone in Records Annex B and withheld that fact.",
+      "discovery_action_keywords": [
+        "marisol",
+        "charting",
+        "infusion",
+        "alibi",
+        "kent",
+        "nurse"
+      ]
+    },
+    {
+      "claim_id": "felix_pharmacy_alibi",
+      "source_suspect": "Felix Dorn",
+      "claim": "Completing evening medication counts in the basement pharmacy from 5:40 PM to 7:50 PM on June 17th",
+      "verification_method": "Check pharmacy count sheets, badge logs, or basement camera",
+      "ground_truth": "Count sheets are signed by Felix but no independent camera or witness confirms he stayed the entire time. Basement camera was offline for maintenance that evening. Alibi unverifiable.",
+      "discovery_action_keywords": [
+        "felix",
+        "pharmacy",
+        "counts",
+        "alibi",
+        "dorn",
+        "basement",
+        "medication"
+      ]
+    },
+    {
+      "claim_id": "quill_conference_alibi",
+      "source_suspect": "Dr. Adrian Quill",
+      "claim": "At a regional neurology conference dinner from 6:00 PM to 9:00 PM on June 17th",
+      "verification_method": "Check parking garage footage, conference sign-in sheets, hotel cameras, or review clinic master credential access logs",
+      "ground_truth": "FALSE. Parking garage camera shows Quill's vehicle returning to the clinic at 6:16 PM. His clinic master credential was used on the service elevator at 7:04 PM. His phone was left with colleagues at the conference to fabricate presence. Colleagues recall his badge and phone but not him specifically.",
+      "discovery_action_keywords": [
+        "quill",
+        "conference",
+        "dinner",
+        "alibi",
+        "hotel",
+        "neurology"
+      ]
+    },
+    {
+      "claim_id": "quill_early_departure",
+      "source_suspect": "Dr. Adrian Quill",
+      "claim": "He left the clinic before 5:30 PM and never returned that evening",
+      "verification_method": "Check parking garage camera and clinic badge access logs",
+      "ground_truth": "FALSE. Parking garage footage shows his vehicle leaving at approximately 5:28 PM and returning at 6:16 PM. Clinic master credential logs show building access at 7:04 PM.",
+      "discovery_action_keywords": [
+        "quill",
+        "left",
+        "clinic",
+        "departure",
+        "returned",
+        "parking"
+      ]
+    },
+    {
+      "claim_id": "quill_trial_records",
+      "source_suspect": "Dr. Adrian Quill",
+      "claim": "Sonia had no access to sensitive trial records",
+      "verification_method": "Check the trial records office workstation audit log",
+      "ground_truth": "FALSE. Workstation audit log confirms Sonia copied the active adverse-event spreadsheet to a thumb drive at 5:41 PM — over an hour before she disappeared.",
+      "discovery_action_keywords": [
+        "sonia",
+        "records",
+        "access",
+        "trial",
+        "spreadsheet",
+        "thumb drive",
+        "audit"
+      ]
+    }
+  ]
 }

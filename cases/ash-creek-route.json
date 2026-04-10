@@ -267,62 +267,59 @@
       "phase": 3
     }
   ],
-  "decision_points": [
-    {
-      "id": "DP-01",
-      "options": [
-        { "label": "Focus first on Lena's personal circle", "cost": 200, "leads_to": ["D-02"] },
-        { "label": "Canvass the route and last scanner location", "cost": 200, "leads_to": ["E-01"] },
-        { "label": "Pull digital records immediately", "cost": 200, "leads_to": ["E-05"] }
-      ]
-    },
-    {
-      "id": "DP-02",
-      "options": [
-        { "label": "Interview Elias Voss despite weak credibility", "cost": 200, "leads_to": ["D-04"] },
-        { "label": "Review gas station and traffic cameras", "cost": 200, "leads_to": ["E-03"] },
-        { "label": "Pressure Dana about route reassignment", "cost": 200, "leads_to": ["D-03"] }
-      ]
-    },
-    {
-      "id": "DP-03",
-      "options": [
-        { "label": "Test the poker alibi", "cost": 200, "leads_to": ["D-06"] },
-        { "label": "Process the postal vehicle for trace evidence", "cost": 200, "leads_to": ["E-02"] },
-        { "label": "Seek emergency phone and tower analysis", "cost": 200, "leads_to": ["E-07"] }
-      ]
-    },
-    {
-      "id": "DP-04",
-      "options": [
-        { "label": "Apply for a warrant on Rusk Recovery & Salvage", "cost": 200, "leads_to": ["D-07"] },
-        { "label": "Continue broad canvass", "cost": 200, "leads_to": ["E-06"] },
-        { "label": "Re-interview Noah Pike", "cost": 200, "leads_to": ["D-02"] }
-      ]
-    }
-  ],
   "budget": 3500,
   "format_templates": {
     "dossier": {
       "header": "CASE FILE — Ash Creek Route",
       "sections": [
-        { "label": "Incident Summary", "source_field": "briefing" },
-        { "label": "Victim", "source_field": "victim" },
-        { "label": "Known Suspects", "source_field": "suspects", "render": "name_and_relationship_list" },
-        { "label": "Initial Evidence", "source_field": "evidence", "filter": { "field": "available_at_phase", "value": 1 } },
-        { "label": "Budget Allocation", "source_field": "budget" }
+        {
+          "label": "Incident Summary",
+          "source_field": "briefing"
+        },
+        {
+          "label": "Victim",
+          "source_field": "victim"
+        },
+        {
+          "label": "Known Suspects",
+          "source_field": "suspects",
+          "render": "name_and_relationship_list"
+        },
+        {
+          "label": "Initial Evidence",
+          "source_field": "evidence",
+          "filter": {
+            "field": "available_at_phase",
+            "value": 1
+          }
+        },
+        {
+          "label": "Budget Allocation",
+          "source_field": "budget"
+        }
       ]
     },
     "narrative": {
       "opening_scene": "The call comes in at 10:47 PM — RM-214 found abandoned at a dirt turnout near Ash Creek, engine cold, wallet still on the seat. Lena Mercer signed out of the annex at seven-eighteen that morning and was supposed to be back by six. Nobody reported her missing for four hours. Now it's your case.",
-      "reveal_fields": ["victim", "briefing"],
-      "withheld_until_play": ["suspects", "evidence"]
+      "reveal_fields": [
+        "victim",
+        "briefing"
+      ],
+      "withheld_until_play": [
+        "suspects",
+        "evidence"
+      ]
     },
     "mysterious_message": {
       "message_type": "text",
       "message_content": "Tow truck again. If I do not come back check mile 12",
       "reveal_fields": [],
-      "withheld_until_play": ["victim", "suspects", "briefing", "evidence"]
+      "withheld_until_play": [
+        "victim",
+        "suspects",
+        "briefing",
+        "evidence"
+      ]
     },
     "briefing": {
       "source_field": "briefing"
@@ -376,9 +373,150 @@
     },
     "mix": {
       "sequence": [
-        { "format": "briefing", "scope": "opening_only" },
-        { "format": "text_messages", "scope": "all" }
+        {
+          "format": "briefing",
+          "scope": "opening_only"
+        },
+        {
+          "format": "text_messages",
+          "scope": "all"
+        }
       ]
     }
-  }
+  },
+  "locations": [
+    {
+      "id": "ash_creek_turnout",
+      "name": "Ash Creek Turnout",
+      "description": "Gravel pulloff on Ash Creek Road where Lena's postal vehicle RM-214 was found abandoned.",
+      "searchable": true,
+      "ambient_details": "Tire tracks from a heavy vehicle. Broken fence post. Orange clay near rear bumper."
+    },
+    {
+      "id": "ash_creek_weigh_station",
+      "name": "Closed Ash Creek Weigh Station",
+      "description": "Abandoned county weigh station near Mile Marker 12. Last known scanner ping from Lena route device.",
+      "searchable": true,
+      "ambient_details": "Fresh tire marks through clay on access road. Padlocked gate. Evidence of recent vehicle activity."
+    },
+    {
+      "id": "pike_auto_parts",
+      "name": "Pike Auto Parts",
+      "description": "Auto parts store on County Road 14. Noah Pike claims to have worked here the evening Lena vanished.",
+      "searchable": true,
+      "ambient_details": "Time-clock punch system. Security camera covers parking lot."
+    },
+    {
+      "id": "rusted_rail_bar",
+      "name": "Rusted Rail Bar",
+      "description": "Local bar where Calvin Rusk claims he played cards from 6:30 PM to 9:30 PM on September 14th.",
+      "searchable": true,
+      "ambient_details": "Cash receipts. Staff recalls Rusk's phone on table but cannot confirm Rusk was present all night. Security camera at front entrance."
+    },
+    {
+      "id": "rusk_recovery_salvage",
+      "name": "Rusk Recovery & Salvage",
+      "description": "Salvage yard and towing operation owned by Calvin Rusk. Lena is being held in a locked storage container behind Bay 3.",
+      "searchable": true,
+      "ambient_details": "Gated yard. Multiple containers. White rollback truck parked near Bay 3. Fresh clay tracks matching Ash Creek."
+    },
+    {
+      "id": "quickfuel_route6",
+      "name": "QuickFuel on Route 6",
+      "description": "Gas station with security camera that captured Rusk's rollback truck at 6:31 PM heading east toward Ash Creek.",
+      "searchable": true,
+      "ambient_details": "30-day video retention. Clear view of eastbound lane."
+    },
+    {
+      "id": "cottonwood_mail_annex",
+      "name": "Cottonwood County Mail Annex",
+      "description": "Postal facility where Lena started her route. Dana Blevins's last message to Lena was logged at 3:55 PM.",
+      "searchable": true,
+      "ambient_details": "Badge-in logs, dispatch records, supervisor message system."
+    },
+    {
+      "id": "county_road_8",
+      "name": "County Road 8 / Mile Marker 12",
+      "description": "Rural stretch where Elias Voss saw Lena's vehicle and a white rollback truck.",
+      "searchable": true,
+      "ambient_details": "No street cameras. Orange clay deposits. Faint skid marks on the shoulder."
+    }
+  ],
+  "verifiable_claims": [
+    {
+      "claim_id": "noah_alibi_pike",
+      "source_suspect": "Noah Pike",
+      "claim": "Working late shift at Pike Auto Parts from 6:00 PM to 10:15 PM on September 14th",
+      "verification_method": "Check Pike Auto Parts time-clock records or staff statements",
+      "ground_truth": "Time-clock records confirm Noah clocked in at 4:45 PM and out at 9:55 PM. Alibi is essentially consistent — he was not at Ash Creek. He omits calling Lena twice before noon.",
+      "discovery_action_keywords": [
+        "pike",
+        "auto parts",
+        "noah",
+        "alibi",
+        "clock",
+        "shift"
+      ]
+    },
+    {
+      "claim_id": "rusk_alibi_bar",
+      "source_suspect": "Calvin Rusk",
+      "claim": "Playing cards at the Rusted Rail Bar from 6:30 PM to 9:30 PM on September 14th",
+      "verification_method": "Check bar for receipts, staff statements, security footage, or review truck location data",
+      "ground_truth": "FALSE. QuickFuel footage shows Rusk's rollback truck on Route 6 at 6:31 PM heading east. His phone was left with an associate at the bar. Bar staff confirm the phone but cannot confirm Rusk was present.",
+      "discovery_action_keywords": [
+        "rusted rail",
+        "bar",
+        "rusk",
+        "alibi",
+        "poker",
+        "cards"
+      ]
+    },
+    {
+      "claim_id": "elias_drone_alibi",
+      "source_suspect": "Elias Voss",
+      "claim": "Flying his drone near the gravel pit west of the creek around sundown",
+      "verification_method": "Check drone GPS flight logs stored in the controller",
+      "ground_truth": "Drone GPS logs show Elias flying along County Road 8 near Mile Marker 12, not the gravel pit. He was much closer to the incident than he admitted.",
+      "discovery_action_keywords": [
+        "elias",
+        "drone",
+        "gravel pit",
+        "alibi",
+        "flying",
+        "voss"
+      ]
+    },
+    {
+      "claim_id": "dana_annex_alibi",
+      "source_suspect": "Dana Blevins",
+      "claim": "At the county mail annex handling sort errors and dispatch logs until after 8:00 PM",
+      "verification_method": "Check mail annex badge logs and supervisor system entries",
+      "ground_truth": "Badge logs confirm Dana badged out at 8:17 PM. Dispatcher entries show activity through 8:14 PM. Alibi confirmed.",
+      "discovery_action_keywords": [
+        "dana",
+        "annex",
+        "mail",
+        "alibi",
+        "supervisor",
+        "blevins"
+      ]
+    },
+    {
+      "claim_id": "rusk_truck_service",
+      "source_suspect": "Calvin Rusk",
+      "claim": "His rollback truck was out of service due to a hydraulic leak on September 14th",
+      "verification_method": "Check repair records or inspect the truck at Rusk Recovery & Salvage",
+      "ground_truth": "FALSE. QuickFuel footage shows the truck operating normally at 6:31 PM. No repair records exist for a hydraulic issue on that date.",
+      "discovery_action_keywords": [
+        "rusk",
+        "truck",
+        "hydraulic",
+        "rollback",
+        "repair",
+        "service"
+      ]
+    }
+  ]
 }

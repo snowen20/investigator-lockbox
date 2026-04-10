@@ -117,6 +117,547 @@
   <div id="issues"></div>
 
   <script>
+    'use strict';
+
+    // ─── utils/extract-names ────────────────────────────────────────────────
+
+    function getSuspectNames(caseData) {
+      if (!Array.isArray(caseData.suspects)) return [];
+      return caseData.suspects.map(s => s.name).filter(Boolean);
+    }
+
+    function getGuiltyName(caseData) {
+      if (!Array.isArray(caseData.suspects)) return null;
+      const guilty = caseData.suspects.find(s => s.guilty === true);
+      return guilty ? guilty.name : null;
+    }
+
+    function getVictimName(caseData) {
+      return (caseData.victim && caseData.victim.name) ? caseData.victim.name : null;
+    }
+
+    function getAllSearchableText(caseData) {
+      const texts = [];
+      if (Array.isArray(caseData.documents)) {
+        caseData.documents.forEach(d => { if (d.content) texts.push(d.content); });
+      }
+      if (Array.isArray(caseData.timeline)) {
+        caseData.timeline.forEach(t => {
+          if (t.event)    texts.push(t.event);
+          if (t.location) texts.push(t.location);
+          if (t.source)   texts.push(t.source);
+        });
+      }
+      if (Array.isArray(caseData.evidence)) {
+        caseData.evidence.forEach(e => {
+          if (e.description) texts.push(e.description);
+          if (e.points_to)   texts.push(e.points_to);
+        });
+      }
+      return texts;
+    }
+
+    function nameAppearsIn(name, texts) {
+      const lower = name.toLowerCase();
+      return texts.some(t => t.toLowerCase().includes(lower));
+    }
+
+    // ─── utils/report ───────────────────────────────────────────────────────
+
+    function buildReport(issues) {
+      const status = issues.some(i => i.severity === 'error') ? 'fail' : 'pass';
+      return { status, issues };
+    }
+
+    // ─── helpers ────────────────────────────────────────────────────────────
+
+    function issue(rule_id, severity, location, description) {
+      return { rule_id, severity, location, description };
+    }
+
+    // ─── rules/structural ───────────────────────────────────────────────────
+
+    const EVIDENCE_ID = /^E-\d{2}$/;
+    const DOCUMENT_ID = /^D-\d{2}$/;
+    const DECISION_ID = /^DP-\d{2}$/;
+    const VALID_PHASES = new Set([1, 2, 3]);
+
+    const TOP_LEVEL = [
+      ['title',          'string'],
+      ['solution',       'string'],
+      ['victim',         'object'],
+      ['suspect_count',  'number'],
+      ['suspects',       'array'],
+      ['timeline',       'array'],
+      ['evidence',       'array'],
+      ['documents',      'array'],
+      ['decision_points','array'],
+      ['budget',         'number'],
+    ];
+
+    const VICTIM_FIELDS   = ['name', 'age', 'occupation'];
+    const SUSPECT_FIELDS  = ['name', 'relationship_to_victim', 'guilty', 'alibi', 'alibi_verifiable', 'motive', 'what_they_know', 'what_they_lie_about'];
+    const TIMELINE_FIELDS = ['datetime', 'event', 'location', 'source'];
+    const EVIDENCE_FIELDS = ['id', 'type', 'description', 'points_to', 'available_at_phase'];
+    const DOCUMENT_FIELDS = ['id', 'type', 'content', 'phase'];
+    const DP_FIELDS       = ['id', 'options'];
+
+    function runStructural(c) {
+      const issues = [];
+
+      // Top-level fields
+      for (const [field, expectedType] of TOP_LEVEL) {
+        if (!(field in c)) {
+          issues.push(issue('SCHEMA_MISSING_FIELD', 'error', field, `Required field "${field}" is missing`));
+          continue;
+        }
+        const val = c[field];
+        const actualType = Array.isArray(val) ? 'array' : typeof val;
+        if (actualType !== expectedType) {
+          issues.push(issue('SCHEMA_MISSING_FIELD', 'error', field,
+            `Field "${field}" must be ${expectedType}, got ${actualType}`));
+        }
+      }
+
+      // Victim fields
+      if (c.victim && typeof c.victim === 'object') {
+        for (const f of VICTIM_FIELDS) {
+          if (!(f in c.victim)) {
+            issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `victim.${f}`,
+              `Victim is missing required field "${f}"`));
+          }
+        }
+      }
+
+      // Suspect fields
+      if (Array.isArray(c.suspects)) {
+        c.suspects.forEach((s, i) => {
+          for (const f of SUSPECT_FIELDS) {
+            if (!(f in s)) {
+              issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `suspects[${i}].${f}`,
+                `Suspect at index ${i} is missing required field "${f}"`));
+            }
+          }
+        });
+      }
+
+      // Timeline fields
+      if (Array.isArray(c.timeline)) {
+        c.timeline.forEach((t, i) => {
+          for (const f of TIMELINE_FIELDS) {
+            if (!(f in t)) {
+              issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `timeline[${i}].${f}`,
+                `Timeline entry at index ${i} is missing required field "${f}"`));
+            }
+          }
+        });
+      }
+
+      // Evidence fields
+      if (Array.isArray(c.evidence)) {
+        c.evidence.forEach((e, i) => {
+          for (const f of EVIDENCE_FIELDS) {
+            if (!(f in e)) {
+              issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `evidence[${i}].${f}`,
+                `Evidence at index ${i} is missing required field "${f}"`));
+            }
+          }
+        });
+      }
+
+      // Document fields
+      if (Array.isArray(c.documents)) {
+        c.documents.forEach((d, i) => {
+          for (const f of DOCUMENT_FIELDS) {
+            if (!(f in d)) {
+              issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `documents[${i}].${f}`,
+                `Document at index ${i} is missing required field "${f}"`));
+            }
+          }
+        });
+      }
+
+      // Decision point fields + option schema
+      if (Array.isArray(c.decision_points)) {
+        c.decision_points.forEach((dp, i) => {
+          for (const f of DP_FIELDS) {
+            if (!(f in dp)) {
+              issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `decision_points[${i}].${f}`,
+                `Decision point at index ${i} is missing required field "${f}"`));
+            }
+          }
+          if (Array.isArray(dp.options)) {
+            dp.options.forEach((opt, j) => {
+              if (typeof opt !== 'object' || opt === null || Array.isArray(opt)) {
+                issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}]`,
+                  `${dp.id || `DP[${i}]`} option ${j} must be an object with label, cost, and leads_to`));
+                return;
+              }
+              if (typeof opt.label !== 'string') {
+                issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].label`,
+                  `${dp.id || `DP[${i}]`} option ${j} is missing required string field "label"`));
+              }
+              if (typeof opt.cost !== 'number') {
+                issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].cost`,
+                  `${dp.id || `DP[${i}]`} option ${j} is missing required number field "cost"`));
+              }
+              if (!Array.isArray(opt.leads_to)) {
+                issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].leads_to`,
+                  `${dp.id || `DP[${i}]`} option ${j} is missing required array field "leads_to"`));
+              }
+            });
+          }
+        });
+      }
+
+      // Suspect count match
+      if (typeof c.suspect_count === 'number' && Array.isArray(c.suspects)) {
+        if (c.suspect_count !== c.suspects.length) {
+          issues.push(issue('SUSPECT_COUNT_MISMATCH', 'error', 'suspect_count',
+            `suspect_count is ${c.suspect_count} but suspects array has ${c.suspects.length} entries`));
+        }
+      }
+
+      // Exactly one guilty
+      if (Array.isArray(c.suspects)) {
+        const guiltyCount = c.suspects.filter(s => s.guilty === true).length;
+        if (guiltyCount !== 1) {
+          issues.push(issue('EXACTLY_ONE_GUILTY', 'error', 'suspects',
+            `Exactly one suspect must be guilty — found ${guiltyCount}`));
+        }
+      }
+
+      // ID formats
+      if (Array.isArray(c.evidence)) {
+        c.evidence.forEach(e => {
+          if (e.id && !EVIDENCE_ID.test(e.id)) {
+            issues.push(issue('ID_FORMAT', 'error', `evidence.${e.id}`,
+              `Evidence ID "${e.id}" does not match required format E-XX`));
+          }
+        });
+      }
+      if (Array.isArray(c.documents)) {
+        c.documents.forEach(d => {
+          if (d.id && !DOCUMENT_ID.test(d.id)) {
+            issues.push(issue('ID_FORMAT', 'error', `documents.${d.id}`,
+              `Document ID "${d.id}" does not match required format D-XX`));
+          }
+        });
+      }
+      if (Array.isArray(c.decision_points)) {
+        c.decision_points.forEach(dp => {
+          if (dp.id && !DECISION_ID.test(dp.id)) {
+            issues.push(issue('ID_FORMAT', 'error', `decision_points.${dp.id}`,
+              `Decision point ID "${dp.id}" does not match required format DP-XX`));
+          }
+        });
+      }
+
+      // ID uniqueness
+      const idGroups = [
+        { label: 'evidence',        items: c.evidence },
+        { label: 'documents',       items: c.documents },
+        { label: 'decision_points', items: c.decision_points },
+      ];
+      for (const { label, items } of idGroups) {
+        if (!Array.isArray(items)) continue;
+        const seen = new Set();
+        items.forEach(item => {
+          if (!item.id) return;
+          if (seen.has(item.id)) {
+            issues.push(issue('ID_UNIQUE', 'error', `${label}.${item.id}`,
+              `Duplicate ID "${item.id}" found in ${label}`));
+          }
+          seen.add(item.id);
+        });
+      }
+
+      // Phase range
+      if (Array.isArray(c.evidence)) {
+        c.evidence.forEach(e => {
+          if (e.id && e.available_at_phase !== undefined && !VALID_PHASES.has(e.available_at_phase)) {
+            issues.push(issue('PHASE_RANGE', 'error', `evidence.${e.id}`,
+              `Evidence "${e.id}" has available_at_phase ${e.available_at_phase} — must be 1, 2, or 3`));
+          }
+        });
+      }
+      if (Array.isArray(c.documents)) {
+        c.documents.forEach(d => {
+          if (d.id && d.phase !== undefined && !VALID_PHASES.has(d.phase)) {
+            issues.push(issue('PHASE_RANGE', 'error', `documents.${d.id}`,
+              `Document "${d.id}" has phase ${d.phase} — must be 1, 2, or 3`));
+          }
+        });
+      }
+
+      return issues;
+    }
+
+    // ─── rules/references ───────────────────────────────────────────────────
+
+    function runReferences(caseData) {
+      const issues = [];
+
+      const evidenceIds = new Set(
+        Array.isArray(caseData.evidence) ? caseData.evidence.map(e => e.id).filter(Boolean) : []
+      );
+      const documentIds = new Set(
+        Array.isArray(caseData.documents) ? caseData.documents.map(d => d.id).filter(Boolean) : []
+      );
+      const validTargets = new Set([...evidenceIds, ...documentIds]);
+
+      const referencedEvidence  = new Set();
+      const referencedDocuments = new Set();
+
+      if (Array.isArray(caseData.decision_points)) {
+        caseData.decision_points.forEach(dp => {
+          if (!dp.id) return;
+          if (Array.isArray(dp.options)) {
+            dp.options.forEach(opt => {
+              if (!Array.isArray(opt.leads_to)) return;
+              opt.leads_to.forEach(target => {
+                if (!validTargets.has(target)) {
+                  issues.push(issue('DECISION_LEADS_TO_VALID', 'error', `decision_points.${dp.id}`,
+                    `${dp.id} leads_to "${target}" which does not match any evidence or document ID`));
+                } else {
+                  if (evidenceIds.has(target))  referencedEvidence.add(target);
+                  if (documentIds.has(target))  referencedDocuments.add(target);
+                }
+              });
+            });
+          }
+        });
+      }
+
+      evidenceIds.forEach(id => {
+        if (!referencedEvidence.has(id)) {
+          issues.push(issue('ORPHAN_EVIDENCE', 'warning', `evidence.${id}`,
+            `Evidence "${id}" is not referenced by any decision point — players cannot reach it through decisions`));
+        }
+      });
+
+      documentIds.forEach(id => {
+        if (!referencedDocuments.has(id)) {
+          issues.push(issue('ORPHAN_DOCUMENT', 'warning', `documents.${id}`,
+            `Document "${id}" is not referenced by any decision point — players cannot reach it through decisions`));
+        }
+      });
+
+      return issues;
+    }
+
+    // ─── rules/timeline ─────────────────────────────────────────────────────
+
+    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+
+    function runTimeline(caseData) {
+      const issues = [];
+      const entries = Array.isArray(caseData.timeline) ? caseData.timeline : [];
+      if (entries.length === 0) return issues;
+
+      const knownNames = [
+        ...getSuspectNames(caseData),
+        getVictimName(caseData)
+      ].filter(Boolean);
+
+      const parsed = [];
+
+      entries.forEach((t, i) => {
+        const ts = Date.parse(t.datetime);
+        if (isNaN(ts)) {
+          issues.push(issue('TIMELINE_PARSE', 'error', `timeline[${i}]`,
+            `Timeline entry at index ${i} has unparseable datetime: "${t.datetime}"`));
+        } else {
+          parsed.push({ index: i, datetime: t.datetime, ts, location: t.location, event: t.event || '' });
+        }
+      });
+
+      for (let i = 1; i < parsed.length; i++) {
+        if (parsed[i].ts < parsed[i - 1].ts) {
+          issues.push(issue('TIMELINE_ORDER', 'error', `timeline[${parsed[i].index}]`,
+            `Timeline entry at index ${parsed[i].index} ("${parsed[i].datetime}") is before the previous entry ("${parsed[i - 1].datetime}")`));
+        }
+      }
+
+      const seen = new Map();
+      entries.forEach((t, i) => {
+        const key = `${t.datetime}||${t.location}||${t.event}`;
+        if (seen.has(key)) {
+          issues.push(issue('TIMELINE_DUPLICATE', 'error', `timeline[${i}]`,
+            `Timeline entry at index ${i} is an exact duplicate of entry at index ${seen.get(key)}`));
+        } else {
+          seen.set(key, i);
+        }
+      });
+
+      const nameEntries = new Map();
+      knownNames.forEach(name => nameEntries.set(name, []));
+
+      parsed.forEach(p => {
+        const text = (p.event + ' ' + p.location).toLowerCase();
+        knownNames.forEach(name => {
+          if (text.includes(name.toLowerCase())) {
+            nameEntries.get(name).push({ ts: p.ts, location: p.location, index: p.index });
+          }
+        });
+      });
+
+      nameEntries.forEach((appearances, name) => {
+        for (let i = 0; i < appearances.length; i++) {
+          for (let j = i + 1; j < appearances.length; j++) {
+            const a = appearances[i];
+            const b = appearances[j];
+            if (Math.abs(a.ts - b.ts) <= THIRTY_MINUTES_MS && a.location !== b.location) {
+              issues.push(issue('PERSON_BILOCATE', 'warning',
+                `timeline[${a.index}] and timeline[${b.index}]`,
+                `"${name}" appears at "${a.location}" and "${b.location}" within 30 minutes — verify this is intentional`));
+            }
+          }
+        }
+      });
+
+      return issues;
+    }
+
+    // ─── rules/budget ────────────────────────────────────────────────────────
+
+    function runBudget(caseData) {
+      const issues = [];
+      if (typeof caseData.budget !== 'number') return issues;
+      if (caseData.budget < 500) {
+        issues.push(issue('BUDGET_MINIMUM', 'error', 'budget',
+          `Budget is ${caseData.budget} — minimum allowed is 500`));
+      }
+      return issues;
+    }
+
+    // ─── rules/paths ─────────────────────────────────────────────────────────
+
+    function runPaths(caseData) {
+      const issues = [];
+      const dps = Array.isArray(caseData.decision_points) ? caseData.decision_points : [];
+
+      const phaseMap = new Map();
+      if (Array.isArray(caseData.evidence)) {
+        caseData.evidence.forEach(e => {
+          if (e.id && e.available_at_phase !== undefined) phaseMap.set(e.id, e.available_at_phase);
+        });
+      }
+      if (Array.isArray(caseData.documents)) {
+        caseData.documents.forEach(d => {
+          if (d.id && d.phase !== undefined) phaseMap.set(d.id, d.phase);
+        });
+      }
+
+      const reachablePhases = new Set();
+      dps.forEach(dp => {
+        if (!Array.isArray(dp.options)) return;
+        dp.options.forEach(opt => {
+          if (!Array.isArray(opt.leads_to)) return;
+          opt.leads_to.forEach(target => {
+            if (phaseMap.has(target)) reachablePhases.add(phaseMap.get(target));
+          });
+        });
+      });
+
+      [1, 2, 3].forEach(phase => {
+        if (!reachablePhases.has(phase)) {
+          issues.push(issue('PHASE_REACHABLE', 'error', 'decision_points',
+            `Phase ${phase} is not reachable — no decision point leads to any phase ${phase} evidence or document`));
+        }
+      });
+
+      const guiltyName = getGuiltyName(caseData);
+      if (guiltyName) {
+        const evidence = Array.isArray(caseData.evidence) ? caseData.evidence : [];
+        const hasGuiltyEvidence = evidence.some(e =>
+          e.points_to && e.points_to.toLowerCase().includes(guiltyName.toLowerCase())
+        );
+        if (!hasGuiltyEvidence) {
+          issues.push(issue('GUILTY_EVIDENCE_EXISTS', 'error', 'evidence',
+            `No evidence item has points_to containing the guilty suspect's name ("${guiltyName}")`));
+        }
+      }
+
+      dps.forEach(dp => {
+        if (!dp.id || !Array.isArray(dp.options) || dp.options.length === 0) return;
+        const allTargets = dp.options
+          .filter(opt => Array.isArray(opt.leads_to))
+          .flatMap(opt => opt.leads_to);
+        const targetPhases = allTargets.filter(t => phaseMap.has(t)).map(t => phaseMap.get(t));
+        if (targetPhases.length > 0 && targetPhases.every(p => p === 3)) {
+          issues.push(issue('DEAD_END_PATH', 'error', `decision_points.${dp.id}`,
+            `${dp.id} leads only to phase 3 content — phases 1 and 2 would be unreachable from this path`));
+        }
+      });
+
+      return issues;
+    }
+
+    // ─── rules/names ─────────────────────────────────────────────────────────
+
+    function runNames(caseData) {
+      const issues = [];
+
+      const guiltyName   = getGuiltyName(caseData);
+      const victimName   = getVictimName(caseData);
+      const suspectNames = getSuspectNames(caseData);
+      const allText      = getAllSearchableText(caseData);
+
+      if (guiltyName) {
+        const solution = typeof caseData.solution === 'string' ? caseData.solution : '';
+        if (!solution.toLowerCase().includes(guiltyName.toLowerCase())) {
+          issues.push(issue('NAME_IN_SOLUTION', 'error', 'solution',
+            `Guilty suspect "${guiltyName}" is not named in the solution field`));
+        }
+      }
+
+      if (victimName) {
+        const docAndTimelineText = [];
+        if (Array.isArray(caseData.documents)) {
+          caseData.documents.forEach(d => { if (d.content) docAndTimelineText.push(d.content); });
+        }
+        if (Array.isArray(caseData.timeline)) {
+          caseData.timeline.forEach(t => {
+            if (t.event)    docAndTimelineText.push(t.event);
+            if (t.location) docAndTimelineText.push(t.location);
+            if (t.source)   docAndTimelineText.push(t.source);
+          });
+        }
+        const nameParts = victimName.split(/\s+/).filter(Boolean);
+        const nameFound = nameParts.some(part => nameAppearsIn(part, docAndTimelineText));
+        if (!nameFound) {
+          issues.push(issue('VICTIM_NAME_CONSISTENT', 'error', 'victim.name',
+            `Victim name "${victimName}" (or any part of it) does not appear in any document or timeline entry`));
+        }
+      }
+
+      suspectNames.forEach(name => {
+        if (!nameAppearsIn(name, allText)) {
+          issues.push(issue('SUSPECT_MENTIONED', 'warning', 'suspects',
+            `Suspect "${name}" is not mentioned in any document, timeline entry, or evidence description`));
+        }
+      });
+
+      return issues;
+    }
+
+    // ─── Main prescreener ────────────────────────────────────────────────────
+
+    function runPrescreener(caseData) {
+      const issues = [
+        ...runStructural(caseData),
+        ...runReferences(caseData),
+        ...runTimeline(caseData),
+        ...runBudget(caseData),
+        ...runPaths(caseData),
+        ...runNames(caseData),
+      ];
+      return buildReport(issues);
+    }
+
+    // ─── UI ──────────────────────────────────────────────────────────────────
+
     const fileInput  = document.getElementById('file-input');
     const runBtn     = document.getElementById('run-btn');
     const statusEl   = document.getElementById('status');
@@ -139,19 +680,16 @@
     }
 
     function renderReport(report) {
-      // Status badge
       statusEl.textContent = report.status.toUpperCase();
       statusEl.className = report.status;
       statusEl.style.display = 'inline-block';
 
-      // Summary line
       const errors   = report.issues.filter(i => i.severity === 'error').length;
       const warnings = report.issues.filter(i => i.severity === 'warning').length;
       summaryEl.textContent = report.issues.length === 0
         ? 'No issues found.'
         : `${report.issues.length} issue(s) — ${errors} error(s), ${warnings} warning(s)`;
 
-      // Issue rows
       if (report.issues.length === 0) {
         issuesEl.innerHTML = '<div class="no-issues">Clean pass. No issues detected.</div>';
         return;
@@ -175,40 +713,16 @@
       const file = fileInput.files[0];
       if (!file) { showError('Select a JSON file first.'); return; }
 
-      let text;
+      let caseData;
       try {
-        text = await file.text();
-        JSON.parse(text); // validate client-side before sending
+        const text = await file.text();
+        caseData = JSON.parse(text);
       } catch (e) {
         showError('File is not valid JSON — ' + e.message);
         return;
       }
 
-      runBtn.disabled = true;
-      summaryEl.textContent = 'Running…';
-
-      let report;
-      try {
-        const res = await fetch('/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: text
-        });
-        report = await res.json();
-      } catch (e) {
-        summaryEl.textContent = '';
-        showError('Request failed — ' + e.message);
-        runBtn.disabled = false;
-        return;
-      }
-
-      runBtn.disabled = false;
-
-      if (report.error) {
-        showError(report.error);
-        return;
-      }
-
+      const report = runPrescreener(caseData);
       renderReport(report);
     });
   </script>

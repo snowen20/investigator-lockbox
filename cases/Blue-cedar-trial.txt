@@ -1,0 +1,323 @@
+{
+  "title": "Blue Cedar Trial",
+  "solution": "Sonia Hale discovered that Blue Cedar Neurology Center was relabeling expired infusion vials and suppressing adverse-event data tied to a sponsor-funded migraine drug trial. Medical director Dr. Adrian Quill intercepted her after she copied internal records, sedated her in Records Annex B, used a master override to conceal the badge trail, and hid her alive in a decommissioned sleep-study room in the lower diagnostic wing. The case is solved by badge access logs, cold-chain inventory discrepancies, parking garage video, sedative residue, and Quill's staged conference alibi.",
+  "victim": {
+    "name": "Sonia Hale",
+    "age": "31",
+    "occupation": "Clinical data coordinator"
+  },
+  "suspect_count": 4,
+  "suspects": [
+    {
+      "name": "Eli Rowan",
+      "relationship_to_victim": "Ex-boyfriend",
+      "guilty": false,
+      "alibi": "On ambulance standby at Station 4 from 5:00 PM to 9:10 PM",
+      "alibi_verifiable": true,
+      "motive": "Recent breakup and anger over money Sonia still owed him",
+      "what_they_know": [
+        "Sonia told him she was scared of what she found in the clinic freezer logs",
+        "Sonia said a doctor at Blue Cedar was changing records after patient reactions"
+      ],
+      "what_they_lie_about": [
+        "He says Sonia never mentioned being afraid of anyone at work",
+        "He downplays how hostile their last argument became"
+      ]
+    },
+    {
+      "name": "Marisol Kent",
+      "relationship_to_victim": "Charge nurse",
+      "guilty": false,
+      "alibi": "Covering infusion chairs and late charting until after 8:15 PM",
+      "alibi_verifiable": true,
+      "motive": "Sonia had threatened to report unsigned infusion notes and protocol shortcuts on Marisol's shift",
+      "what_they_know": [
+        "Sonia was reconciling adverse-event binders the day she vanished",
+        "Dr. Quill told staff not to discuss patient seizure events with sponsor auditors"
+      ],
+      "what_they_lie_about": [
+        "Marisol says Sonia was only doing routine paperwork and nothing unusual",
+        "She omits that she directed Sonia to finish work alone in Records Annex B"
+      ]
+    },
+    {
+      "name": "Felix Dorn",
+      "relationship_to_victim": "Pharmacy technician",
+      "guilty": false,
+      "alibi": "Completing evening medication counts in the basement pharmacy from 5:40 PM to 7:50 PM",
+      "alibi_verifiable": false,
+      "motive": "Sonia had questioned why his initials appeared on relabeled trial vials and missing cold-chain logs",
+      "what_they_know": [
+        "He saw Sonia photographing freezer shelves and lot stickers that afternoon",
+        "He saw Dr. Quill request replacement labels for infusion stock two days earlier"
+      ],
+      "what_they_lie_about": [
+        "He says there were no inventory discrepancies in the trial freezer",
+        "He denies noticing any relabeled or expired vials"
+      ]
+    },
+    {
+      "name": "Dr. Adrian Quill",
+      "relationship_to_victim": "Medical director and principal investigator",
+      "guilty": true,
+      "alibi": "At a regional neurology conference dinner from 6:00 PM to 9:00 PM",
+      "alibi_verifiable": false,
+      "motive": "Sonia uncovered trial fraud involving relabeled expired infusions and suppressed adverse-event reports, and Quill silenced her to avoid criminal exposure, loss of license, and sponsor collapse",
+      "what_they_know": [
+        "He sedated Sonia in Records Annex B after she copied the adverse-event spreadsheet",
+        "He moved Sonia by transport chair into the decommissioned lower diagnostic wing",
+        "He left his phone and conference badge near colleagues to support a false alibi"
+      ],
+      "what_they_lie_about": [
+        "He says he left the clinic before 5:30 PM and never returned that evening",
+        "He says Sonia had no access to sensitive trial records",
+        "He denies any expired or relabeled infusion stock existed at Blue Cedar"
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "datetime": "2026-06-17T07:12:00",
+      "event": "Sonia badges into Blue Cedar Neurology Center and opens the trial records office",
+      "location": "Blue Cedar Neurology Center",
+      "source": "Access control log"
+    },
+    {
+      "datetime": "2026-06-17T11:08:00",
+      "event": "Sonia tells Eli by text that the infusion lot numbers and patient reaction counts do not match",
+      "location": "Text message",
+      "source": "Phone extraction"
+    },
+    {
+      "datetime": "2026-06-17T14:26:00",
+      "event": "Marisol instructs Sonia to finish the adverse-event reconciliation and leave the binders in Records Annex B",
+      "location": "Infusion unit",
+      "source": "Supervisor message log"
+    },
+    {
+      "datetime": "2026-06-17T17:41:00",
+      "event": "Sonia copies the active adverse-event spreadsheet to a thumb drive",
+      "location": "Trial records office",
+      "source": "Workstation audit log"
+    },
+    {
+      "datetime": "2026-06-17T18:03:00",
+      "event": "Sonia's badge is used to enter Records Annex B",
+      "location": "Records Annex B",
+      "source": "Badge access record"
+    },
+    {
+      "datetime": "2026-06-17T18:11:00",
+      "event": "Unsent email draft appears on Sonia's laptop: 'If something happens check Quill and freezer log 4C'",
+      "location": "Victim laptop",
+      "source": "Device extraction"
+    },
+    {
+      "datetime": "2026-06-17T18:16:00",
+      "event": "Parking garage camera captures Dr. Quill's vehicle returning to the clinic",
+      "location": "Blue Cedar parking garage",
+      "source": "Security video"
+    },
+    {
+      "datetime": "2026-06-17T18:22:00",
+      "event": "A security officer sees Quill pushing a covered transport chair toward the lower diagnostic wing",
+      "location": "Service corridor",
+      "source": "Witness statement"
+    },
+    {
+      "datetime": "2026-06-17T19:04:00",
+      "event": "Quill's phone remains active at the conference hotel while his clinic master credential is used on the service elevator",
+      "location": "Hilton Medical Center Hotel and Blue Cedar Neurology Center",
+      "source": "Cell record and access control review"
+    },
+    {
+      "datetime": "2026-06-17T22:34:00",
+      "event": "Sonia is reported missing after failing to return home and missing scheduled data submission",
+      "location": "Blue Cedar Neurology Center",
+      "source": "Deputy incident report"
+    },
+    {
+      "datetime": "2026-06-18T09:15:00",
+      "event": "Investigators find benzodiazepine residue, a torn badge lanyard, and scuff marks in Records Annex B",
+      "location": "Records Annex B",
+      "source": "Forensic field notes"
+    },
+    {
+      "datetime": "2026-06-18T15:40:00",
+      "event": "Warrant team locates Sonia alive inside a locked decommissioned sleep-study room in the lower diagnostic wing",
+      "location": "Blue Cedar Neurology Center",
+      "source": "Warrant return"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "type": "access control",
+      "description": "Sonia's final recorded badge entry is into Records Annex B at 6:03 PM",
+      "points_to": "The disappearance occurred inside the clinic after normal work hours",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-02",
+      "type": "inventory review",
+      "description": "Trial freezer 4C contains expired infusion vials covered with fresh lot stickers and handwritten relabel dates",
+      "points_to": "Internal medical fraud tied to trial inventory",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-03",
+      "type": "video",
+      "description": "Parking garage camera shows Dr. Quill returning to Blue Cedar after he claimed he had already left for the conference",
+      "points_to": "Dr. Adrian Quill",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-04",
+      "type": "workstation audit",
+      "description": "Sonia exported the adverse-event spreadsheet minutes before she vanished",
+      "points_to": "She discovered material serious enough to preserve outside the system",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-05",
+      "type": "digital extraction",
+      "description": "Unsent email draft reads: 'If something happens check Quill and freezer log 4C'",
+      "points_to": "Sonia feared a specific person and linked him to the inventory issue",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-06",
+      "type": "witness statement",
+      "description": "Security officer reports seeing Quill move a covered transport chair toward the lower diagnostic wing shortly after Sonia's last badge use",
+      "points_to": "Victim was moved deeper into the clinic by Quill",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-07",
+      "type": "cell and credential analysis",
+      "description": "Quill's phone remained active at the conference hotel while his clinic master credential opened a service elevator at Blue Cedar",
+      "points_to": "Dr. Quill's alibi was staged",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-08",
+      "type": "forensic trace",
+      "description": "Midazolam residue, adhesive transfer, and a torn badge lanyard are recovered from Records Annex B",
+      "points_to": "Sonia was chemically subdued and removed against her will",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-09",
+      "type": "warrant search",
+      "description": "Investigators recover Sonia alive from a locked decommissioned sleep-study room along with her missing thumb drive",
+      "points_to": "Victim was concealed inside Blue Cedar after being abducted on-site",
+      "available_at_phase": 3
+    },
+    {
+      "id": "E-10",
+      "type": "document seizure",
+      "description": "Hidden binders from Quill's office contain suppressed seizure reports, overwritten timestamps, and sponsor copies that do not match the internal record",
+      "points_to": "Dr. Adrian Quill",
+      "available_at_phase": 3
+    }
+  ],
+  "documents": [
+    {
+      "id": "D-01",
+      "type": "missing_person_report",
+      "content": "Reporting party: Marisol Kent. Sonia Hale failed to return home and missed mandatory trial upload. Vehicle remains at clinic. Purse and laptop charger located in records office. No indication of voluntary departure.",
+      "phase": 1
+    },
+    {
+      "id": "D-02",
+      "type": "interview_summary",
+      "content": "Eli Rowan states Sonia only complained about stress and never said she was in danger. Text review later shows Sonia directly referenced false lot numbers and being afraid of someone at work.",
+      "phase": 1
+    },
+    {
+      "id": "D-03",
+      "type": "supervisor_message_log",
+      "content": "Marisol to Sonia at 2:26 PM: Finish the adverse-event binders tonight. Leave everything in Annex B and lock up when done.",
+      "phase": 1
+    },
+    {
+      "id": "D-04",
+      "type": "security_interview",
+      "content": "Night security officer first reports nothing unusual, then admits he saw Dr. Quill moving a covered transport chair into the lower diagnostic corridor and assumed it was equipment.",
+      "phase": 2
+    },
+    {
+      "id": "D-05",
+      "type": "pharmacy_discrepancy_memo",
+      "content": "Felix Dorn's internal note flags two infusion lots with mismatched expiration records and replacement labels, but the memo was never submitted to compliance.",
+      "phase": 2
+    },
+    {
+      "id": "D-06",
+      "type": "hotel_statement",
+      "content": "Conference staff recall Quill's phone and badge remained at the dinner table while he was absent for a substantial period between 6:30 PM and 7:15 PM.",
+      "phase": 2
+    },
+    {
+      "id": "D-07",
+      "type": "warrant_return",
+      "content": "Search of Blue Cedar lower diagnostic wing located Sonia Hale alive in a locked decommissioned sleep-study room. Recovered items include suppressed adverse-event binders, relabeled trial stock, and the victim's thumb drive.",
+      "phase": 3
+    }
+  ],
+  "decision_points": [
+    {
+      "id": "DP-01",
+      "options": [
+        "Focus first on Sonia's personal circle",
+        "Lock down clinic access and camera records",
+        "Pull Sonia's devices and cloud drafts immediately"
+      ],
+      "leads_to": [
+        "D-02",
+        "E-01",
+        "E-05"
+      ]
+    },
+    {
+      "id": "DP-02",
+      "options": [
+        "Interview night security despite the shaky first account",
+        "Review parking garage and hallway footage",
+        "Press staff on the freezer and infusion lot discrepancies"
+      ],
+      "leads_to": [
+        "D-04",
+        "E-03",
+        "D-05"
+      ]
+    },
+    {
+      "id": "DP-03",
+      "options": [
+        "Test the conference alibi",
+        "Process Records Annex B for trace evidence",
+        "Audit Sonia's export activity and trial workstation logs"
+      ],
+      "leads_to": [
+        "D-06",
+        "E-08",
+        "E-04"
+      ]
+    },
+    {
+      "id": "DP-04",
+      "options": [
+        "Apply for a warrant on the lower diagnostic wing and Quill's office",
+        "Continue broad staff canvass",
+        "Re-interview Eli Rowan"
+      ],
+      "leads_to": [
+        "D-07",
+        "E-06",
+        "D-02"
+      ]
+    }
+  ],
+  "budget": 4200
+}

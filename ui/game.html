@@ -3,8 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Investigator Lockbox</title>
-  <script src="../cases/index.js"></script>
-  <script src="../cases/ash-creek-route.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -999,6 +997,7 @@ const G = {
   accused:  null,       // name of accused suspect
   tab:      'ev',       // active case-file tab
   journal:  { tabs: [], activeIdx: -1 },  // case-level notes journal
+  cases:   {},          // loaded case data, keyed by case key
   index:    null,       // loaded cases/index.json
   selectedCat: null,    // currently selected category object
   // Setup options (chosen on setup screen)
@@ -1085,18 +1084,46 @@ apiKeyEl.addEventListener('input', () => {
   browseBtn.disabled = apiKeyEl.value.trim().length <= 10;
 });
 
-browseBtn.addEventListener('click', () => {
+browseBtn.addEventListener('click', async () => {
   const key = apiKeyEl.value.trim();
   if (!key) return;
   G.apiKey = key;
-  document.getElementById('start-err').textContent = '';
-  if (!window.CASE_INDEX) {
-    document.getElementById('start-err').textContent = 'Case index not loaded. Check that cases/index.js is present.';
-    return;
+  const errEl = document.getElementById('start-err');
+  errEl.textContent = 'Loading cases...';
+  browseBtn.disabled = true;
+  try {
+    const [categoryDefs, manifest] = await Promise.all([
+      fetch('../cases/categories.json').then(r => {
+        if (!r.ok) throw new Error('categories.json not found');
+        return r.json();
+      }),
+      fetch('../cases/manifest.json').then(r => {
+        if (!r.ok) throw new Error('manifest.json not found');
+        return r.json();
+      }),
+    ]);
+    const categories = categoryDefs.map(c => ({ ...c, cases: [] }));
+    const cases = {};
+    await Promise.all(manifest.map(async (file) => {
+      const caseData = await fetch(`../cases/${file}`).then(r => {
+        if (!r.ok) throw new Error(`Failed to load ${file}`);
+        return r.json();
+      });
+      const caseKey = file.replace(/\.json$/, '');
+      cases[caseKey] = caseData;
+      const cat = categories.find(c => c.name === caseData.category);
+      if (cat) cat.cases.push({ title: caseData.title, key: caseKey });
+    }));
+    G.cases = cases;
+    G.index = { categories };
+    errEl.textContent = '';
+    renderCategories();
+    show('categories');
+  } catch (e) {
+    errEl.textContent = 'Failed to load cases: ' + e.message;
+  } finally {
+    browseBtn.disabled = apiKeyEl.value.trim().length <= 10;
   }
-  G.index = window.CASE_INDEX;
-  renderCategories();
-  show('categories');
 });
 
 function renderCategories() {
@@ -1144,7 +1171,7 @@ function renderCategories() {
 }
 
 function loadCase(key) {
-  const caseData = window.CASES && window.CASES[key];
+  const caseData = G.cases && G.cases[key];
   if (!caseData) {
     console.error('Case data not found for key:', key);
     return;

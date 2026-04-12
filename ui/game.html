@@ -284,8 +284,10 @@
       background: var(--scanline), rgba(10, 10, 10, 0.9);
     }
     .action-card-header {
-      font-size: 0.85rem;
-      color: var(--green-dim);
+      font-size: 0.95rem;
+      color: var(--green);
+      font-weight: bold;
+      letter-spacing: 0.08em;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 8px;
@@ -1673,7 +1675,7 @@ function renderActionCard(action, idx) {
     ? `<div class="action-card-cost">▸ ${esc(action.cost_label)} — $${action.cost.toLocaleString()}</div>`
     : '';
   return `<div class="action-card" data-action-idx="${idx}">
-    <div class="action-card-header">Action ${idx + 1}</div>
+    <div class="action-card-header">Investigation ${idx + 1}</div>
     <div class="action-card-prompt">&gt; ${esc(action.input)}</div>
     <div class="action-card-text">${esc(action.narrative)}</div>
     ${costLine}
@@ -1683,7 +1685,10 @@ function renderActionCard(action, idx) {
 function refreshActionResults() {
   const el = document.getElementById('action-results');
   if (!el) return;
-  el.innerHTML = G.actions.map((a, i) => renderActionCard(a, i)).join('');
+  const total = G.actions.length;
+  el.innerHTML = [...G.actions].reverse().map((a, revIdx) =>
+    renderActionCard(a, total - 1 - revIdx)
+  ).join('');
 }
 
 function processActionResult(input, narrative, cost, cost_label, discovered) {

@@ -819,6 +819,12 @@
       <div id="setup-format-opts"></div>
     </div>
 
+    <!-- Investigator Role -->
+    <div class="setup-section">
+      <div class="setup-section-label">Investigator Role</div>
+      <div id="setup-role-opts"></div>
+    </div>
+
     <!-- Advisor Toggle -->
     <div class="setup-section">
       <div class="setup-section-label">Advisor</div>
@@ -957,8 +963,8 @@
 <div id="s-accuse" class="screen">
   <div class="page">
     <button class="back-btn" id="acc-back">← Back</button>
-    <h1>Make Your Accusation</h1>
-    <p class="dim" style="margin-bottom:20px">Select the suspect you believe is responsible. This cannot be undone.</p>
+    <h1 id="acc-title">Make Your Accusation</h1>
+    <p id="acc-subtitle" class="dim" style="margin-bottom:20px">Select the suspect you believe is responsible. This cannot be undone.</p>
     <div id="acc-body"></div>
     <button class="danger" id="acc-confirm" disabled style="margin-top:8px">Confirm Accusation</button>
     <div id="acc-err" class="err"></div>
@@ -998,8 +1004,11 @@ const G = {
   index:    null,       // loaded cases/index.json
   selectedCat: null,    // currently selected category object
   // Setup options (chosen on setup screen)
-  setupFormat:  'briefing',  // selected delivery format key
-  setupAdvisor: true,        // advisor on/off toggle
+  setupFormat:  'briefing',   // selected delivery format key
+  setupAdvisor: true,         // advisor on/off toggle
+  setupRole:    'detective',  // selected investigator role
+  role:         'detective',  // active role — set from setupRole when "Begin Case" is clicked
+  startBudget:  0,            // budget at game start (after role modifier), used for "spent" display
   // Discovered information registry
   discoveredInfo: {
     names: [], locations: [], times: [],
@@ -1184,6 +1193,9 @@ function loadCase(key) {
   // Reset setup to defaults
   G.setupFormat  = 'briefing';
   G.setupAdvisor = true;
+  G.setupRole    = 'detective';
+  G.role         = 'detective';
+  G.startBudget  = 0;
   // Reset discovered info
   G.discoveredInfo = {
     names: [], locations: [], times: [],
@@ -1411,6 +1423,9 @@ document.getElementById('begin-btn').addEventListener('click', () => {
 });
 
 document.getElementById('setup-begin-btn').addEventListener('click', () => {
+  G.role = G.setupRole || 'detective';
+  if (G.role === 'pi') G.budget = Math.floor(G.budget * 0.75);
+  G.startBudget = G.budget;
   renderBrief();
   show('brief');
 });
@@ -1483,6 +1498,12 @@ function updateDiscoveredFromUnlocked() {
 // ============================================================
 // SETUP SCREEN
 // ============================================================
+const ROLE_OPTIONS = [
+  { key: 'pi',        label: 'Private Investigator', desc: 'Hired from the outside. No badge, no warrants, no authority. You find your own suspects and build a case strong enough to hand off to police.' },
+  { key: 'detective', label: 'Police Detective',     desc: 'Lead detective on the case. You have department resources, warrant access, and suspects in the box. Standard investigation.' },
+  { key: 'fbi',       label: 'FBI Agent',            desc: "Federal authority. Warrants move faster, records come easier, and people take you seriously. But you're an outsider in a local case." },
+];
+
 const FORMAT_OPTIONS = [
   { key: 'briefing',          label: 'Briefing',          desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
   { key: 'dossier',           label: 'Dossier',           desc: 'Case file style. Organized summary: incident, names, dates, locations, evidence notes, known facts. For structured thinkers.' },
@@ -1497,6 +1518,17 @@ function renderSetup() {
   // Format options
   document.getElementById('setup-format-opts').innerHTML = FORMAT_OPTIONS.map(opt =>
     `<div class="setup-option${G.setupFormat === opt.key ? ' selected' : ''}" data-fmt="${esc(opt.key)}">
+      <span class="setup-radio-dot"></span>
+      <div>
+        <div class="setup-option-label">${esc(opt.label)}</div>
+        <div class="setup-option-desc">${esc(opt.desc)}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  // Role options
+  document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt =>
+    `<div class="setup-option${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
       <span class="setup-radio-dot"></span>
       <div>
         <div class="setup-option-label">${esc(opt.label)}</div>
@@ -1523,6 +1555,14 @@ function renderSetup() {
     });
   });
 
+  // Role option clicks
+  document.querySelectorAll('#setup-role-opts .setup-option').forEach(el => {
+    el.addEventListener('click', () => {
+      G.setupRole = el.dataset.role;
+      renderSetup();
+    });
+  });
+
   // Advisor toggle
   toggle.addEventListener('change', () => {
     G.setupAdvisor = toggle.checked;
@@ -1544,8 +1584,16 @@ function renderHub() {
   document.getElementById('nav-c-val').textContent =
     `${G.unlocked.size} item(s) unlocked`;
 
-  document.getElementById('nav-s-val').textContent =
-    `${(c.suspects || []).length} suspect(s)`;
+  if (G.role === 'pi') {
+    const discovered = (c.suspects || []).filter(s => G.discoveredInfo.names.includes(s.name));
+    document.getElementById('nav-s-val').textContent = `${discovered.length} identified`;
+    document.querySelector('#nav-accuse .tile-label').textContent = 'Submit Evidence';
+    document.querySelector('#nav-accuse .tile-val').textContent   = 'Hand off to law enforcement';
+  } else {
+    document.getElementById('nav-s-val').textContent = `${(c.suspects || []).length} suspect(s)`;
+    document.querySelector('#nav-accuse .tile-label').textContent = 'Make Accusation';
+    document.querySelector('#nav-accuse .tile-val').textContent   = 'Commit to a suspect';
+  }
 }
 
 document.getElementById('nav-casefile') .addEventListener('click', () => { renderCaseFile();  show('casefile'); });
@@ -1565,7 +1613,7 @@ document.getElementById('acc-back')  .addEventListener('click', () => { renderHu
 // FREE-FORM ACTION RESOLVER
 // ============================================================
 
-const ACTION_SYSTEM_PROMPT = `You are the game engine for a detective investigation game. The player is a lead investigator. They have submitted an action they want to take. Your job is to resolve that action against the case data.
+const ACTION_SYSTEM_PROMPT_BASE = `You are the game engine for a detective investigation game. The player is a lead investigator. They have submitted an action they want to take. Your job is to resolve that action against the case data.
 
 RULES:
 1. ONLY return information that exists in or can be directly inferred from the case data. Do not invent evidence, witnesses, locations, or facts not present in the case.
@@ -1573,11 +1621,11 @@ RULES:
 3. If the action targets something NOT in the case data, return a plausible dead-end. Examples: "You check but find nothing relevant." / "The office is closed." / "No one matching that description is available." Do NOT fabricate new information.
 4. If a suspect made a claim (alibi, timeline, fact), and the case data contains the ground truth, the player CAN verify it through a reasonable action. Return whether the claim checks out based on the case data.
 5. Respond in second person, present tense. Concise — 2 to 5 sentences unless the player is discovering a significant evidence item, in which case describe it fully.
-6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": []}}. If cost is 0 set cost_label to "".
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "".
 7. If the action is vague or nonsensical, ask for clarification in the narrative field. Set cost to 0.
 8. Never reveal information the player has not earned through their actions. No freebies.
 9. If the player has already taken this exact action, note it in the narrative and reference the prior result. Set cost to 0.
-10. If the player's budget is $0 and the action would cost money, return: {"narrative": "You don't have the budget for that. You'll need to work with what you've got.", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": []}}
+10. If the player's budget is $0 and the action would cost money, return: {"narrative": "You don't have the budget for that. You'll need to work with what you've got.", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}
 
 COST GUIDELINES (include cost in response so the game engine can deduct it):
 - Phone calls, conversations, asking questions: $0
@@ -1592,6 +1640,31 @@ COST GUIDELINES (include cost in response so the game engine can deduct it):
 Use your judgment within these ranges. If the action doesn't fit a category, price it reasonably.
 
 You are a resolver, not a storyteller. Do not advance the plot. Do not introduce twists. Report what the player finds based on the case data, nothing more.`;
+
+const ACTION_ROLE_INJECTIONS = {
+  pi: `
+ROLE: The player is a private investigator with no legal authority.
+- If the action requires a warrant, legal subpoena, or law enforcement access, deny it. Explain they lack authority. Return the narrative: "You don't have the authority to request a warrant. You'd need to hand this off to law enforcement." Set cost to 0.
+- If the action involves talking to someone, that person may refuse, ask who the PI is, or demand credentials. Not every time, but regularly enough that the player feels the lack of a badge. Use your judgment — cooperative witnesses exist, but uncooperative ones are common.
+- Records limited to: public records, business filings, social media, anything a civilian can legally access. Deny requests for cell tower data, sealed records, or criminal history.
+- The player cannot make arrests or detain anyone.`,
+  detective: `
+ROLE: The player is a police detective with standard law enforcement authority.
+- Warrants are available but require budget and processing time. Note the delay in your response (e.g., "The warrant will be ready in the morning").
+- Suspects and witnesses generally cooperate at the station, though they can request a lawyer or decline to answer specific questions.
+- All records requests are available with appropriate legal process.`,
+  fbi: `
+ROLE: The player is an FBI agent with federal authority.
+- Warrants are available, move quickly, and cost less (50% of normal warrant cost). Do not add processing delays.
+- Records requests are available and routine (50% of normal cost). Do not add delays.
+- Suspects and witnesses are generally cooperative and take the player seriously. Refusal is rare but possible (lawyer requests).
+- If the player invokes "jurisdiction" or "federal authority" on a specific person, that person cooperates fully for this interaction but becomes noticeably hostile and less forthcoming in all future interactions.`,
+};
+
+function buildActionSystemPrompt() {
+  const injection = ACTION_ROLE_INJECTIONS[G.role] || ACTION_ROLE_INJECTIONS.detective;
+  return ACTION_SYSTEM_PROMPT_BASE + '\n' + injection;
+}
 
 let _actionInFlight = false;
 
@@ -1613,6 +1686,73 @@ function refreshActionResults() {
   el.innerHTML = G.actions.map((a, i) => renderActionCard(a, i)).join('');
 }
 
+function processActionResult(input, narrative, cost, cost_label, discovered) {
+  // Enforce budget cap
+  const actualCost = Math.min(cost, G.budget);
+  G.budget -= actualCost;
+
+  // Update discoveredInfo
+  const addUniq = (arr, items) => {
+    for (const v of (items || [])) {
+      if (v && !arr.includes(v)) arr.push(v);
+    }
+  };
+  addUniq(G.discoveredInfo.names,     discovered.names);
+  addUniq(G.discoveredInfo.locations, discovered.locations);
+  addUniq(G.discoveredInfo.times,     discovered.times);
+
+  // Unlock any evidence IDs surfaced
+  const newlyUnlocked = [];
+  for (const id of (discovered.evidence_ids || [])) {
+    if (!G.discoveredInfo.evidence_ids.includes(id)) {
+      G.discoveredInfo.evidence_ids.push(id);
+      if (!G.unlocked.has(id)) { G.unlocked.add(id); newlyUnlocked.push(id); }
+    }
+  }
+
+  // Unlock any document IDs surfaced
+  for (const id of (discovered.document_ids || [])) {
+    if (!G.discoveredInfo.document_ids.includes(id)) {
+      G.discoveredInfo.document_ids.push(id);
+      if (!G.unlocked.has(id)) { G.unlocked.add(id); newlyUnlocked.push(id); }
+    }
+  }
+
+  // Store raw narrative in discoveredInfo
+  const actionIdx = G.actions.length;
+  if (!G.discoveredInfo.raw_statements[`action_${actionIdx}`])
+    G.discoveredInfo.raw_statements[`action_${actionIdx}`] = [];
+  G.discoveredInfo.raw_statements[`action_${actionIdx}`].push(narrative);
+
+  // Log action
+  G.actions.push({ input, narrative, cost: actualCost, cost_label });
+
+  // Re-render results + hub budget
+  refreshActionResults();
+  const bEl = document.getElementById('hub-budget');
+  if (bEl) {
+    bEl.textContent = '$' + G.budget.toLocaleString();
+    bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
+  }
+
+  // Clear input
+  const inputEl = document.getElementById('action-in');
+  if (inputEl) inputEl.value = '';
+
+  // Advisor trigger: check same conditions as interview/evidence triggers
+  if (advisorActive() && !G.pendingAdvisorContext) {
+    const hasNewEntity =
+      G.discoveredInfo.names.some(n     => !G.entityRegistry.names.includes(n)) ||
+      G.discoveredInfo.locations.some(l => !G.entityRegistry.locations.includes(l)) ||
+      G.discoveredInfo.times.some(t     => !G.entityRegistry.times.includes(t));
+    const hasEvidenceRef = newlyUnlocked.length > 0 || checkEvidenceReference(narrative);
+    if (hasNewEntity || hasEvidenceRef || actualCost > G.budget * 0.5) {
+      const context = `Free-form action: "${input}"\nResult: "${narrative}"${actualCost > 0 ? `\nCost: $${actualCost} (${cost_label})` : ''}`;
+      buildAdvisorButtons(context);
+    }
+  }
+}
+
 async function resolveAction(input) {
   if (_actionInFlight) return;
   input = input.trim();
@@ -1626,9 +1766,6 @@ async function resolveAction(input) {
   _actionInFlight = true;
   btn.disabled = true;
   inputEl.disabled = true;
-
-  // Budget check for obviously-paid actions (rough guard — resolver prices it exactly)
-  // If budget is 0, we still allow free actions; resolver handles the response.
 
   // Build action history summary for the resolver
   const actionHistory = G.actions.map((a, i) =>
@@ -1667,6 +1804,40 @@ async function resolveAction(input) {
   typingCard.innerHTML = `<div class="action-card-prompt">&gt; ${esc(input)}</div><div class="action-card-text">Investigating...</div>`;
   if (resultsEl) resultsEl.prepend(typingCard);
 
+  // action_contexts pre-flight: if player input matches a keyword, use the template instead of the API
+  const actionContexts = Array.isArray(G.case.action_contexts) ? G.case.action_contexts : [];
+  if (actionContexts.length > 0) {
+    const playerInputLower = input.toLowerCase();
+    for (const ctx of actionContexts) {
+      const keywords = Array.isArray(ctx.keywords) ? ctx.keywords : [];
+      if (keywords.some(kw => playerInputLower.includes(kw.toLowerCase()))) {
+        typingCard.remove();
+        const narrative  = String(ctx.response_template || '');
+        const cost       = typeof ctx.cost === 'number' ? Math.max(0, Math.round(ctx.cost)) : 0;
+        const cost_label = String(ctx.context_id || 'Action context');
+        // Classify reveals into evidence vs document IDs
+        const evidenceIds = new Set((G.case.evidence  || []).map(ev => ev.id));
+        const documentIds = new Set((G.case.documents || []).map(d  => d.id));
+        const discovered  = { names: [], locations: [], times: [], evidence_ids: [], document_ids: [] };
+        for (const id of (ctx.reveals || [])) {
+          if (evidenceIds.has(id))      discovered.evidence_ids.push(id);
+          else if (documentIds.has(id)) discovered.document_ids.push(id);
+        }
+        try {
+          processActionResult(input, narrative, cost, cost_label, discovered);
+        } catch (e) {
+          errEl.textContent = 'Action failed: ' + e.message;
+        } finally {
+          _actionInFlight  = false;
+          btn.disabled     = false;
+          inputEl.disabled = false;
+          inputEl.focus();
+        }
+        return;
+      }
+    }
+  }
+
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1679,7 +1850,7 @@ async function resolveAction(input) {
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
         max_tokens: 600,
-        system:     ACTION_SYSTEM_PROMPT,
+        system:     buildActionSystemPrompt(),
         messages:   [{ role: 'user', content: userMsg }],
       }),
     });
@@ -1709,69 +1880,14 @@ async function resolveAction(input) {
     const cost_label = String(parsed.cost_label || '');
     const discovered = parsed.discovered || {};
 
-    // Enforce budget cap
-    const actualCost = Math.min(cost, G.budget);
-    G.budget -= actualCost;
-
-    // Update discoveredInfo
-    const addUniq = (arr, items) => {
-      for (const v of (items || [])) {
-        if (v && !arr.includes(v)) arr.push(v);
-      }
-    };
-    addUniq(G.discoveredInfo.names,     discovered.names);
-    addUniq(G.discoveredInfo.locations, discovered.locations);
-    addUniq(G.discoveredInfo.times,     discovered.times);
-
-    // Unlock any evidence IDs the resolver surfaced
-    const newlyUnlocked = [];
-    for (const id of (discovered.evidence_ids || [])) {
-      if (!G.discoveredInfo.evidence_ids.includes(id)) {
-        G.discoveredInfo.evidence_ids.push(id);
-        if (!G.unlocked.has(id)) { G.unlocked.add(id); newlyUnlocked.push(id); }
-      }
-    }
-
-    // Store raw narrative in discoveredInfo
-    const actionIdx = G.actions.length;
-    if (!G.discoveredInfo.raw_statements[`action_${actionIdx}`])
-      G.discoveredInfo.raw_statements[`action_${actionIdx}`] = [];
-    G.discoveredInfo.raw_statements[`action_${actionIdx}`].push(narrative);
-
-    // Log action
-    G.actions.push({ input, narrative, cost: actualCost, cost_label });
-
-    // Re-render results + hub budget
-    refreshActionResults();
-    const bEl = document.getElementById('hub-budget');
-    if (bEl) {
-      bEl.textContent = '$' + G.budget.toLocaleString();
-      bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
-    }
-
-    // Clear input
-    inputEl.value = '';
-
-    // Advisor trigger: check same conditions as interview/evidence triggers
-    if (advisorActive() && !G.pendingAdvisorContext) {
-      const lower = narrative.toLowerCase();
-      const hasNewEntity =
-        G.discoveredInfo.names.some(n     => !G.entityRegistry.names.includes(n)) ||
-        G.discoveredInfo.locations.some(l => !G.entityRegistry.locations.includes(l)) ||
-        G.discoveredInfo.times.some(t     => !G.entityRegistry.times.includes(t));
-      const hasEvidenceRef = newlyUnlocked.length > 0 || checkEvidenceReference(narrative);
-      if (hasNewEntity || hasEvidenceRef || actualCost > G.budget * 0.5) {
-        const context = `Free-form action: "${input}"\nResult: "${narrative}"${actualCost > 0 ? `\nCost: $${actualCost} (${cost_label})` : ''}`;
-        buildAdvisorButtons(context);
-      }
-    }
+    processActionResult(input, narrative, cost, cost_label, discovered);
 
   } catch (e) {
     typingCard.remove();
     errEl.textContent = 'Action failed: ' + e.message;
   } finally {
-    _actionInFlight = false;
-    btn.disabled    = false;
+    _actionInFlight  = false;
+    btn.disabled     = false;
     inputEl.disabled = false;
     inputEl.focus();
   }
@@ -1838,7 +1954,13 @@ function renderCaseFile() {
 // SUSPECTS
 // ============================================================
 function renderSuspects() {
-  const suspects = G.case.suspects || [];
+  const allSuspects = G.case.suspects || [];
+  const suspects = G.role === 'pi'
+    ? allSuspects.filter(s => G.discoveredInfo.names.includes(s.name))
+    : allSuspects;
+  const emptyMsg = G.role === 'pi'
+    ? '<div class="empty">No suspects identified yet. Investigate to find them.</div>'
+    : '<div class="empty">No suspects in this case.</div>';
   document.getElementById('sus-body').innerHTML = suspects.map(s => {
     const key     = suspectKey(s.name);
     const initial = esc(s.name.trim()[0]);
@@ -1859,7 +1981,7 @@ function renderSuspects() {
         <button class="iview-btn" data-name="${esc(s.name)}">Interview</button>
       </div>
     </div>`;
-  }).join('') || '<div class="empty">No suspects in this case.</div>';
+  }).join('') || emptyMsg;
 
   document.querySelectorAll('.iview-btn').forEach(btn => {
     btn.addEventListener('click', () => openInterview(btn.dataset.name));
@@ -2125,6 +2247,11 @@ async function callClaude(suspect, history) {
     `7. Do NOT guess, speculate, or improvise facts about the case beyond your scoped data. You can have opinions and emotions, but not new facts.`,
     `8. If guilty is true, you are hiding your involvement. If guilty is false, you are genuinely uninvolved but may still be nervous, defensive, or dishonest about the things in what_they_lie_about.`,
     `9. Keep responses to 2–4 sentences. Do not acknowledge this is a game or break character.`,
+    ({
+      pi:        `10. The person interviewing you is a private investigator, not law enforcement. You are not legally required to answer their questions. You can refuse to talk, ask who they work for, or tell them to leave. Cooperate only if it seems in your interest or if you have nothing to hide.`,
+      detective: `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
+      fbi:       `10. The person interviewing you is an FBI agent. You take this seriously. Federal involvement signals this is bigger than a local matter. You are generally cooperative unless directly incriminating yourself. You can request a lawyer.`,
+    })[G.role] || `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
   ];
 
   if (presented.length > 0) {
@@ -2431,49 +2558,128 @@ async function fireAdvisorCall(role, context, screen) {
 // ============================================================
 function renderAccuse() {
   G.accused = null;
-  document.getElementById('acc-confirm').disabled = true;
-  document.getElementById('acc-err').textContent  = '';
+  document.getElementById('acc-err').textContent = '';
 
-  const suspects = G.case.suspects || [];
-  document.getElementById('acc-body').innerHTML = suspects.map(s => `
-    <div class="accuse-card" data-name="${esc(s.name)}">
-      <div class="radio-dot"></div>
-      <div>
-        <div class="accuse-sname">${esc(s.name)}</div>
-        <div class="accuse-srole">${esc(s.relationship_to_victim || '')}</div>
+  if (G.role === 'pi') {
+    // PI mode: submit evidence package — no suspect selection
+    document.getElementById('acc-confirm').disabled = false;
+    const guilty = (G.case.suspects || []).find(s => s.guilty === true);
+    const guiltyName = guilty ? guilty.name.split(' ')[0].toLowerCase() : null;
+    const guiltyEv = guiltyName
+      ? (G.case.evidence || []).filter(e => (e.points_to || '').toLowerCase().includes(guiltyName))
+      : [];
+    const discoveredCount = guiltyEv.filter(e => G.discoveredInfo.evidence_ids.includes(e.id)).length;
+    const pct = guiltyEv.length > 0 ? Math.round(discoveredCount / guiltyEv.length * 100) : 100;
+    document.getElementById('acc-body').innerHTML = `
+      <p class="dim" style="margin-bottom:16px">You are preparing to hand your findings to law enforcement. They will only act if your evidence is compelling enough.</p>
+      <div class="accuse-card sel" style="cursor:default;pointer-events:none">
+        <div>
+          <div class="accuse-sname">Evidence Package</div>
+          <div class="accuse-srole">${G.discoveredInfo.evidence_ids.length} item(s) collected &nbsp;|&nbsp; ${pct}% coverage of key evidence</div>
+        </div>
+      </div>`;
+    document.getElementById('acc-title').textContent    = 'Submit Evidence Package';
+    document.getElementById('acc-subtitle').textContent = 'Law enforcement will only act if your evidence package is strong enough.';
+    document.getElementById('acc-confirm').textContent  = 'Submit to Law Enforcement';
+  } else {
+    // Detective / FBI mode: select a suspect to accuse
+    document.getElementById('acc-confirm').disabled = true;
+    document.getElementById('acc-title').textContent    = 'Make Your Accusation';
+    document.getElementById('acc-subtitle').textContent = 'Select the suspect you believe is responsible. This cannot be undone.';
+    document.getElementById('acc-confirm').textContent  = 'Confirm Accusation';
+    const suspects = G.case.suspects || [];
+    document.getElementById('acc-body').innerHTML = suspects.map(s => `
+      <div class="accuse-card" data-name="${esc(s.name)}">
+        <div class="radio-dot"></div>
+        <div>
+          <div class="accuse-sname">${esc(s.name)}</div>
+          <div class="accuse-srole">${esc(s.relationship_to_victim || '')}</div>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `).join('') || '<div class="empty">No suspects available to accuse.</div>';
 
-  document.querySelectorAll('.accuse-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('.accuse-card').forEach(c => c.classList.remove('sel'));
-      card.classList.add('sel');
-      G.accused = card.dataset.name;
-      document.getElementById('acc-confirm').disabled = false;
+    document.querySelectorAll('.accuse-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.accuse-card').forEach(c => c.classList.remove('sel'));
+        card.classList.add('sel');
+        G.accused = card.dataset.name;
+        document.getElementById('acc-confirm').disabled = false;
+      });
     });
+  }
+}
+
+// Helpers for resolution threshold checks
+function _guiltyEvidenceStats() {
+  const guilty = (G.case.suspects || []).find(s => s.guilty === true);
+  if (!guilty) return { total: 0, discovered: 0, firstName: null };
+  const firstName = guilty.name.split(' ')[0].toLowerCase();
+  const total = (G.case.evidence || []).filter(e => (e.points_to || '').toLowerCase().includes(firstName));
+  const discovered = total.filter(e => G.discoveredInfo.evidence_ids.includes(e.id));
+  return { total: total.length, discovered: discovered.length, firstName };
+}
+
+function _guiltyAlibiDisproven(firstName) {
+  return (G.case.evidence || []).some(e => {
+    if (!G.discoveredInfo.evidence_ids.includes(e.id)) return false;
+    const pt = (e.points_to || '').toLowerCase();
+    return pt.includes(firstName) && (pt.includes('alibi') || pt.includes('staged') || pt.includes('false'));
   });
 }
 
 document.getElementById('acc-confirm').addEventListener('click', () => {
-  if (!G.accused) return;
-  const suspect = (G.case.suspects || []).find(s => s.name === G.accused);
-  if (!suspect) return;
+  const errEl = document.getElementById('acc-err');
+  errEl.textContent = '';
 
-  const correct    = suspect.guilty === true;
-  const spent      = (G.case.budget || 0) - G.budget;
+  if (G.role === 'pi') {
+    // PI mode: threshold = ≥70% of guilty suspect's evidence + at least one alibi disproven
+    const { total, discovered, firstName } = _guiltyEvidenceStats();
+    const evMet     = total === 0 || (discovered / total >= 0.70);
+    const alibiMet  = !firstName || _guiltyAlibiDisproven(firstName);
+    if (!evMet || !alibiMet) {
+      const msgs = [];
+      if (!evMet)    msgs.push('insufficient key evidence');
+      if (!alibiMet) msgs.push("the suspect's alibi hasn't been disproven");
+      errEl.textContent = `Law enforcement reviewed your evidence package and determined there isn't enough to act on (${msgs.join('; ')}). Keep investigating.`;
+      return;
+    }
+    // Package accepted — reveal the solution
+    const spent = G.startBudget - G.budget;
+    document.getElementById('res-badge').textContent = 'CASE REFERRED';
+    document.getElementById('res-badge').className   = 'result-badge win';
+    document.getElementById('res-meta').innerHTML    =
+      `Law enforcement accepted your evidence package and opened an arrest warrant.<br>
+       Budget spent: $${spent.toLocaleString()} &nbsp;|&nbsp; Remaining: $${G.budget.toLocaleString()}`;
+    document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+    show('result');
 
-  document.getElementById('res-badge').textContent = correct ? 'CASE CLOSED' : 'WRONG SUSPECT';
-  document.getElementById('res-badge').className   = 'result-badge ' + (correct ? 'win' : 'lose');
+  } else {
+    // Detective / FBI mode: threshold = ≥50% of guilty suspect's evidence
+    if (!G.accused) return;
+    const suspect = (G.case.suspects || []).find(s => s.name === G.accused);
+    if (!suspect) return;
 
-  document.getElementById('res-meta').innerHTML = correct
-    ? `You correctly identified <strong style="color:#ddd">${esc(G.accused)}</strong> as the perpetrator.<br>
-       Budget spent: $${spent.toLocaleString()} &nbsp;|&nbsp; Remaining: $${G.budget.toLocaleString()}`
-    : `<strong style="color:#ddd">${esc(G.accused)}</strong> is not the perpetrator. The case remains open.`;
+    const { total, discovered } = _guiltyEvidenceStats();
+    const evMet = total === 0 || (discovered / total >= 0.50);
+    if (!evMet) {
+      errEl.textContent = "The evidence isn't strong enough to support this accusation. Keep investigating.";
+      return;
+    }
 
-  document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+    const correct = suspect.guilty === true;
+    const spent   = (G.case.budget || 0) - G.budget;
 
-  show('result');
+    document.getElementById('res-badge').textContent = correct ? 'CASE CLOSED' : 'WRONG SUSPECT';
+    document.getElementById('res-badge').className   = 'result-badge ' + (correct ? 'win' : 'lose');
+
+    document.getElementById('res-meta').innerHTML = correct
+      ? `You correctly identified <strong style="color:#ddd">${esc(G.accused)}</strong> as the perpetrator.<br>
+         Budget spent: $${spent.toLocaleString()} &nbsp;|&nbsp; Remaining: $${G.budget.toLocaleString()}`
+      : `<strong style="color:#ddd">${esc(G.accused)}</strong> is not the perpetrator. The case remains open.`;
+
+    document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+    show('result');
+  }
 });
 
 document.getElementById('res-restart').addEventListener('click', () => {

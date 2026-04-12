@@ -8,51 +8,62 @@ function run(caseData) {
   const issues = [];
 
   const evidenceIds = new Set(
-    Array.isArray(caseData.evidence) ? caseData.evidence.map(e => e.id).filter(Boolean) : []
+    Array.isArray(caseData.evidence)  ? caseData.evidence.map(e => e.id).filter(Boolean)  : []
   );
   const documentIds = new Set(
     Array.isArray(caseData.documents) ? caseData.documents.map(d => d.id).filter(Boolean) : []
   );
-  const validTargets = new Set([...evidenceIds, ...documentIds]);
 
-  const referencedEvidence = new Set();
-  const referencedDocuments = new Set();
+  // Build reachable sets from v2 discovery mechanisms
+  const reachableEvidence  = new Set();
+  const reachableDocuments = new Set();
 
-  if (Array.isArray(caseData.decision_points)) {
-    caseData.decision_points.forEach(dp => {
-      if (!dp.id) return;
+  // From locations[].contains_evidence / contains_documents
+  if (Array.isArray(caseData.locations)) {
+    caseData.locations.forEach(loc => {
+      if (Array.isArray(loc.contains_evidence)) {
+        loc.contains_evidence.forEach(id => { if (evidenceIds.has(id))  reachableEvidence.add(id); });
+      }
+      if (Array.isArray(loc.contains_documents)) {
+        loc.contains_documents.forEach(id => { if (documentIds.has(id)) reachableDocuments.add(id); });
+      }
+    });
+  }
 
-      // DECISION_LEADS_TO_VALID — every option's leads_to values must resolve to known IDs
-      if (Array.isArray(dp.options)) {
-        dp.options.forEach(opt => {
-          if (!Array.isArray(opt.leads_to)) return;
-          opt.leads_to.forEach(target => {
-            if (!validTargets.has(target)) {
-              issues.push(issue('DECISION_LEADS_TO_VALID', 'error', `decision_points.${dp.id}`,
-                `${dp.id} leads_to "${target}" which does not match any evidence or document ID`));
-            } else {
-              if (evidenceIds.has(target)) referencedEvidence.add(target);
-              if (documentIds.has(target)) referencedDocuments.add(target);
-            }
-          });
+  // From action_contexts[].reveals
+  if (Array.isArray(caseData.action_contexts)) {
+    caseData.action_contexts.forEach(ctx => {
+      if (Array.isArray(ctx.reveals)) {
+        ctx.reveals.forEach(id => {
+          if (evidenceIds.has(id))  reachableEvidence.add(id);
+          if (documentIds.has(id)) reachableDocuments.add(id);
         });
       }
     });
   }
 
-  // ORPHAN_EVIDENCE — warning: evidence not reachable through any decision point
+  // From verifiable_claims — evidence/document IDs mentioned in ground_truth or claim text
+  if (Array.isArray(caseData.verifiable_claims)) {
+    caseData.verifiable_claims.forEach(vc => {
+      const text = (vc.ground_truth || '') + ' ' + (vc.claim || '');
+      evidenceIds.forEach(id  => { if (text.includes(id)) reachableEvidence.add(id); });
+      documentIds.forEach(id => { if (text.includes(id)) reachableDocuments.add(id); });
+    });
+  }
+
+  // EVIDENCE_REACHABLE — warn if evidence has no path to the player
   evidenceIds.forEach(id => {
-    if (!referencedEvidence.has(id)) {
-      issues.push(issue('ORPHAN_EVIDENCE', 'warning', `evidence.${id}`,
-        `Evidence "${id}" is not referenced by any decision point — players cannot reach it through decisions`));
+    if (!reachableEvidence.has(id)) {
+      issues.push(issue('EVIDENCE_REACHABLE', 'warning', `evidence.${id}`,
+        `Evidence "${id}" is not linked to any location, verifiable claim, or action context — player may not be able to discover it`));
     }
   });
 
-  // ORPHAN_DOCUMENT — warning: document not reachable through any decision point
+  // DOCUMENT_REACHABLE — warn if document has no path to the player
   documentIds.forEach(id => {
-    if (!referencedDocuments.has(id)) {
-      issues.push(issue('ORPHAN_DOCUMENT', 'warning', `documents.${id}`,
-        `Document "${id}" is not referenced by any decision point — players cannot reach it through decisions`));
+    if (!reachableDocuments.has(id)) {
+      issues.push(issue('DOCUMENT_REACHABLE', 'warning', `documents.${id}`,
+        `Document "${id}" is not linked to any location, verifiable claim, or action context — player may not be able to discover it`));
     }
   });
 

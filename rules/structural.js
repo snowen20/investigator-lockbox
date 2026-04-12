@@ -2,8 +2,6 @@
 
 const EVIDENCE_ID = /^E-\d{2}$/;
 const DOCUMENT_ID = /^D-\d{2}$/;
-const DECISION_ID = /^DP-\d{2}$/;
-const VALID_PHASES = new Set([1, 2, 3]);
 
 function issue(rule_id, severity, location, description) {
   return { rule_id, severity, location, description };
@@ -11,24 +9,27 @@ function issue(rule_id, severity, location, description) {
 
 // Top-level required fields and their expected types
 const TOP_LEVEL = [
-  ['title',          'string'],
-  ['solution',       'string'],
-  ['victim',         'object'],
-  ['suspect_count',  'number'],
-  ['suspects',       'array'],
-  ['timeline',       'array'],
-  ['evidence',       'array'],
-  ['documents',      'array'],
-  ['decision_points','array'],
-  ['budget',         'number'],
+  ['title',     'string'],
+  ['solution',  'string'],
+  ['victim',    'object'],
+  ['suspects',  'array'],
+  ['timeline',  'array'],
+  ['evidence',  'array'],
+  ['documents', 'array'],
+  ['budget',    'number'],
 ];
 
-const VICTIM_FIELDS    = ['name', 'age', 'occupation'];
-const SUSPECT_FIELDS   = ['name', 'relationship_to_victim', 'guilty', 'alibi', 'alibi_verifiable', 'motive', 'what_they_know', 'what_they_lie_about'];
-const TIMELINE_FIELDS  = ['datetime', 'event', 'location', 'source'];
-const EVIDENCE_FIELDS  = ['id', 'type', 'description', 'points_to', 'available_at_phase'];
-const DOCUMENT_FIELDS  = ['id', 'type', 'content', 'phase'];
-const DP_FIELDS        = ['id', 'options'];
+const VICTIM_FIELDS   = ['name', 'age', 'occupation'];
+const SUSPECT_FIELDS  = ['name', 'relationship_to_victim', 'guilty', 'alibi', 'alibi_verifiable', 'motive', 'what_they_know', 'what_they_lie_about'];
+const TIMELINE_FIELDS = ['datetime', 'event', 'location', 'source'];
+const EVIDENCE_FIELDS = ['id', 'type', 'description', 'points_to'];
+const DOCUMENT_FIELDS = ['id', 'type', 'content'];
+
+// v2 optional array required fields
+const LOCATION_REQUIRED  = ['id', 'name', 'description', 'searchable'];
+const CLAIM_REQUIRED     = ['claim_id', 'source_suspect', 'claim', 'verification_method', 'ground_truth', 'discovery_action_keywords'];
+const CONTEXT_REQUIRED   = ['context_id', 'keywords', 'response_template', 'reveals', 'cost'];
+const CHARACTER_REQUIRED = ['name', 'role', 'location', 'what_they_know'];
 
 function checkTopLevel(c, issues) {
   for (const [field, expectedType] of TOP_LEVEL) {
@@ -103,49 +104,6 @@ function checkDocuments(c, issues) {
   });
 }
 
-function checkDecisionPoints(c, issues) {
-  if (!Array.isArray(c.decision_points)) return;
-  c.decision_points.forEach((dp, i) => {
-    for (const f of DP_FIELDS) {
-      if (!(f in dp)) {
-        issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `decision_points[${i}].${f}`,
-          `Decision point at index ${i} is missing required field "${f}"`));
-      }
-    }
-
-    // OPTION_SCHEMA — each option must be an object with label (string), cost (number), leads_to (array)
-    if (Array.isArray(dp.options)) {
-      dp.options.forEach((opt, j) => {
-        if (typeof opt !== 'object' || opt === null || Array.isArray(opt)) {
-          issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}]`,
-            `${dp.id || `DP[${i}]`} option ${j} must be an object with label, cost, and leads_to`));
-          return;
-        }
-        if (typeof opt.label !== 'string') {
-          issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].label`,
-            `${dp.id || `DP[${i}]`} option ${j} is missing required string field "label"`));
-        }
-        if (typeof opt.cost !== 'number') {
-          issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].cost`,
-            `${dp.id || `DP[${i}]`} option ${j} is missing required number field "cost"`));
-        }
-        if (!Array.isArray(opt.leads_to)) {
-          issues.push(issue('OPTION_SCHEMA', 'error', `decision_points[${i}].options[${j}].leads_to`,
-            `${dp.id || `DP[${i}]`} option ${j} is missing required array field "leads_to"`));
-        }
-      });
-    }
-  });
-}
-
-function checkSuspectCount(c, issues) {
-  if (typeof c.suspect_count !== 'number' || !Array.isArray(c.suspects)) return;
-  if (c.suspect_count !== c.suspects.length) {
-    issues.push(issue('SUSPECT_COUNT_MISMATCH', 'error', 'suspect_count',
-      `suspect_count is ${c.suspect_count} but suspects array has ${c.suspects.length} entries`));
-  }
-}
-
 function checkExactlyOneGuilty(c, issues) {
   if (!Array.isArray(c.suspects)) return;
   const guiltyCount = c.suspects.filter(s => s.guilty === true).length;
@@ -172,21 +130,12 @@ function checkIDFormats(c, issues) {
       }
     });
   }
-  if (Array.isArray(c.decision_points)) {
-    c.decision_points.forEach(dp => {
-      if (dp.id && !DECISION_ID.test(dp.id)) {
-        issues.push(issue('ID_FORMAT', 'error', `decision_points.${dp.id}`,
-          `Decision point ID "${dp.id}" does not match required format DP-XX`));
-      }
-    });
-  }
 }
 
 function checkIDUniqueness(c, issues) {
   const groups = [
-    { label: 'evidence',        items: c.evidence },
-    { label: 'documents',       items: c.documents },
-    { label: 'decision_points', items: c.decision_points },
+    { label: 'evidence',  items: c.evidence },
+    { label: 'documents', items: c.documents },
   ];
   for (const { label, items } of groups) {
     if (!Array.isArray(items)) continue;
@@ -202,23 +151,91 @@ function checkIDUniqueness(c, issues) {
   }
 }
 
-function checkPhaseRange(c, issues) {
-  if (Array.isArray(c.evidence)) {
-    c.evidence.forEach(e => {
-      if (e.id && e.available_at_phase !== undefined && !VALID_PHASES.has(e.available_at_phase)) {
-        issues.push(issue('PHASE_RANGE', 'error', `evidence.${e.id}`,
-          `Evidence "${e.id}" has available_at_phase ${e.available_at_phase} — must be 1, 2, or 3`));
+// ── v2 optional array validators ─────────────────────────────────────────────
+
+function checkLocations(c, issues) {
+  if (!Array.isArray(c.locations) || c.locations.length === 0) return;
+  const evidenceIds = new Set(Array.isArray(c.evidence)  ? c.evidence.map(e => e.id).filter(Boolean)  : []);
+  const documentIds = new Set(Array.isArray(c.documents) ? c.documents.map(d => d.id).filter(Boolean) : []);
+
+  c.locations.forEach((loc, i) => {
+    for (const f of LOCATION_REQUIRED) {
+      if (!(f in loc)) {
+        issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `locations[${i}].${f}`,
+          `Location at index ${i} is missing required field "${f}"`));
       }
-    });
-  }
-  if (Array.isArray(c.documents)) {
-    c.documents.forEach(d => {
-      if (d.id && d.phase !== undefined && !VALID_PHASES.has(d.phase)) {
-        issues.push(issue('PHASE_RANGE', 'error', `documents.${d.id}`,
-          `Document "${d.id}" has phase ${d.phase} — must be 1, 2, or 3`));
+    }
+    if (Array.isArray(loc.contains_evidence)) {
+      loc.contains_evidence.forEach(id => {
+        if (!evidenceIds.has(id)) {
+          issues.push(issue('LOCATION_EVIDENCE_REF', 'error', `locations[${i}].contains_evidence`,
+            `Location "${loc.id || i}" references evidence "${id}" which does not exist`));
+        }
+      });
+    }
+    if (Array.isArray(loc.contains_documents)) {
+      loc.contains_documents.forEach(id => {
+        if (!documentIds.has(id)) {
+          issues.push(issue('LOCATION_DOCUMENT_REF', 'error', `locations[${i}].contains_documents`,
+            `Location "${loc.id || i}" references document "${id}" which does not exist`));
+        }
+      });
+    }
+  });
+}
+
+function checkVerifiableClaims(c, issues) {
+  if (!Array.isArray(c.verifiable_claims) || c.verifiable_claims.length === 0) return;
+  const suspectNames = new Set(Array.isArray(c.suspects) ? c.suspects.map(s => s.name).filter(Boolean) : []);
+
+  c.verifiable_claims.forEach((vc, i) => {
+    for (const f of CLAIM_REQUIRED) {
+      if (!(f in vc)) {
+        issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `verifiable_claims[${i}].${f}`,
+          `Verifiable claim at index ${i} is missing required field "${f}"`));
       }
-    });
-  }
+    }
+    if (vc.source_suspect && !suspectNames.has(vc.source_suspect)) {
+      issues.push(issue('CLAIM_SUSPECT_REF', 'error', `verifiable_claims[${i}].source_suspect`,
+        `Verifiable claim "${vc.claim_id || i}" references source_suspect "${vc.source_suspect}" who is not in suspects[]`));
+    }
+  });
+}
+
+function checkActionContexts(c, issues) {
+  if (!Array.isArray(c.action_contexts) || c.action_contexts.length === 0) return;
+  const evidenceIds = new Set(Array.isArray(c.evidence)  ? c.evidence.map(e => e.id).filter(Boolean)  : []);
+  const documentIds = new Set(Array.isArray(c.documents) ? c.documents.map(d => d.id).filter(Boolean) : []);
+  const validIds    = new Set([...evidenceIds, ...documentIds]);
+
+  c.action_contexts.forEach((ctx, i) => {
+    for (const f of CONTEXT_REQUIRED) {
+      if (!(f in ctx)) {
+        issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `action_contexts[${i}].${f}`,
+          `Action context at index ${i} is missing required field "${f}"`));
+      }
+    }
+    if (Array.isArray(ctx.reveals)) {
+      ctx.reveals.forEach(id => {
+        if (!validIds.has(id)) {
+          issues.push(issue('CONTEXT_REVEALS_REF', 'error', `action_contexts[${i}].reveals`,
+            `Action context "${ctx.context_id || i}" reveals "${id}" which does not exist in evidence or documents`));
+        }
+      });
+    }
+  });
+}
+
+function checkCharacters(c, issues) {
+  if (!Array.isArray(c.characters) || c.characters.length === 0) return;
+  c.characters.forEach((ch, i) => {
+    for (const f of CHARACTER_REQUIRED) {
+      if (!(f in ch)) {
+        issues.push(issue('SCHEMA_MISSING_FIELD', 'error', `characters[${i}].${f}`,
+          `Character at index ${i} is missing required field "${f}"`));
+      }
+    }
+  });
 }
 
 function run(caseData) {
@@ -229,12 +246,13 @@ function run(caseData) {
   checkTimeline(caseData, issues);
   checkEvidence(caseData, issues);
   checkDocuments(caseData, issues);
-  checkDecisionPoints(caseData, issues);
-  checkSuspectCount(caseData, issues);
   checkExactlyOneGuilty(caseData, issues);
   checkIDFormats(caseData, issues);
   checkIDUniqueness(caseData, issues);
-  checkPhaseRange(caseData, issues);
+  checkLocations(caseData, issues);
+  checkVerifiableClaims(caseData, issues);
+  checkActionContexts(caseData, issues);
+  checkCharacters(caseData, issues);
   return issues;
 }
 

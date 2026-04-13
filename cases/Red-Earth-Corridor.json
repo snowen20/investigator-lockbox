@@ -1,0 +1,505 @@
+{
+  "title": "Red Earth Corridor",
+  "category": "Corporate Malfeasance",
+  "briefing": "You have been hired by Leah Candler, a 38-year-old ranch operations manager, to investigate a coordinated campaign of pressure against her family’s cattle ranch outside Red Mesa County. For the past month, gates have been found open, cattle have been shifted at night, pumps have faulted without a normal cause, survey stakes have appeared on land no one was allowed to enter, and deputies keep arriving on anonymous complaints that go nowhere. A shell company called Redstone Corridor Holdings has made repeated offers to buy a narrow strip through the ranch, but Leah’s family refuses to sell. The disturbances are growing more sophisticated, and Leah believes someone is trying to terrorize the family into surrendering the land. Your job is to determine who is behind the campaign, how they are doing it, and build enough evidence to make an accusation. You have a limited investigation budget — spend it wisely.",
+  "solution": "Redstone Corridor Holdings was acting on behalf of Black Mesa Infrastructure, which needed the last unsold strip through Candler Ranch for a buried transmission corridor and secure maintenance road connecting two larger parcels it already controlled through shell companies. After direct purchase offers failed, Redstone land acquisition director Mara Sloane approved a covert pressure campaign run by Cole Danner of High Prairie Risk, a private security contractor staffed by former surveillance personnel. Danner used fixed-wing thermal drones, buried seismic nodes, RF interference tools, and deniable nighttime intrusions to create cattle disturbances, camera dropouts, pump faults, and recurring gate incidents along the exact future corridor line. Deputy Travis Hale amplified the pressure through repeated responses to anonymous complaints, while Boone Mercer’s already-sold service easement gave the contractors a quiet access route. Reed Candler nearly broke under debt pressure but was not part of the operation. The case is solved by mapping every disturbance to the hidden corridor line, tying the shell parcels to Black Mesa, recovering High Prairie sensor equipment, and seizing Danner’s operation plan and corridor map under warrant.",
+  "victim": {
+    "name": "Leah Candler",
+    "age": "38",
+    "occupation": "Ranch operations manager"
+  },
+  "suspect_count": 5,
+  "suspects": [
+    {
+      "name": "Boone Mercer",
+      "relationship_to_victim": "Neighboring rancher",
+      "guilty": false,
+      "alibi": "At the Red Mesa livestock auction from 6:10 PM to 9:20 PM on the night the east gate was opened",
+      "alibi_verifiable": true,
+      "motive": "He already sold a narrow service easement to Redstone and fears losing money or drawing retaliation if the deal collapses",
+      "what_they_know": [
+        "Unmarked contractor trucks began using his service road shortly after he signed the easement papers",
+        "He saw a drone pass low over the east pasture and chose not to report it",
+        "He knows the pressure incidents started only after Redstone was denied direct purchase"
+      ],
+      "what_they_lie_about": [
+        "He says no one from Redstone or any contractor crossed from his side after the easement sale",
+        "He downplays how often he saw lights moving on the service road after midnight"
+      ]
+    },
+    {
+      "name": "Deputy Travis Hale",
+      "relationship_to_victim": "County deputy assigned to the ranch district",
+      "guilty": false,
+      "alibi": "On patrol in Sector 2 during the main night-disturbance windows",
+      "alibi_verifiable": true,
+      "motive": "He wants to stay useful to county power brokers and receives off-duty event-security money from contractor networks tied to the project",
+      "what_they_know": [
+        "Most of the anonymous complaints about the Candlers came from the same rotating burner pattern",
+        "He had informal contact with Cole Danner near Boone Mercer's easement road",
+        "He noticed the complaints always clustered around the same strip of ranch land"
+      ],
+      "what_they_lie_about": [
+        "He says his repeated visits to the ranch were routine and unconnected",
+        "He denies any off-duty contact with High Prairie Risk or Redstone personnel"
+      ]
+    },
+    {
+      "name": "Reed Candler",
+      "relationship_to_victim": "Leah's cousin and minority co-owner",
+      "guilty": false,
+      "alibi": "At home after a creditor meeting in Red Mesa on the night of the pump failure",
+      "alibi_verifiable": false,
+      "motive": "Severe personal debt made him vulnerable to a private buyout and he briefly considered urging the family to sell",
+      "what_they_know": [
+        "Mara Sloane privately offered to clear his debt if he helped fracture the family vote on the land sale",
+        "He saw a route map that cut straight through the east pasture and water line corridor",
+        "He knows Redstone was unusually focused on one narrow strip rather than the ranch as a whole"
+      ],
+      "what_they_lie_about": [
+        "He says he never met Mara Sloane outside formal offer discussions",
+        "He hides that he deleted messages after Redstone made him a side offer"
+      ]
+    },
+    {
+      "name": "Mara Sloane",
+      "relationship_to_victim": "Land acquisition director for Redstone Corridor Holdings",
+      "guilty": true,
+      "alibi": "Attending an Amarillo land-use forum from 5:00 PM to 9:00 PM on the night the drone was seen",
+      "alibi_verifiable": false,
+      "motive": "She needed the last clean corridor gap through Candler Ranch to complete a high-value infrastructure route for Black Mesa Infrastructure",
+      "what_they_know": [
+        "The route cannot shift west due to aquifer constraints or east due to federal wetland restrictions",
+        "Redstone is tied through layered entities to Black Mesa Infrastructure",
+        "She approved contractor spending after direct negotiations with the Candler family failed"
+      ],
+      "what_they_lie_about": [
+        "She says Redstone has no corporate connection to Black Mesa Infrastructure",
+        "She says no private security contractor was hired for anything beyond passive site observation",
+        "She denies making Reed Candler a private debt-relief offer"
+      ]
+    },
+    {
+      "name": "Cole Danner",
+      "relationship_to_victim": "Regional operations lead for High Prairie Risk",
+      "guilty": true,
+      "alibi": "Conducting a wildlife survey on leased land north of the county line until after dark",
+      "alibi_verifiable": false,
+      "motive": "His contract bonus was tied to reducing seller resistance and making the family abandon the corridor strip voluntarily",
+      "what_they_know": [
+        "He placed buried seismic nodes near gates, pump sheds, and windbreaks along the target line",
+        "He used a fixed-wing thermal drone and RF tools to monitor and disturb the ranch without obvious trespass",
+        "He coordinated vehicle movement through Boone Mercer's service easement to avoid direct approach across Candler property"
+      ],
+      "what_they_lie_about": [
+        "He says High Prairie Risk never entered or monitored Candler Ranch",
+        "He says recovered sensor and RF equipment was only for feral hog tracking and range testing",
+        "He denies any operational contact with Mara Sloane beyond a standard vendor introduction"
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "datetime": "2026-03-04T14:10:00",
+      "event": "Mara Sloane delivers Redstone Corridor Holdings' first purchase offer for a narrow strip through the east side of Candler Ranch",
+      "location": "Candler Ranch main house",
+      "source": "Offer letter and family notes"
+    },
+    {
+      "datetime": "2026-03-12T09:30:00",
+      "event": "Leah Candler formally rejects the offer on behalf of the family ownership group",
+      "location": "Candler Ranch office",
+      "source": "Certified reply receipt"
+    },
+    {
+      "datetime": "2026-03-18T16:22:00",
+      "event": "Boone Mercer signs a service-easement agreement with Redstone on the neighboring tract west of the ranch",
+      "location": "Red Mesa Title Office",
+      "source": "County filing abstract"
+    },
+    {
+      "datetime": "2026-03-29T05:47:00",
+      "event": "Leah finds the north cattle gate open and eighteen head pushed into the south pasture with no storm or latch failure",
+      "location": "North line gate",
+      "source": "Ranch incident log"
+    },
+    {
+      "datetime": "2026-04-02T23:18:00",
+      "event": "Well 3 pump faults, two cameras go dark for ninety seconds, and irrigation timing is lost",
+      "location": "East water line corridor",
+      "source": "Pump controller and camera logs"
+    },
+    {
+      "datetime": "2026-04-05T07:42:00",
+      "event": "Deputy Travis Hale responds to an anonymous livestock-neglect complaint and warns the family about repeated calls tied to the same pasture zone",
+      "location": "Candler Ranch east pasture",
+      "source": "Deputy incident summary"
+    },
+    {
+      "datetime": "2026-04-08T01:56:00",
+      "event": "Leah sees a low-noise fixed-wing drone cross the east pasture and bank over the pump sheds",
+      "location": "East pasture",
+      "source": "Client statement and trail camera review"
+    },
+    {
+      "datetime": "2026-04-11T18:14:00",
+      "event": "Reed Candler meets Mara Sloane in the parking lot of Mesa Feed & Supply and later deletes the related messages",
+      "location": "Mesa Feed & Supply",
+      "source": "Store camera and phone extraction"
+    },
+    {
+      "datetime": "2026-04-13T10:05:00",
+      "event": "Investigators are retained after a second line of survey stakes appears overnight across the east corridor",
+      "location": "Candler Ranch",
+      "source": "Case intake record"
+    },
+    {
+      "datetime": "2026-04-14T15:31:00",
+      "event": "A buried sensor node is recovered near Windmill Road and the flagged line is mapped against the recurring disturbances",
+      "location": "Windmill Road gate",
+      "source": "Field recovery notes"
+    },
+    {
+      "datetime": "2026-04-15T11:48:00",
+      "event": "Title research links seven surrounding parcels to shell entities tied to Black Mesa Infrastructure",
+      "location": "Red Mesa County Records",
+      "source": "Title analyst memo"
+    },
+    {
+      "datetime": "2026-04-16T22:09:00",
+      "event": "Beacon pings from Cole Danner's assigned High Prairie truck align with another outage window and drone pass near the east corridor",
+      "location": "Boone Mercer service road and east pasture",
+      "source": "Telematics and camera outage correlation"
+    },
+    {
+      "datetime": "2026-04-17T16:40:00",
+      "event": "A warrant search of Cole Danner's trailer recovers a corridor map, RF kit, drone hardware, and High Prairie operation notes tied to Redstone",
+      "location": "High Prairie Risk equipment yard",
+      "source": "Warrant return"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "type": "survey pattern",
+      "description": "Unauthorized survey flags and paint marks fall on a single straight line crossing the east pasture, pump corridor, and service-road approach",
+      "points_to": "A specific route objective across Candler Ranch rather than random harassment",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-02",
+      "type": "systems log",
+      "description": "Well 3 controller logs show repeated narrowband RF interruption bursts during the same windows cameras and pumps malfunctioned",
+      "points_to": "External technical interference rather than routine equipment failure",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-03",
+      "type": "video",
+      "description": "Trail camera footage captures a low-noise fixed-wing drone with a thermal payload crossing the east pasture after midnight",
+      "points_to": "Deliberate aerial surveillance of the ranch",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-04",
+      "type": "forensic trace",
+      "description": "North gate latch shows fresh tool marks and repeated boot impressions inconsistent with livestock pressure or wind damage",
+      "points_to": "Human tampering used to create deniable ranch disturbances",
+      "available_at_phase": 1
+    },
+    {
+      "id": "E-05",
+      "type": "title analysis",
+      "description": "County parcel mapping ties seven surrounding tracts to shell companies that resolve through common control back to Black Mesa Infrastructure",
+      "points_to": "A concealed land-acquisition corridor surrounding Candler Ranch",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-06",
+      "type": "hardware recovery",
+      "description": "A buried seismic sensor recovered near Windmill Road bears a High Prairie Risk asset serial registered to Cole Danner's operations batch",
+      "points_to": "Cole Danner and High Prairie Risk",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-07",
+      "type": "dispatch correlation",
+      "description": "Anonymous complaint records and repeater logs show Deputy Travis Hale was repeatedly sent to the ranch only when the family shifted cattle off the suspected corridor line",
+      "points_to": "Administrative pressure synchronized to the target route",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-08",
+      "type": "telematics",
+      "description": "Camera outage windows and GPS drift events align with beacon pings from a High Prairie service truck assigned to Cole Danner",
+      "points_to": "High Prairie field presence during the technical disturbances",
+      "available_at_phase": 2
+    },
+    {
+      "id": "E-09",
+      "type": "billing record",
+      "description": "Redstone invoice packets authorize High Prairie Risk for 'pattern analysis, occupancy pressure, seller fatigue mitigation, and corridor stabilization'",
+      "points_to": "Mara Sloane and Redstone directed the coercive campaign",
+      "available_at_phase": 3
+    },
+    {
+      "id": "E-10",
+      "type": "warrant search",
+      "description": "Search of Cole Danner's trailer recovers drone batteries, an RF disruption kit, a buried-sensor base station, and a highlighted corridor map through Candler Ranch",
+      "points_to": "Cole Danner and the concealed corridor operation",
+      "available_at_phase": 3
+    }
+  ],
+  "documents": [
+    {
+      "id": "D-01",
+      "type": "incident_ledger",
+      "content": "Leah Candler's ranch log records opened gates, cattle displacement, pump faults, dead radios, and recurring survey stakes over a twenty-eight day period, with all events clustering on the east side of the property.",
+      "phase": 1
+    },
+    {
+      "id": "D-02",
+      "type": "purchase_offer_letter",
+      "content": "Redstone Corridor Holdings, through Mara Sloane, offers to buy a narrow permanent-access strip through Candler Ranch for an amount far above market value but refuses to specify the ultimate project use.",
+      "phase": 1
+    },
+    {
+      "id": "D-03",
+      "type": "neighbor_interview",
+      "content": "Boone Mercer states he sold only a limited service easement and denies seeing contractor traffic at night, but later admits lights moved along his road after the Redstone deal closed.",
+      "phase": 1
+    },
+    {
+      "id": "D-04",
+      "type": "deputy_incident_summary",
+      "content": "Deputy Travis Hale's reports show repeated responses to anonymous complaints at Candler Ranch, most of them tied to livestock, water access, or boundary issues along the same eastern strip.",
+      "phase": 2
+    },
+    {
+      "id": "D-05",
+      "type": "financial_pressure_note",
+      "content": "Reed Candler is behind on multiple private debts and received messages offering debt relief if he could help move the family toward a sale. Reed deleted the thread after meeting Mara Sloane.",
+      "phase": 2
+    },
+    {
+      "id": "D-06",
+      "type": "title_research_memo",
+      "content": "A county title analyst notes that seven surrounding parcels were quietly acquired by different LLCs that share legal counsel, registered agents, and financing paths tied to Black Mesa Infrastructure.",
+      "phase": 2
+    },
+    {
+      "id": "D-07",
+      "type": "internal_land_email",
+      "content": "An internal Redstone email forwarded by Mara Sloane describes Candler Ranch as the 'last clean gap' and requests expanded contractor support after direct negotiation failed to move the sellers.",
+      "phase": 3
+    },
+    {
+      "id": "D-08",
+      "type": "warrant_return",
+      "content": "Search of Cole Danner's equipment trailer recovers marked corridor maps, drone hardware, buried sensor equipment, burner phones, and a High Prairie field plan tied to Redstone billing codes.",
+      "phase": 3
+    }
+  ],
+  "decision_points": [
+    {
+      "id": "DP-01",
+      "options": [
+        {
+          "label": "Map the incident line across the ranch and inspect the disturbed east corridor",
+          "cost": 250,
+          "leads_to": ["D-01", "E-01", "E-02"]
+        },
+        {
+          "label": "Review the purchase offers and title posture around the ranch boundary",
+          "cost": 300,
+          "leads_to": ["D-02", "D-06", "E-05"]
+        },
+        {
+          "label": "Interview the immediate local circle before the pressure escalates",
+          "cost": 200,
+          "leads_to": ["D-03", "D-05"]
+        }
+      ]
+    },
+    {
+      "id": "DP-02",
+      "options": [
+        {
+          "label": "Pull trail cameras, gate photos, and overnight visual records",
+          "cost": 350,
+          "leads_to": ["E-03", "E-04"]
+        },
+        {
+          "label": "Audit county complaint traffic and Deputy Hale's response pattern",
+          "cost": 400,
+          "leads_to": ["D-04", "E-07"]
+        },
+        {
+          "label": "Pressure Boone Mercer about service-road traffic and contractor access",
+          "cost": 225,
+          "leads_to": ["D-03", "E-05"]
+        }
+      ]
+    },
+    {
+      "id": "DP-03",
+      "options": [
+        {
+          "label": "Sweep gates, pump sheds, and windbreaks for clandestine hardware",
+          "cost": 500,
+          "leads_to": ["E-06", "E-08"]
+        },
+        {
+          "label": "Follow Reed Candler's debt exposure and private side contacts",
+          "cost": 250,
+          "leads_to": ["D-05", "D-07"]
+        },
+        {
+          "label": "Subpoena contractor records and land-acquisition support billing",
+          "cost": 600,
+          "leads_to": ["E-09", "D-07"]
+        }
+      ]
+    },
+    {
+      "id": "DP-04",
+      "options": [
+        {
+          "label": "Seek a warrant on Cole Danner's trailer and equipment yard",
+          "cost": 900,
+          "leads_to": ["D-08", "E-10"]
+        },
+        {
+          "label": "Re-interview Mara Sloane with the shell-parcel map and Reed contact trail",
+          "cost": 300,
+          "leads_to": ["D-02", "D-07", "E-09"]
+        },
+        {
+          "label": "Run overnight counter-surveillance on the service-road approach",
+          "cost": 700,
+          "leads_to": ["E-03", "E-08", "E-10"]
+        }
+      ]
+    }
+  ],
+  "budget": 4800,
+  "format_templates": {
+    "dossier": {
+      "header": "CASE FILE — Red Earth Corridor",
+      "sections": [
+        {
+          "label": "Incident Summary",
+          "source_field": "briefing"
+        },
+        {
+          "label": "Victim",
+          "source_field": "victim"
+        },
+        {
+          "label": "Known Suspects",
+          "source_field": "suspects",
+          "render": "name_and_relationship_list"
+        },
+        {
+          "label": "Initial Evidence",
+          "source_field": "evidence",
+          "filter": {
+            "field": "available_at_phase",
+            "value": 1
+          }
+        },
+        {
+          "label": "Budget Allocation",
+          "source_field": "budget"
+        }
+      ]
+    },
+    "narrative": {
+      "opening_scene": "At first light Leah Candler finds the north gate hanging open again, cattle pushed where they should not be, and a new line of survey stakes marching across pasture no one was allowed to enter. Her cameras glitched during the night. Her pump failed for ninety seconds and came back on by itself. When the deputy arrives, it is not to help her — it is to question why the family keeps drawing anonymous complaints. Now it is your case.",
+      "reveal_fields": [
+        "victim",
+        "briefing"
+      ],
+      "withheld_until_play": [
+        "suspects",
+        "evidence"
+      ]
+    },
+    "mysterious_message": {
+      "message_type": "text",
+      "message_content": "They were on the east line again last night. Gates open. Pump dead. Flags back. This is not random.",
+      "reveal_fields": [],
+      "withheld_until_play": [
+        "victim",
+        "suspects",
+        "briefing",
+        "evidence"
+      ]
+    },
+    "briefing": {
+      "source_field": "briefing"
+    },
+    "email_chains": {
+      "threads": [
+        {
+          "from": "mara.sloane@redstonecorridor.com",
+          "to": "leah@candlerranch.net",
+          "subject": "Final revised offer for east access strip",
+          "body": "Leah — Redstone remains prepared to make a premium offer for the eastern strip and believes a cooperative outcome is in everyone's interest. We encourage your family to reconsider before outside factors reduce flexibility.",
+          "timestamp": "2026-03-04T14:10:00"
+        },
+        {
+          "from": "reed.candler@candlerranch.net",
+          "to": "leah@candlerranch.net",
+          "subject": "We need to talk about the offer",
+          "body": "I know you do not want to hear this, but they are not going away and I think there is more at stake than they are saying. Do not answer this by email.",
+          "timestamp": "2026-04-11T19:02:00"
+        }
+      ]
+    },
+    "text_messages": {
+      "messages": [
+        {
+          "sender": "Leah Candler",
+          "body": "North gate is open again and the cattle are pushed south.",
+          "timestamp": "2026-03-29T05:49:00"
+        },
+        {
+          "sender": "Reed Candler",
+          "body": "Could be kids or hunters.",
+          "timestamp": "2026-03-29T05:51:00"
+        },
+        {
+          "sender": "Leah Candler",
+          "body": "Hunters do not leave survey flags and kill the cameras.",
+          "timestamp": "2026-03-29T05:52:00"
+        },
+        {
+          "sender": "Leah Candler",
+          "body": "I saw a drone over the east pasture tonight.",
+          "timestamp": "2026-04-08T01:58:00"
+        },
+        {
+          "sender": "Leah Candler",
+          "body": "[DRAFT — UNSENT] They want us tired, broke, and gone before they ever ask again.",
+          "timestamp": "2026-04-13T00:16:00"
+        }
+      ]
+    },
+    "mix": {
+      "sequence": [
+        {
+          "format": "briefing",
+          "scope": "opening_only"
+        },
+        {
+          "format": "text_messages",
+          "scope": "all"
+        }
+      ]
+    }
+  },
+  "locations": [],
+  "verifiable_claims": [],
+  "action_contexts": []
+}

@@ -1696,7 +1696,17 @@ COST GUIDELINES (include cost in response so the game engine can deduct it):
 - Multi-person canvass operation: $200–400
 Use your judgment within these ranges. If the action doesn't fit a category, price it reasonably.
 
-You are a resolver, not a storyteller. Do not advance the plot. Do not introduce twists. Report what the player finds based on the case data, nothing more.`;
+You are a resolver, not a storyteller. Do not advance the plot. Do not introduce twists. Report what the player finds based on the case data, nothing more.
+
+INFORMATION SCOPING — CRITICAL:
+Your response text may ONLY reference three categories of information:
+1. BRIEFING — facts stated in the case briefing the player read at the start.
+2. DISCOVERED — facts the player has already uncovered (provided in the discoveredInfo object).
+3. THIS ACTION'S RESULT — new facts this specific action is revealing for the first time.
+
+You have access to the full case data to DECIDE what the player's action uncovers. But your written response must NEVER mention facts the player has not yet discovered and is not discovering right now. If a fact is in the case data but not in the briefing, not in discoveredInfo, and not being revealed by this action — it does not exist in your response.
+
+If the player challenges something as not being in their briefing or evidence, and they are correct, acknowledge it. Do not fabricate sources or double down.`;
 
 const ACTION_ROLE_INJECTIONS = {
   pi: `
@@ -1845,8 +1855,13 @@ async function resolveAction(input) {
       : '',
   ].filter(Boolean).join('\n') || '(none yet)';
 
+  // Build briefing text the player started with
+  const briefingText = G.case.briefing || '(no briefing)';
+
   const userMsg = [
     `CASE DATA:\n${JSON.stringify(G.case, null, 2)}`,
+    '',
+    `PLAYER'S STARTING BRIEFING (this is ALL the player was told at the start):\n${briefingText}`,
     '',
     `INVESTIGATOR'S DISCOVERED INFORMATION:\n${diSummary}`,
     '',

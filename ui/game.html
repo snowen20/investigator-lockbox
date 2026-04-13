@@ -1932,7 +1932,7 @@ async function resolveAction(input) {
       const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
       parsed = JSON.parse(cleaned);
     } catch {
-      throw new Error('Resolver returned invalid JSON. Raw: ' + rawText.slice(0, 200));
+      parsed = { narrative: rawText, cost: 0, cost_label: '', discovered: {} };
     }
 
     const narrative  = String(parsed.narrative  || '');

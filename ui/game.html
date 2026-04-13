@@ -200,26 +200,73 @@
     }
 
     /* ===========================
-       START SCREEN
+       START SCREEN (Landing)
     =========================== */
     #s-start .wrap {
-      max-width: 460px;
+      max-width: 420px;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 48px 32px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      text-align: center;
+    }
+    .landing-lockup {
+      margin-bottom: 48px;
+      width: 100%;
+    }
+    .landing-icon {
+      width: 64px; height: 64px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--amber-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      color: var(--amber);
+      box-shadow: 0 0 30px var(--amber-glow);
     }
     .start-title {
       font-family: var(--serif);
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       color: var(--text);
-      letter-spacing: 0.04em;
-      margin-bottom: 48px;
-      text-align: center;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
       width: 100%;
+    }
+    .landing-rule {
+      width: 80px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+      margin: 12px auto 16px;
+    }
+    .landing-tagline {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      font-style: italic;
+    }
+    .landing-form {
+      width: 100%;
+    }
+    .landing-form .field-label {
+      display: block;
+      text-align: left;
+      margin-bottom: 8px;
+    }
+    .landing-form input {
+      margin-bottom: 20px;
+    }
+    .landing-form button {
+      width: 100%;
+      padding: 14px 36px;
+      font-size: 16px;
+    }
+    .landing-form .err {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
     }
     .field { margin-bottom: 20px; width: 100%; }
     .field-label {
@@ -230,11 +277,14 @@
       text-transform: uppercase;
       margin-bottom: 8px;
     }
-    .start-actions { display: flex; gap: 12px; align-items: center; margin-top: 32px; width: 100%; }
 
     /* ===========================
-       CATEGORY LIST SCREEN (accordion)
+       CATEGORY LIST SCREEN (drawer accordion)
     =========================== */
+    .library-header { margin-bottom: 36px; }
+    .library-header h1 { font-family: var(--serif); font-size: 1.8rem; margin-bottom: 6px; }
+    .library-header p { color: var(--text-muted); font-size: 15px; margin: 0; }
+
     .cat-item {
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -243,45 +293,76 @@
       overflow: hidden;
       transition: background 0.2s;
     }
-    .cat-item:hover { background: rgba(15, 52, 96, 0.4); }
+    .cat-item:hover:not(.empty) { background: rgba(15, 52, 96, 0.4); }
+    .cat-item.empty { opacity: 0.4; pointer-events: none; }
     .cat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 16px 20px;
       cursor: pointer;
+      user-select: none;
+    }
+    .cat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cat-title {
       font-family: var(--sans);
       font-size: 15px;
       font-weight: 600;
       color: var(--text);
-      user-select: none;
+      letter-spacing: 0.02em;
     }
-    .cat-header:hover { background: rgba(15, 52, 96, 0.3); }
-    .cat-item.empty .cat-header { opacity: 0.4; }
+    .cat-meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .cat-meta .count { color: var(--amber); font-weight: 600; }
+    .cat-item.empty .cat-meta .count { color: var(--text-dim); }
     .cat-arrow { font-size: 12px; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
     .cat-item.open .cat-arrow { transform: rotate(90deg); }
     .cat-expand {
       display: none;
       padding: 0 20px 16px;
-      border-top: 1px solid var(--border);
     }
     .cat-item.open .cat-expand { display: block; }
-    .cat-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin: 0 0 10px; }
-    .cat-coming-soon { font-size: 13px; color: var(--text-dim); font-style: italic; }
-    .cat-case-link {
-      display: block;
-      padding: 10px 14px;
-      font-family: var(--serif);
-      font-size: 1.05rem;
-      color: var(--text);
-      cursor: pointer;
+    .cat-coming-soon { font-size: 13px; color: var(--text-dim); font-style: italic; padding: 4px 0; }
+
+    .case-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
       background: rgba(10, 10, 20, 0.4);
       border-radius: 6px;
       margin-bottom: 6px;
+      cursor: pointer;
       transition: background 0.2s;
     }
-    .cat-case-link:last-child { margin-bottom: 0; }
-    .cat-case-link:hover { background: rgba(10, 10, 20, 0.7); color: var(--amber); }
+    .case-row:last-child { margin-bottom: 0; }
+    .case-row:hover { background: rgba(10, 10, 20, 0.7); }
+    .case-row-info h3 {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      margin-bottom: 2px;
+      color: var(--text);
+    }
+    .case-row-info p { font-size: 13px; color: var(--text-muted); margin: 0; }
+    .case-row-select {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--amber);
+      flex-shrink: 0;
+      margin-left: 16px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .case-row:hover .case-row-select { color: #e0b44e; }
 
     /* ===========================
        BRIEF SCREEN
@@ -936,13 +1017,16 @@
 <!-- ===================== START ===================== -->
 <div id="s-start" class="screen active">
   <div class="wrap">
-    <div class="start-title">Investigator Lockbox</div>
-    <div class="field">
-      <div class="field-label">Anthropic API Key</div>
-      <input type="password" id="api-key" placeholder="sk-ant-...">
+    <div class="landing-lockup">
+      <div class="landing-icon">&#128270;</div>
+      <div class="start-title">Investigator Lockbox</div>
+      <div class="landing-rule"></div>
+      <div class="landing-tagline">Every case has a truth. Find it.</div>
     </div>
-    <div class="start-actions">
-      <button class="primary" id="browse-btn" disabled>Browse Cases</button>
+    <div class="landing-form">
+      <label class="field-label" for="api-key">API Key</label>
+      <input type="password" id="api-key" placeholder="sk-ant-api03-...">
+      <button class="primary" id="browse-btn" disabled>Enter</button>
       <span id="start-err" class="err"></span>
     </div>
   </div>
@@ -951,8 +1035,11 @@
 <!-- ===================== CATEGORIES ===================== -->
 <div id="s-categories" class="screen">
   <div class="page">
-    <button class="back-btn" id="cat-back">← Back</button>
-    <h1>Case Library</h1>
+    <button class="back-btn" id="cat-back">&#8592; Back</button>
+    <div class="library-header">
+      <h1>Case Library</h1>
+      <p>Select a category to browse available investigations.</p>
+    </div>
     <div id="cat-body"></div>
   </div>
 </div>
@@ -1304,43 +1391,51 @@ browseBtn.addEventListener('click', async () => {
 function renderCategories() {
   const cats = (G.index && G.index.categories) || [];
   document.getElementById('cat-body').innerHTML = cats.map(cat => {
-    const empty     = (cat.cases || []).length === 0;
+    const cases = cat.cases || [];
+    const empty = cases.length === 0;
+    const count = cases.length;
+    const countLabel = count === 1 ? '1 case' : `${count} cases`;
     const casesHtml = empty
-      ? `<span class="cat-coming-soon">Coming soon</span>`
-      : (cat.cases || []).map(c =>
-          `<div class="cat-case-link" data-key="${esc(c.key)}">${esc(c.title)}</div>`
+      ? `<div class="cat-coming-soon">Coming soon</div>`
+      : cases.map(c =>
+          `<div class="case-row" data-key="${esc(c.key)}">
+            <div class="case-row-info">
+              <h3>${esc(c.title)}</h3>
+              <p>${esc(c.description || cat.description || '')}</p>
+            </div>
+            <span class="case-row-select">Select &#8594;</span>
+          </div>`
         ).join('');
     return `<div class="cat-item${empty ? ' empty' : ''}">
       <div class="cat-header">
-        <span>${esc(cat.name)}</span>
-        <span class="cat-arrow">▸</span>
+        <div class="cat-header-left">
+          <span class="cat-title">${esc(cat.name)}</span>
+          <span class="cat-meta"><span class="count">${count}</span> ${count === 1 ? 'case' : 'cases'}</span>
+        </div>
+        <span class="cat-arrow">&#9654;</span>
       </div>
-      <div class="cat-expand">
-        <p class="cat-desc">${esc(cat.description || '')}</p>
-        <div class="cat-cases">${casesHtml}</div>
-      </div>
+      <div class="cat-expand">${casesHtml}</div>
     </div>`;
   }).join('') || '<div class="empty">No categories found.</div>';
 
   document.querySelectorAll('#cat-body .cat-header').forEach(header => {
     header.addEventListener('click', () => {
       const item    = header.closest('.cat-item');
+      if (item.classList.contains('empty')) return;
       const wasOpen = item.classList.contains('open');
       document.querySelectorAll('#cat-body .cat-item.open').forEach(el => {
         el.classList.remove('open');
-        el.querySelector('.cat-arrow').textContent = '▸';
       });
       if (!wasOpen) {
         item.classList.add('open');
-        header.querySelector('.cat-arrow').textContent = '▾';
-        setCategoryBg(header.querySelector('span').textContent);
+        setCategoryBg(header.querySelector('.cat-title').textContent);
       } else {
         setCategoryBg(null);
       }
     });
   });
 
-  document.querySelectorAll('#cat-body .cat-case-link').forEach(el => {
+  document.querySelectorAll('#cat-body .case-row').forEach(el => {
     el.addEventListener('click', () => loadCase(el.dataset.key));
   });
 }
@@ -1487,7 +1582,7 @@ function renderFmtNarrative(tpl) {
   let html = '';
   if (tpl.opening_scene) {
     html += `<div class="brief-block">
-      <p style="line-height:1.9;font-style:italic;border-left:2px solid var(--green-dim);padding-left:16px;color:var(--green)">${esc(tpl.opening_scene)}</p>
+      <p style="line-height:1.9;font-style:italic;border-left:3px solid var(--amber-dim);padding-left:16px;color:#c8c8d4">${esc(tpl.opening_scene)}</p>
     </div>`;
   }
   (tpl.reveal_fields || []).forEach(field => {
@@ -1516,7 +1611,7 @@ function renderFmtMysteriousMessage(tpl) {
   const typeLabel = { text: 'TEXT MESSAGE', voicemail: 'VOICEMAIL', email: 'EMAIL', note: 'HANDWRITTEN NOTE' }[tpl.message_type] || 'MESSAGE';
   return `<div class="brief-block">
     <div class="brief-label">${esc(typeLabel)}</div>
-    <div style="background:rgba(5,5,5,0.9);border:1px solid var(--green-dim);padding:18px;margin-top:8px;font-size:1rem;line-height:1.9;color:var(--green)">${esc(tpl.message_content || '')}</div>
+    <div style="background:rgba(10,10,20,0.5);border:1px solid var(--border-light);border-radius:var(--radius);padding:18px;margin-top:8px;font-size:1rem;line-height:1.9;color:var(--text)">${esc(tpl.message_content || '')}</div>
     <div class="brief-subvalue" style="margin-top:8px">[Source and context unknown]</div>
   </div>`;
 }
@@ -1564,7 +1659,7 @@ function renderFmtTextMessages(tpl, scope) {
       const dt = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
       return `<div style="display:flex;flex-direction:column;align-items:${right ? 'flex-end' : 'flex-start'}">
         <div style="font-size:0.9rem;color:var(--green-dim);margin-bottom:3px">${esc(m.sender || '')} &nbsp; ${esc(dt)}</div>
-        <div style="background:${right ? 'rgba(10,30,10,0.9)' : 'rgba(5,15,5,0.9)'};border:1px solid ${right ? 'var(--green-dim)' : 'var(--green-lo)'};padding:8px 14px;max-width:85%;line-height:1.65;color:var(--green)">${esc(m.body || '')}</div>
+        <div style="background:${right ? 'rgba(212,168,67,0.1)' : 'rgba(10,10,20,0.6)'};border:1px solid ${right ? 'var(--amber-dim)' : 'var(--border-light)'};border-radius:var(--radius);padding:8px 14px;max-width:85%;line-height:1.65;color:var(--text)">${esc(m.body || '')}</div>
       </div>`;
     }).join('') + `</div></div>`;
 }

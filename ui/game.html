@@ -881,6 +881,9 @@
     /* ===========================
        SETUP SCREEN
     =========================== */
+    .setup-header { text-align: center; margin-bottom: 40px; }
+    .setup-header h1 { font-family: var(--serif); font-size: 1.8rem; margin-bottom: 4px; }
+    .setup-header p { color: var(--text-muted); font-size: 15px; margin: 0; }
     .setup-section { margin-bottom: 36px; }
     .setup-section-label {
       font-size: 12px;
@@ -892,68 +895,79 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
-    .setup-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px 16px;
+    .option-grid { display: grid; gap: 10px; }
+    .option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .option-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .option-card {
+      background: rgba(10, 10, 20, 0.5);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: rgba(10, 10, 20, 0.5);
-      margin-bottom: 6px;
+      padding: 16px;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
     }
-    .setup-option:hover { border-color: var(--text-dim); background: rgba(10, 10, 20, 0.7); }
-    .setup-option.selected { border-color: var(--amber); background: rgba(212, 168, 67, 0.06); box-shadow: 0 0 0 1px var(--amber-dim); }
-    .setup-option input[type="radio"] { display: none; }
-    .setup-radio-dot {
-      width: 12px; height: 12px; min-width: 12px;
-      border: 2px solid var(--text-dim);
-      border-radius: 50%;
-      margin-top: 3px;
-      transition: all 0.2s;
+    .option-card:hover { border-color: var(--text-dim); background: rgba(10, 10, 20, 0.7); }
+    .option-card.selected {
+      border-color: var(--amber);
+      background: rgba(212, 168, 67, 0.06);
+      box-shadow: 0 0 0 1px var(--amber-dim);
     }
-    .setup-option.selected .setup-radio-dot { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 8px var(--amber-glow); }
-    .setup-option-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-    .setup-option-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-    .setup-advisor-row {
+    .option-card .option-icon {
+      font-size: 22px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .option-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+    .option-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+    .option-card.selected h4 { color: var(--amber); }
+    .option-card .check {
+      position: absolute;
+      top: 10px; right: 12px;
+      font-size: 14px;
+      color: var(--amber);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .option-card.selected .check { opacity: 1; }
+    .toggle-row {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 16px;
+      justify-content: space-between;
+      background: rgba(10, 10, 20, 0.5);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: rgba(10, 10, 20, 0.5);
+      padding: 16px 20px;
     }
-    .setup-advisor-row.disabled { opacity: 0.35; pointer-events: none; }
-    .advisor-toggle {
-      position: relative;
+    .toggle-row-text h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .toggle-row-text p { font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.5; }
+    .toggle-switch {
       width: 44px; height: 24px;
-      flex-shrink: 0;
-    }
-    .advisor-toggle input { opacity: 0; width: 0; height: 0; }
-    .advisor-toggle-slider {
-      position: absolute;
-      inset: 0;
       background: var(--bg-surface);
       border-radius: 12px;
+      position: relative;
       cursor: pointer;
       transition: background 0.2s;
+      flex-shrink: 0;
     }
-    .advisor-toggle-slider::before {
+    .toggle-switch.on { background: var(--amber-dim); }
+    .toggle-switch::after {
       content: '';
       position: absolute;
-      left: 3px; top: 3px;
+      top: 3px; left: 3px;
       width: 18px; height: 18px;
       background: var(--text);
       border-radius: 50%;
-      transition: transform 0.2s, background 0.2s;
+      transition: transform 0.2s;
     }
-    .advisor-toggle input:checked + .advisor-toggle-slider { background: var(--amber-dim); }
-    .advisor-toggle input:checked + .advisor-toggle-slider::before { transform: translateX(20px); }
-    .setup-advisor-label { font-size: 14px; font-weight: 600; color: var(--text); }
-    .setup-advisor-note { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+    .toggle-switch.on::after { transform: translateX(20px); }
+    .setup-actions {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .setup-actions button.primary { padding: 14px 36px; font-size: 16px; }
 
     /* ===========================
        ADVISOR SYSTEM
@@ -1059,35 +1073,40 @@
 <!-- ===================== SETUP ===================== -->
 <div id="s-setup" class="screen">
   <div class="page">
-    <button class="back-btn" id="setup-back">← Back to Cases</button>
-    <h1>Case Setup</h1>
+    <button class="back-btn" id="setup-back">&#8592; Back to Cases</button>
+    <div class="setup-header">
+      <h1 id="setup-case-title">Case Setup</h1>
+      <p>Configure your investigation before beginning.</p>
+    </div>
 
     <!-- Delivery Format -->
     <div class="setup-section">
       <div class="setup-section-label">Delivery Format</div>
-      <div id="setup-format-opts"></div>
+      <div id="setup-format-opts" class="option-grid cols-3"></div>
     </div>
 
     <!-- Investigator Role -->
     <div class="setup-section">
       <div class="setup-section-label">Investigator Role</div>
-      <div id="setup-role-opts"></div>
+      <div id="setup-role-opts" class="option-grid cols-3"></div>
     </div>
 
     <!-- Advisor Toggle -->
     <div class="setup-section">
       <div class="setup-section-label">Advisor</div>
-      <div class="setup-advisor-row" id="setup-advisor-row">
-        <label class="advisor-toggle">
-          <input type="checkbox" id="setup-advisor-toggle" checked>
-          <span class="advisor-toggle-slider"></span>
+      <div class="toggle-row" id="setup-advisor-row">
+        <div class="toggle-row-text">
+          <h4 id="setup-advisor-label">AI Advisor</h4>
+          <p id="setup-advisor-note">An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.</p>
+        </div>
+        <label style="cursor:pointer;flex-shrink:0">
+          <input type="checkbox" id="setup-advisor-toggle" checked style="display:none">
+          <div class="toggle-switch" id="setup-advisor-switch"></div>
         </label>
-        <span class="setup-advisor-label" id="setup-advisor-label">Advisor ON</span>
-        <span class="setup-advisor-note" id="setup-advisor-note">An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.</span>
       </div>
     </div>
 
-    <div style="margin-top:8px">
+    <div class="setup-actions">
       <button class="primary" id="setup-begin-btn">Begin Case</button>
     </div>
   </div>
@@ -1764,64 +1783,66 @@ function updateDiscoveredFromUnlocked() {
 // SETUP SCREEN
 // ============================================================
 const ROLE_OPTIONS = [
-  { key: 'pi',        label: 'Private Investigator', desc: 'Hired from the outside. No badge, no warrants, no authority. You find your own suspects and build a case strong enough to hand off to police.' },
-  { key: 'detective', label: 'Police Detective',     desc: 'Lead detective on the case. You have department resources, warrant access, and suspects in the box. Standard investigation.' },
-  { key: 'fbi',       label: 'FBI Agent',            desc: "Federal authority. Warrants move faster, records come easier, and people take you seriously. But you're an outsider in a local case." },
+  { key: 'pi',        icon: '&#128269;', label: 'Private Investigator', desc: 'No badge. No warrant power. Harder mode with 75% budget.' },
+  { key: 'detective', icon: '&#128737;', label: 'Police Detective',     desc: 'Standard law enforcement authority. Department resources and warrants available.' },
+  { key: 'fbi',       icon: '&#11088;',  label: 'FBI Agent',            desc: "Federal authority. Fast warrants, reduced costs, high cooperation." },
 ];
 
 const FORMAT_OPTIONS = [
-  { key: 'briefing',          label: 'Briefing',          desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
-  { key: 'dossier',           label: 'Dossier',           desc: 'Case file style. Organized summary: incident, names, dates, locations, evidence notes, known facts. For structured thinkers.' },
-  { key: 'narrative',         label: 'Narrative',         desc: 'Scene-based opening. Player is dropped into events as they unfold. For immersion.' },
-  { key: 'mysterious_message',label: 'Mysterious Message',desc: 'Begins with something incomplete — anonymous text, voicemail, cryptic note. Player must figure out what the case even is. For discovery.' },
-  { key: 'email_chains',      label: 'Email Chains',      desc: 'Information fragmented across email threads, replies, forwards, contradictions. For white-collar, institutional, conspiracy cases.' },
-  { key: 'text_messages',     label: 'Text Messages',     desc: 'Opens through texts or chat logs. Informal, immediate. For disappearances, interpersonal conflict, modern feel.' },
-  { key: 'mix',               label: 'Mix',               desc: 'Multiple formats combined in sequence. For realism and variety.' },
+  { key: 'briefing',           icon: '&#128203;', label: 'Briefing',           desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
+  { key: 'dossier',            icon: '&#128193;', label: 'Dossier',            desc: 'Case file format. Organized summary: incident, names, dates, locations, evidence notes.' },
+  { key: 'narrative',          icon: '&#128214;', label: 'Narrative',          desc: 'Scene-based opening. Dropped into events as they unfold. For immersion.' },
+  { key: 'mysterious_message', icon: '&#128270;', label: 'Mysterious Message', desc: 'Begins with something incomplete — anonymous text, voicemail, cryptic note.' },
+  { key: 'email_chains',       icon: '&#9993;',   label: 'Email Chains',       desc: 'Information fragmented across email threads, replies, forwards, contradictions.' },
+  { key: 'text_messages',      icon: '&#128172;', label: 'Text Messages',      desc: 'Opens through texts or chat logs. Informal, immediate.' },
+  { key: 'mix',                icon: '&#127922;', label: 'Mix',                desc: 'Multiple formats combined in sequence. For realism and variety.' },
 ];
 
 function renderSetup() {
-  // Format options
+  // Show case title in header
+  const titleEl = document.getElementById('setup-case-title');
+  if (titleEl && G.case) titleEl.textContent = G.case.title || 'Case Setup';
+
+  // Format cards
   document.getElementById('setup-format-opts').innerHTML = FORMAT_OPTIONS.map(opt =>
-    `<div class="setup-option${G.setupFormat === opt.key ? ' selected' : ''}" data-fmt="${esc(opt.key)}">
-      <span class="setup-radio-dot"></span>
-      <div>
-        <div class="setup-option-label">${esc(opt.label)}</div>
-        <div class="setup-option-desc">${esc(opt.desc)}</div>
-      </div>
+    `<div class="option-card${G.setupFormat === opt.key ? ' selected' : ''}" data-fmt="${esc(opt.key)}">
+      <span class="check">&#10003;</span>
+      <span class="option-icon">${opt.icon}</span>
+      <h4>${esc(opt.label)}</h4>
+      <p>${esc(opt.desc)}</p>
     </div>`
   ).join('');
 
-  // Role options
+  // Role cards
   document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt =>
-    `<div class="setup-option${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
-      <span class="setup-radio-dot"></span>
-      <div>
-        <div class="setup-option-label">${esc(opt.label)}</div>
-        <div class="setup-option-desc">${esc(opt.desc)}</div>
-      </div>
+    `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
+      <span class="check">&#10003;</span>
+      <span class="option-icon">${opt.icon}</span>
+      <h4>${esc(opt.label)}</h4>
+      <p>${esc(opt.desc)}</p>
     </div>`
   ).join('');
 
   // Advisor toggle state
-  const toggle = document.getElementById('setup-advisor-toggle');
-  const label  = document.getElementById('setup-advisor-label');
-  const note   = document.getElementById('setup-advisor-note');
-  toggle.checked  = G.setupAdvisor;
-  label.textContent = G.setupAdvisor ? 'Advisor ON' : 'Advisor OFF';
-  note.textContent  = G.setupAdvisor
+  const toggle    = document.getElementById('setup-advisor-toggle');
+  const switchDiv = document.getElementById('setup-advisor-switch');
+  const note      = document.getElementById('setup-advisor-note');
+  toggle.checked = G.setupAdvisor;
+  switchDiv.classList.toggle('on', G.setupAdvisor);
+  note.textContent = G.setupAdvisor
     ? 'An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.'
     : "You're on your own. No one to bounce ideas off of. Every call is yours.";
 
-  // Format option clicks
-  document.querySelectorAll('#setup-format-opts .setup-option').forEach(el => {
+  // Format card clicks
+  document.querySelectorAll('#setup-format-opts .option-card').forEach(el => {
     el.addEventListener('click', () => {
       G.setupFormat = el.dataset.fmt;
       renderSetup();
     });
   });
 
-  // Role option clicks
-  document.querySelectorAll('#setup-role-opts .setup-option').forEach(el => {
+  // Role card clicks
+  document.querySelectorAll('#setup-role-opts .option-card').forEach(el => {
     el.addEventListener('click', () => {
       G.setupRole = el.dataset.role;
       renderSetup();

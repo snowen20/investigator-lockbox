@@ -255,6 +255,37 @@
     .tile-label { font-size: 1rem; color: var(--green-dim); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px; }
     .tile-val { font-size: 1rem; color: var(--green); }
 
+    .hub-brief-toggle {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--green-lo);
+      border-left: 3px solid var(--green-dim);
+      color: var(--green-dim);
+      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+      font-size: 1rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      cursor: var(--cursor-pointer);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+    }
+    .hub-brief-toggle:hover { border-color: var(--green-dim); color: var(--green); }
+    .hub-brief-toggle.open { color: var(--green); border-color: var(--green); border-left-color: var(--green); }
+    .hub-brief-body {
+      border: 1px solid var(--green-lo);
+      border-top: none;
+      border-left: 3px solid var(--green-dim);
+      padding: 20px 16px;
+      margin-bottom: 24px;
+      background: var(--scanline), rgba(5, 10, 5, 0.95);
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
     /* ===========================
        FREE-FORM ACTION INPUT
     =========================== */
@@ -862,6 +893,14 @@
         <div class="budget-amt" id="hub-budget"></div>
       </div>
     </div>
+    <!-- Case Brief panel (collapsible) -->
+    <div style="margin-bottom:24px">
+      <button id="hub-brief-toggle" class="hub-brief-toggle">
+        <span>Case Brief</span><span id="hub-brief-arrow">▸</span>
+      </button>
+      <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
+    </div>
+
     <!-- Free-form action input -->
     <div class="action-input-row">
       <input type="text" id="action-in" placeholder="What do you want to do next?" autocomplete="off">
@@ -1596,7 +1635,23 @@ function renderHub() {
     document.querySelector('#nav-accuse .tile-label').textContent = 'Make Accusation';
     document.querySelector('#nav-accuse .tile-val').textContent   = 'Commit to a suspect';
   }
+
+  // Populate case brief panel (collapsed by default, content always fresh)
+  document.getElementById('hub-brief-body').innerHTML = renderCaseOpening();
+  document.getElementById('hub-brief-body').style.display = 'none';
+  document.getElementById('hub-brief-arrow').textContent  = '▸';
+  document.getElementById('hub-brief-toggle').classList.remove('open');
 }
+
+document.getElementById('hub-brief-toggle').addEventListener('click', () => {
+  const body  = document.getElementById('hub-brief-body');
+  const arrow = document.getElementById('hub-brief-arrow');
+  const btn   = document.getElementById('hub-brief-toggle');
+  const isOpen = body.style.display !== 'none';
+  body.style.display    = isOpen ? 'none' : '';
+  arrow.textContent     = isOpen ? '▸' : '▾';
+  btn.classList.toggle('open', !isOpen);
+});
 
 document.getElementById('nav-casefile') .addEventListener('click', () => { renderCaseFile();  show('casefile'); });
 document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });

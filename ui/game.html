@@ -457,122 +457,141 @@
     =========================== */
     .hub-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       margin-bottom: 28px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
     }
-    .hub-title { font-family: var(--serif); font-size: 1.4rem; color: var(--text); margin-bottom: 4px; }
-    .hub-subtitle { font-size: 13px; color: var(--text-muted); letter-spacing: 0.04em; }
-    .budget-label { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; text-align: right; }
-    .budget-amt { font-family: var(--mono); font-size: 1.6rem; font-weight: 600; color: var(--amber); line-height: 1; }
-    .budget-amt.low { color: var(--red); }
+    .hub-header-left { display: flex; align-items: center; gap: 12px; }
+    .hub-header-left h1 { font-family: var(--serif); font-size: 1.4rem; line-height: 1.2; }
+    .hub-budget { text-align: right; }
+    .hub-budget-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 2px; }
+    .hub-budget-val { font-family: var(--mono); font-size: 1.6rem; font-weight: 600; color: var(--amber); line-height: 1; }
+    .hub-budget-val.low { color: var(--red); }
 
-    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .nav-tile {
-      background: rgba(15, 52, 96, 0.25);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .nav-tile:hover { background: rgba(15, 52, 96, 0.45); border-color: var(--text-dim); }
-    .nav-tile.red { border-color: rgba(196, 69, 54, 0.3); }
-    .tile-label { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
-    .tile-val { font-size: 1rem; color: var(--text); }
-
-    .hub-brief-toggle {
-      width: 100%;
-      background: rgba(15, 52, 96, 0.25);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text-muted);
-      font-family: var(--sans);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      padding: 12px 16px;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0;
-      transition: all 0.2s;
-    }
-    .hub-brief-toggle:hover { border-color: var(--text-dim); color: var(--text); }
-    .hub-brief-toggle.open { color: var(--text); border-color: var(--amber-dim); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
     .hub-brief-body {
       border: 1px solid var(--border);
-      border-top: none;
-      border-radius: 0 0 var(--radius) var(--radius);
+      border-radius: var(--radius);
       padding: 20px 16px;
-      margin-bottom: 24px;
+      margin-top: 8px;
       background: rgba(10, 10, 20, 0.5);
       max-height: 420px;
       overflow-y: auto;
     }
 
-    /* ===========================
-       FREE-FORM ACTION INPUT
-    =========================== */
-    .action-input-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .action-input-row input {
-      flex: 1;
+    /* --- ACTION BOX (CENTERPIECE) --- */
+    .action-box {
       background: rgba(10, 10, 20, 0.6);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius);
-      color: var(--text);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 8px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .action-box:focus-within {
+      border-color: var(--amber-dim);
+      box-shadow: 0 0 0 4px var(--amber-glow), 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .action-box textarea {
       font-family: var(--sans);
       font-size: 16px;
-      padding: 12px 16px;
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      resize: none;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      min-height: 52px;
+      line-height: 1.5;
     }
-    .action-input-row input::placeholder { color: var(--text-dim); }
-    .action-input-row input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px var(--amber-glow); }
+    .action-box textarea::placeholder { color: var(--text-dim); }
+    .action-box-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      gap: 16px;
+    }
+    .action-hint { font-size: 12px; color: var(--text-dim); }
 
-    #action-results { margin-bottom: 24px; }
-    .action-card {
+    /* --- INVESTIGATION FEED --- */
+    .feed-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .feed-card {
+      background: rgba(10, 10, 20, 0.45);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 12px;
-      background: rgba(10, 10, 20, 0.45);
       transition: background 0.2s;
     }
-    .action-card:hover { background: rgba(10, 10, 20, 0.6); }
-    .action-card-header {
+    .feed-card:hover { background: rgba(10, 10, 20, 0.6); }
+    .feed-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .feed-tag {
       font-family: var(--mono);
       font-size: 10px;
       font-weight: 600;
-      color: var(--amber);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 10px;
-      background: var(--amber-glow);
-      display: inline-block;
       padding: 3px 8px;
       border-radius: 3px;
     }
-    .action-card-prompt {
-      color: var(--text-muted);
-      margin-bottom: 10px;
+    .feed-tag.investigation { background: rgba(212, 168, 67, 0.15); color: var(--amber); }
+    .feed-tag.interview     { background: rgba(92, 138, 138, 0.15); color: var(--teal); }
+    .feed-tag.evidence      { background: rgba(92, 138, 138, 0.2);  color: #6fa8a8; }
+    .feed-tag.advisor       { background: rgba(160, 120, 200, 0.15); color: #a88cc8; }
+    .feed-prompt {
       font-size: 14px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 10px;
       padding-left: 12px;
       border-left: 2px solid var(--border-light);
     }
-    .action-card-text { color: #c8c8d4; line-height: 1.7; font-size: 15px; }
-    .action-card-cost { font-family: var(--mono); font-size: 12px; color: var(--amber); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-    .action-card.typing { opacity: 0.6; }
-    .opt-cost { font-family: var(--mono); font-size: 13px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-    .opt-row.chosen .opt-cost { color: var(--amber); }
+    .feed-narrative { font-size: 15px; line-height: 1.7; color: #c8c8d4; margin-bottom: 12px; }
+    .feed-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .feed-cost { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+    .feed-budget-after { font-family: var(--mono); font-size: 12px; color: var(--amber); }
+    .feed-card.typing { opacity: 0.6; }
+
+    /* --- BOTTOM NAV --- */
+    .hub-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .hub-nav-tile {
+      background: rgba(15, 52, 96, 0.25);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .hub-nav-tile:hover { background: rgba(15, 52, 96, 0.45); border-color: var(--text-dim); }
+    .hub-nav-tile .tile-icon { font-size: 24px; margin-bottom: 6px; }
+    .hub-nav-tile .tile-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .hub-nav-tile .tile-count { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+    .hub-accuse { text-align: center; margin-top: 20px; }
 
     /* ===========================
        CASE FILE SCREEN
@@ -1211,56 +1230,68 @@
 <!-- ===================== HUB ===================== -->
 <div id="s-hub" class="screen">
   <div class="page">
-    <div class="hub-topbar">
-      <button class="home-btn" id="hub-home">⌂ Case Library</button>
-    </div>
+
+    <!-- Header -->
     <div class="hub-header">
-      <div>
-        <div class="hub-subtitle">Active Case</div>
-        <div class="hub-title" id="hub-title"></div>
+      <div class="hub-header-left">
+        <button class="back-btn" id="hub-home">&#8592; Library</button>
+        <h1 id="hub-title"></h1>
+        <span class="role-badge" id="hub-role-badge"></span>
       </div>
-      <div>
-        <div class="budget-label">Budget</div>
-        <div class="budget-amt" id="hub-budget"></div>
+      <div class="hub-budget">
+        <div class="hub-budget-label">Budget Remaining</div>
+        <div class="hub-budget-val" id="hub-budget"></div>
       </div>
-    </div>
-    <!-- Case Brief panel (collapsible) -->
-    <div style="margin-bottom:24px">
-      <button id="hub-brief-toggle" class="hub-brief-toggle">
-        <span>Case Brief</span><span id="hub-brief-arrow">▸</span>
-      </button>
-      <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
     </div>
 
-    <!-- Free-form action input -->
-    <div class="action-input-row">
-      <input type="text" id="action-in" placeholder="What do you want to do next?" autocomplete="off">
-      <button id="action-btn">Investigate</button>
+    <!-- Action Input (centerpiece) -->
+    <div class="action-box">
+      <textarea id="action-in" rows="2" placeholder="What do you want to do next?" autocomplete="off"></textarea>
+      <div class="action-box-footer">
+        <span class="action-hint">Describe any investigative action — visit locations, interview witnesses, request records, run surveillance. Press Ctrl+Enter or click Investigate.</span>
+        <button class="primary" id="action-btn">Investigate</button>
+      </div>
     </div>
-    <div id="action-err" class="err" style="min-height:1.1em;margin-bottom:8px"></div>
-    <!-- Action results feed -->
-    <div id="action-results"></div>
-    <!-- Advisor area (hub context) -->
-    <div id="advisor-prompt-hub" class="advisor-prompt" style="display:none;margin-top:16px">
+    <div id="action-err" class="err" style="min-height:1.1em;margin-bottom:16px"></div>
+
+    <!-- Advisor area -->
+    <div id="advisor-prompt-hub" class="advisor-prompt" style="display:none;margin-bottom:16px">
       <div class="advisor-prompt-label">Advisor consultation available</div>
       <div id="advisor-btn-row-hub" class="advisor-btn-row"></div>
     </div>
-    <div id="advisor-response-hub" style="display:none;margin-top:12px"></div>
-    <!-- Nav tiles -->
-    <div class="nav-grid">
-      <div class="nav-tile" id="nav-casefile">
+    <div id="advisor-response-hub" style="display:none;margin-bottom:12px"></div>
+
+    <!-- Investigation Feed -->
+    <div class="feed-label" id="feed-label" style="display:none">Investigation Log</div>
+    <div id="action-results"></div>
+
+    <!-- Bottom Nav -->
+    <div class="hub-nav">
+      <div class="hub-nav-tile" id="nav-casefile">
+        <div class="tile-icon">&#128451;</div>
         <div class="tile-label">Case File</div>
-        <div class="tile-val" id="nav-c-val"></div>
+        <div class="tile-count" id="nav-c-val"></div>
       </div>
-      <div class="nav-tile" id="nav-suspects">
+      <div class="hub-nav-tile" id="nav-suspects">
+        <div class="tile-icon">&#128101;</div>
         <div class="tile-label">Suspects</div>
-        <div class="tile-val" id="nav-s-val"></div>
+        <div class="tile-count" id="nav-s-val"></div>
       </div>
-      <div class="nav-tile red" id="nav-accuse">
-        <div class="tile-label">Make Accusation</div>
-        <div class="tile-val" style="color:#a66">Commit to a suspect</div>
+      <div class="hub-nav-tile" id="nav-brief-tile">
+        <div class="tile-icon">&#128203;</div>
+        <div class="tile-label">Case Brief</div>
+        <div class="tile-count">Review briefing</div>
       </div>
     </div>
+
+    <!-- Collapsible brief (opened by Case Brief tile) -->
+    <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
+
+    <!-- Accusation -->
+    <div class="hub-accuse">
+      <button class="danger" id="nav-accuse">Make Accusation</button>
+    </div>
+
   </div>
 </div>
 
@@ -1963,44 +1994,39 @@ function renderHub() {
   const c = G.case;
   document.getElementById('hub-title').textContent = c.title || 'Untitled';
 
+  const roleLabels = { pi: 'Private Investigator', detective: 'Detective', fbi: 'FBI Agent' };
+  document.getElementById('hub-role-badge').textContent = roleLabels[G.role] || G.role;
+
   const bEl = document.getElementById('hub-budget');
   bEl.textContent = '$' + G.budget.toLocaleString();
-  bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
+  bEl.className   = 'hub-budget-val' + (G.budget < 500 ? ' low' : '');
 
-  document.getElementById('nav-c-val').textContent =
-    `${G.unlocked.size} item(s) unlocked`;
+  const evCount  = G.unlocked.size;
+  document.getElementById('nav-c-val').textContent = evCount > 0 ? `${evCount} item(s) unlocked` : 'No items yet';
 
+  const accuseBtn = document.getElementById('nav-accuse');
   if (G.role === 'pi') {
     const discovered = (c.suspects || []).filter(s => G.discoveredInfo.names.includes(s.name));
     document.getElementById('nav-s-val').textContent = `${discovered.length} identified`;
-    document.querySelector('#nav-accuse .tile-label').textContent = 'Submit Evidence';
-    document.querySelector('#nav-accuse .tile-val').textContent   = 'Hand off to law enforcement';
+    accuseBtn.textContent = 'Submit Evidence';
   } else {
     document.getElementById('nav-s-val').textContent = `${(c.suspects || []).length} suspect(s)`;
-    document.querySelector('#nav-accuse .tile-label').textContent = 'Make Accusation';
-    document.querySelector('#nav-accuse .tile-val').textContent   = 'Commit to a suspect';
+    accuseBtn.textContent = 'Make Accusation';
   }
 
-  // Populate case brief panel (collapsed by default, content always fresh)
+  // Populate collapsible brief (hidden by default, fresh each time)
   document.getElementById('hub-brief-body').innerHTML = renderCaseOpening();
   document.getElementById('hub-brief-body').style.display = 'none';
-  document.getElementById('hub-brief-arrow').textContent  = '▸';
-  document.getElementById('hub-brief-toggle').classList.remove('open');
 }
 
-document.getElementById('hub-brief-toggle').addEventListener('click', () => {
-  const body  = document.getElementById('hub-brief-body');
-  const arrow = document.getElementById('hub-brief-arrow');
-  const btn   = document.getElementById('hub-brief-toggle');
-  const isOpen = body.style.display !== 'none';
-  body.style.display    = isOpen ? 'none' : '';
-  arrow.textContent     = isOpen ? '▸' : '▾';
-  btn.classList.toggle('open', !isOpen);
+document.getElementById('nav-brief-tile').addEventListener('click', () => {
+  const body = document.getElementById('hub-brief-body');
+  body.style.display = body.style.display !== 'none' ? 'none' : '';
 });
 
-document.getElementById('nav-casefile') .addEventListener('click', () => { renderCaseFile();  show('casefile'); });
-document.getElementById('nav-suspects') .addEventListener('click', () => { renderSuspects();  show('suspects'); });
-document.getElementById('nav-accuse')   .addEventListener('click', () => { renderAccuse();    show('accuse'); });
+document.getElementById('nav-casefile').addEventListener('click', () => { renderCaseFile();  show('casefile'); });
+document.getElementById('nav-suspects').addEventListener('click', () => { renderSuspects();  show('suspects'); });
+document.getElementById('nav-accuse')  .addEventListener('click', () => { renderAccuse();    show('accuse'); });
 
 document.getElementById('hub-home')  .addEventListener('click', () => show('categories'));
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
@@ -2082,12 +2108,16 @@ let _actionInFlight = false;
 
 function renderActionCard(action, idx) {
   const costLine = (action.cost > 0)
-    ? `<div class="action-card-cost">▸ ${esc(action.cost_label)} — $${action.cost.toLocaleString()}</div>`
+    ? `<div class="feed-footer">
+        <span class="feed-cost">${esc(action.cost_label)} &mdash; $${action.cost.toLocaleString()}</span>
+       </div>`
     : '';
-  return `<div class="action-card" data-action-idx="${idx}">
-    <div class="action-card-header">Investigation ${idx + 1}</div>
-    <div class="action-card-prompt">&gt; ${esc(action.input)}</div>
-    <div class="action-card-text">${esc(action.narrative)}</div>
+  return `<div class="feed-card" data-action-idx="${idx}">
+    <div class="feed-card-top">
+      <span class="feed-tag investigation">Investigation</span>
+    </div>
+    <div class="feed-prompt">${esc(action.input)}</div>
+    <div class="feed-narrative">${esc(action.narrative)}</div>
     ${costLine}
   </div>`;
 }
@@ -2095,7 +2125,9 @@ function renderActionCard(action, idx) {
 function refreshActionResults() {
   const el = document.getElementById('action-results');
   if (!el) return;
+  const labelEl = document.getElementById('feed-label');
   const total = G.actions.length;
+  if (labelEl) labelEl.style.display = total > 0 ? '' : 'none';
   el.innerHTML = [...G.actions].reverse().map((a, revIdx) =>
     renderActionCard(a, total - 1 - revIdx)
   ).join('');
@@ -2147,7 +2179,7 @@ function processActionResult(input, narrative, cost, cost_label, discovered) {
   const bEl = document.getElementById('hub-budget');
   if (bEl) {
     bEl.textContent = '$' + G.budget.toLocaleString();
-    bEl.className   = 'budget-amt' + (G.budget < 500 ? ' low' : '');
+    bEl.className   = 'hub-budget-val' + (G.budget < 500 ? ' low' : '');
   }
 
   // Clear input
@@ -2220,8 +2252,8 @@ async function resolveAction(input) {
   // Show a typing card
   const resultsEl = document.getElementById('action-results');
   const typingCard = document.createElement('div');
-  typingCard.className = 'action-card typing';
-  typingCard.innerHTML = `<div class="action-card-prompt">&gt; ${esc(input)}</div><div class="action-card-text">Investigating...</div>`;
+  typingCard.className = 'feed-card typing';
+  typingCard.innerHTML = `<div class="feed-card-top"><span class="feed-tag investigation">Investigation</span></div><div class="feed-prompt">${esc(input)}</div><div class="feed-narrative">Investigating...</div>`;
   if (resultsEl) resultsEl.prepend(typingCard);
 
   // action_contexts pre-flight: if player input matches a keyword, use the template instead of the API
@@ -2317,7 +2349,7 @@ document.getElementById('action-btn').addEventListener('click', () => {
   resolveAction(document.getElementById('action-in').value);
 });
 document.getElementById('action-in').addEventListener('keydown', e => {
-  if (e.key === 'Enter') resolveAction(e.target.value);
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) resolveAction(e.target.value);
 });
 
 // ============================================================

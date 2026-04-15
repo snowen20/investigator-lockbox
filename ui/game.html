@@ -1045,6 +1045,20 @@
       transition: opacity 0.2s;
     }
     .option-card.selected .check { opacity: 1; }
+    .option-card.disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .option-card.disabled::after {
+      content: 'Federal cases only';
+      display: block;
+      margin-top: 6px;
+      font-size: 10px;
+      font-style: italic;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
     .toggle-row {
       display: flex;
       align-items: center;
@@ -1979,19 +1993,19 @@ function renderSetup() {
     </div>`
   ).join('');
 
-  // Role cards — FBI only available for federal-jurisdiction cases
+  // Role cards — FBI visible but disabled for non-federal cases
   const isFederal = G.case && G.case.jurisdiction === 'federal';
-  const availableRoles = ROLE_OPTIONS.filter(opt => opt.key !== 'fbi' || isFederal);
   if (!isFederal && G.setupRole === 'fbi') G.setupRole = 'detective';
 
-  document.getElementById('setup-role-opts').innerHTML = availableRoles.map(opt =>
-    `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
+  document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt => {
+    const isDisabled = opt.key === 'fbi' && !isFederal;
+    return `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}${isDisabled ? ' disabled' : ''}" data-role="${esc(opt.key)}">
       <span class="check">&#10003;</span>
       <span class="option-icon">${opt.icon}</span>
       <h4>${esc(opt.label)}</h4>
       <p>${esc(opt.desc)}</p>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
 
   // Advisor toggle state
   const toggle    = document.getElementById('setup-advisor-toggle');

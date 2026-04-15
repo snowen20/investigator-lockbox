@@ -1147,8 +1147,7 @@
 <div id="s-start" class="screen active">
   <div class="wrap">
     <div class="landing-lockup">
-      <div class="landing-icon">&#128270;</div>
-      <div class="start-title">Investigator Lockbox</div>
+      <img src="../images/background images/Main_Title.png" alt="Investigator Lockbox" style="max-width:420px;width:100%;margin:0 auto 8px;display:block;">
       <div class="landing-rule"></div>
       <div class="landing-tagline">Every case has a truth. Find it.</div>
     </div>
@@ -1453,7 +1452,11 @@ const G = {
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('s-' + id).classList.add('active');
-  if (id !== 'categories') setCategoryBg(null);
+  if (id === 'start') {
+    const layer = document.getElementById('bg-layer');
+    layer.style.backgroundImage = "url('../images/background images/wilderness-rescue.jpg')";
+    layer.style.opacity = '0.3';
+  } else if (id !== 'categories') setCategoryBg(null);
 }
 
 function esc(s) {
@@ -1510,6 +1513,13 @@ function setCategoryBg(catName) {
 // ============================================================
 // START
 // ============================================================
+// Set landing page background on initial load
+(function() {
+  const layer = document.getElementById('bg-layer');
+  layer.style.backgroundImage = "url('../images/background images/wilderness-rescue.jpg')";
+  layer.style.opacity = '0.3';
+})();
+
 const apiKeyEl  = document.getElementById('api-key');
 const browseBtn = document.getElementById('browse-btn');
 

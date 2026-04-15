@@ -1,6 +1,7 @@
 {
   "title": "Ash Creek Route",
   "category": "Human Disappearance / Abduction",
+  "jurisdiction": "local",
   "briefing": "You have been called in to investigate the disappearance of Lena Mercer, a 29-year-old rural mail carrier for Cottonwood County. Lena failed to return from Route 17A on the evening of September 14th. Her postal vehicle was found abandoned at a turnout near Ash Creek with mail tubs still inside, her wallet on the seat, and no sign of voluntary departure. Your job is to determine what happened to Lena, identify who is responsible, and build enough evidence to make an accusation. You have a limited investigation budget — spend it wisely.",
   "solution": "Lena Mercer was abducted by Calvin Rusk, owner of Rusk Recovery & Salvage. During her rural mail route she noticed Rusk using the closed Ash Creek weigh station near Mile Marker 12 to offload stolen farm equipment. Rusk intercepted her, removed the SD card from the postal truck dashcam, forced her into his rollback tow truck, and hid her alive inside a locked parts-storage container at his salvage yard. The case is solved by linking the last scanner ping, orange clay transfer, gas station video, the empty dashcam slot, and Rusk's false poker alibi.",
   "victim": {

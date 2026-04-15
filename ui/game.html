@@ -1979,8 +1979,12 @@ function renderSetup() {
     </div>`
   ).join('');
 
-  // Role cards
-  document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt =>
+  // Role cards — FBI only available for federal-jurisdiction cases
+  const isFederal = G.case && G.case.jurisdiction === 'federal';
+  const availableRoles = ROLE_OPTIONS.filter(opt => opt.key !== 'fbi' || isFederal);
+  if (!isFederal && G.setupRole === 'fbi') G.setupRole = 'detective';
+
+  document.getElementById('setup-role-opts').innerHTML = availableRoles.map(opt =>
     `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
       <span class="check">&#10003;</span>
       <span class="option-icon">${opt.icon}</span>

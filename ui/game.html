@@ -1029,9 +1029,11 @@
       box-shadow: 0 0 0 1px var(--amber-dim);
     }
     .option-card .option-icon {
-      font-size: 22px;
+      width: 36px;
+      height: 36px;
       margin-bottom: 8px;
       display: block;
+      object-fit: contain;
     }
     .option-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
     .option-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
@@ -1963,19 +1965,19 @@ function updateDiscoveredFromUnlocked() {
 // SETUP SCREEN
 // ============================================================
 const ROLE_OPTIONS = [
-  { key: 'pi',        icon: '&#128269;', label: 'Private Investigator', desc: 'No badge. No warrant power. Harder mode with 75% budget.' },
-  { key: 'detective', icon: '&#128737;', label: 'Police Detective',     desc: 'Standard law enforcement authority. Department resources and warrants available.' },
-  { key: 'fbi',       icon: '&#11088;',  label: 'FBI Agent',            desc: "Federal authority. Fast warrants, reduced costs, high cooperation." },
+  { key: 'pi',        icon: '../images/background images/icons/private investigator.png', label: 'Private Investigator', desc: 'No badge. No warrant power. Harder mode with 75% budget.' },
+  { key: 'detective', icon: '../images/background images/icons/police detective.png',     label: 'Police Detective',     desc: 'Standard law enforcement authority. Department resources and warrants available.' },
+  { key: 'fbi',       icon: '../images/background images/icons/FBI.png',                  label: 'FBI Agent',            desc: "Federal authority. Fast warrants, reduced costs, high cooperation." },
 ];
 
 const FORMAT_OPTIONS = [
-  { key: 'briefing',           icon: '&#128203;', label: 'Briefing',           desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
-  { key: 'dossier',            icon: '&#128193;', label: 'Dossier',            desc: 'Case file format. Organized summary: incident, names, dates, locations, evidence notes.' },
-  { key: 'narrative',          icon: '&#128214;', label: 'Narrative',          desc: 'Scene-based opening. Dropped into events as they unfold. For immersion.' },
-  { key: 'mysterious_message', icon: '&#128270;', label: 'Mysterious Message', desc: 'Begins with something incomplete — anonymous text, voicemail, cryptic note.' },
-  { key: 'email_chains',       icon: '&#9993;',   label: 'Email Chains',       desc: 'Information fragmented across email threads, replies, forwards, contradictions.' },
-  { key: 'text_messages',      icon: '&#128172;', label: 'Text Messages',      desc: 'Opens through texts or chat logs. Informal, immediate.' },
-  { key: 'mix',                icon: '&#127922;', label: 'Mix',                desc: 'Multiple formats combined in sequence. For realism and variety.' },
+  { key: 'briefing',           icon: '../images/background images/icons/briefing.png',           label: 'Briefing',           desc: 'Direct mission-style. Situation, role, objective, limits. Compressed and operational.' },
+  { key: 'dossier',            icon: '../images/background images/icons/dossier.png',            label: 'Dossier',            desc: 'Case file format. Organized summary: incident, names, dates, locations, evidence notes.' },
+  { key: 'narrative',          icon: '../images/background images/icons/narrative.png',          label: 'Narrative',          desc: 'Scene-based opening. Dropped into events as they unfold. For immersion.' },
+  { key: 'mysterious_message', icon: '../images/background images/icons/mysterious message.png', label: 'Mysterious Message', desc: 'Begins with something incomplete — anonymous text, voicemail, cryptic note.' },
+  { key: 'email_chains',       icon: '../images/background images/icons/email chain.png',        label: 'Email Chains',       desc: 'Information fragmented across email threads, replies, forwards, contradictions.' },
+  { key: 'text_messages',      icon: '../images/background images/icons/text messages.png',      label: 'Text Messages',      desc: 'Opens through texts or chat logs. Informal, immediate.' },
+  { key: 'mix',                icon: '../images/background images/icons/Mix.png',                label: 'Mix',                desc: 'Multiple formats combined in sequence. For realism and variety.' },
 ];
 
 function renderSetup() {
@@ -1987,7 +1989,7 @@ function renderSetup() {
   document.getElementById('setup-format-opts').innerHTML = FORMAT_OPTIONS.map(opt =>
     `<div class="option-card${G.setupFormat === opt.key ? ' selected' : ''}" data-fmt="${esc(opt.key)}">
       <span class="check">&#10003;</span>
-      <span class="option-icon">${opt.icon}</span>
+      <img class="option-icon" src="${opt.icon}" alt="${esc(opt.label)}">
       <h4>${esc(opt.label)}</h4>
       <p>${esc(opt.desc)}</p>
     </div>`
@@ -2001,7 +2003,7 @@ function renderSetup() {
     const isDisabled = opt.key === 'fbi' && !isFederal;
     return `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}${isDisabled ? ' disabled' : ''}" data-role="${esc(opt.key)}">
       <span class="check">&#10003;</span>
-      <span class="option-icon">${opt.icon}</span>
+      <img class="option-icon" src="${opt.icon}" alt="${esc(opt.label)}">
       <h4>${esc(opt.label)}</h4>
       <p>${esc(opt.desc)}</p>
     </div>`;

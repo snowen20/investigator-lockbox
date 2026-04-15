@@ -1454,7 +1454,7 @@ function show(id) {
   document.getElementById('s-' + id).classList.add('active');
   if (id === 'start') {
     const layer = document.getElementById('bg-layer');
-    layer.style.backgroundImage = "url('../images/background images/wilderness-rescue.jpg')";
+    layer.style.backgroundImage = "url('../images/background images/wilderness-rescue_light.jpg')";
     layer.style.opacity = '0.3';
   } else if (id !== 'categories') setCategoryBg(null);
 }
@@ -1516,7 +1516,7 @@ function setCategoryBg(catName) {
 // Set landing page background on initial load
 (function() {
   const layer = document.getElementById('bg-layer');
-  layer.style.backgroundImage = "url('../images/background images/wilderness-rescue.jpg')";
+  layer.style.backgroundImage = "url('../images/background images/wilderness-rescue_light.jpg')";
   layer.style.opacity = '0.3';
 })();
 

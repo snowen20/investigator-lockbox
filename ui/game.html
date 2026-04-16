@@ -1835,7 +1835,10 @@ function esc(s) {
 }
 
 function suspectKey(name) {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  // Produces Title_Case filenames matching images/Avatars_120x120/ convention
+  return name.trim().split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('_');
 }
 
 // ============================================================
@@ -2984,7 +2987,7 @@ function renderSuspects() {
       const key = suspectKey(s.name);
       return `<div class="suspect-card">
         <div class="suspect-avatar">
-          <img src="../images/Avatars_120x120/${key}.png" alt="${esc(s.name)}"
+          <img src="../images/Avatars_120x120/${key}.jpg" alt="${esc(s.name)}"
                onerror="this.style.display='none';this.insertAdjacentText('afterend','&#128100;')">
         </div>
         <h3>${esc(s.name)}</h3>
@@ -3052,7 +3055,7 @@ function renderChatWindow() {
       return `<div class="msg advisor"><div class="advisor-role-tag">[ADVISOR]</div>${esc(m.content.replace(/^\[ADVISOR\]\s*/, ''))}</div>`;
     }
     return `<div class="suspect-bubble-row">
-      <img class="chat-avatar" src="../images/Avatars_48x48/${key}.png"
+      <img class="chat-avatar" src="../images/Avatars_120x120/${key}.jpg"
            width="48" height="48" alt="${esc(G.suspect.name)}"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div class="chat-avatar-ph" style="display:none">${initial}</div>

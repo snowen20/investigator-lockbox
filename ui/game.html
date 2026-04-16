@@ -768,6 +768,61 @@
     .tab-btn.active { color: var(--amber); border-bottom-color: var(--amber); }
     .tab-btn:hover:not(.active) { color: var(--text); background: none; }
 
+    /* --- TOAST NOTIFICATION --- */
+    #toast-container {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      background: #1e2a3a;
+      border: 1px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: 14px;
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      max-width: 480px;
+      text-align: center;
+      animation: toast-in 0.2s ease;
+    }
+    .toast strong { color: var(--teal); }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .toast.toast-out {
+      animation: toast-out 0.3s ease forwards;
+    }
+    @keyframes toast-out {
+      to { opacity: 0; transform: translateY(-8px); }
+    }
+
+    /* --- NEW-ITEM BADGE on sidebar Case File tile --- */
+    .new-badge {
+      display: inline-block;
+      background: var(--teal);
+      color: #0a0a14;
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
     .item-card {
       padding: 16px 18px;
       border: 1px solid var(--border);
@@ -778,6 +833,7 @@
     }
     .item-card:hover { background: rgba(10, 10, 20, 0.6); }
     .item-card.locked { opacity: 0.3; }
+    .item-card.new-item { border-color: var(--teal); box-shadow: 0 0 0 1px rgba(92,138,138,0.3), 0 0 10px rgba(92,138,138,0.12); }
     .item-id { font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
     .item-type { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; background: var(--teal-dim); display: inline-block; padding: 2px 6px; border-radius: 3px; }
     .item-desc { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 5px; }
@@ -1608,6 +1664,9 @@
   </div>
 </div>
 
+<!-- ===================== TOAST CONTAINER ===================== -->
+<div id="toast-container"></div>
+
 <!-- ===================== BRIEF MODAL ===================== -->
 <div id="brief-modal-backdrop" class="brief-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="brief-modal-title-el">
   <div class="brief-modal" id="brief-modal">
@@ -1656,6 +1715,7 @@ const G = {
   pendingAdvisorContext: null,  // set when advisor buttons are shown
   clockMinutes: 0,     // total minutes elapsed since Day 1, 8:00 AM
   pendingItems: [],    // [{id, label, readyAt, evidence_ids, document_ids}] — time-gated items
+  seenUnlocked: new Set(), // IDs the player has seen in the Case File (clears "new" badges)
 };
 
 // ============================================================
@@ -1681,6 +1741,7 @@ function saveState(key) {
       journal:       G.journal,
       clockMinutes:  G.clockMinutes,
       pendingItems:  G.pendingItems,
+      seenUnlocked:  [...G.seenUnlocked],
     };
     localStorage.setItem(_LS_PREFIX + key, JSON.stringify(state));
   } catch (e) {
@@ -1814,6 +1875,48 @@ function renderClockDisplay() {
 function renderInterviewClock() {
   const el = document.getElementById('iview-clock');
   if (el) el.textContent = clockMinutesToDisplay(G.clockMinutes);
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+function showToast(html, durationMs) {
+  durationMs = durationMs || 5000;
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = html;
+  container.appendChild(toast);
+
+  const dismiss = () => {
+    if (!toast.parentNode) return;
+    toast.classList.add('toast-out');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+  };
+  toast.addEventListener('click', dismiss);
+  setTimeout(dismiss, durationMs);
+}
+
+// ============================================================
+// CASE FILE BADGE
+// ============================================================
+// Count unlocked IDs not yet in G.seenUnlocked
+function unseenCount() {
+  let n = 0;
+  for (const id of G.unlocked) { if (!G.seenUnlocked.has(id)) n++; }
+  return n;
+}
+
+// Refresh the "NEW (N)" badge on the Case File sidebar tile
+function updateCaseFileBadge() {
+  const el = document.getElementById('nav-c-val');
+  if (!el) return;
+  const total  = G.unlocked.size;
+  const unseen = unseenCount();
+  let text = total > 0 ? `${total} item(s) unlocked` : 'No items yet';
+  if (unseen > 0) text += ` <span class="new-badge">+${unseen} new</span>`;
+  el.innerHTML = text;
 }
 
 // ============================================================
@@ -2035,8 +2138,9 @@ function loadCase(key) {
     G.tab          = 'ev';
     G.setupRole    = G.role;
     G.pendingAdvisorContext = null;
-    G.clockMinutes = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
-    G.pendingItems = Array.isArray(saved.pendingItems) ? saved.pendingItems : [];
+    G.clockMinutes  = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
+    G.pendingItems  = Array.isArray(saved.pendingItems)  ? saved.pendingItems  : [];
+    G.seenUnlocked  = new Set(Array.isArray(saved.seenUnlocked) ? saved.seenUnlocked : []);
     refreshActionResults();
     renderHub();
     show('hub');
@@ -2064,8 +2168,9 @@ function loadCase(key) {
     raw_statements: {},
   };
   G.pendingAdvisorContext = null;
-  G.clockMinutes = 0;
-  G.pendingItems = [];
+  G.clockMinutes  = 0;
+  G.pendingItems  = [];
+  G.seenUnlocked  = new Set();
   renderSetup();
   show('setup');
 }
@@ -2456,8 +2561,7 @@ function renderHub() {
   bEl.textContent = '$' + G.budget.toLocaleString();
   bEl.className   = 'hub-budget-val' + (G.budget < 500 ? ' low' : '');
 
-  const evCount  = G.unlocked.size;
-  document.getElementById('nav-c-val').textContent = evCount > 0 ? `${evCount} item(s) unlocked` : 'No items yet';
+  updateCaseFileBadge();
 
   const accuseBtn = document.getElementById('nav-accuse');
   if (G.role === 'pi') {
@@ -2500,7 +2604,14 @@ document.addEventListener('keydown', e => {
   }
 });
 
-document.getElementById('nav-casefile').addEventListener('click', () => { renderCaseFile();  show('casefile'); });
+document.getElementById('nav-casefile').addEventListener('click', () => {
+  // Mark everything currently unlocked as seen before rendering
+  for (const id of G.unlocked) G.seenUnlocked.add(id);
+  updateCaseFileBadge();
+  saveState(G.caseKey);
+  renderCaseFile();
+  show('casefile');
+});
 document.getElementById('nav-suspects').addEventListener('click', () => { renderSuspects();  show('suspects'); });
 document.getElementById('nav-accuse')  .addEventListener('click', () => { renderAccuse();    show('accuse'); });
 
@@ -2526,7 +2637,9 @@ document.getElementById('acc-back')  .addEventListener('click', () => { renderHu
 // FREE-FORM ACTION RESOLVER
 // ============================================================
 
-const ACTION_SYSTEM_PROMPT_BASE = `You are the game engine for a detective investigation game. The player is a lead investigator. They have submitted an action they want to take. Your job is to resolve that action against the case data.
+const ACTION_SYSTEM_PROMPT_BASE = `CRITICAL: Respond with ONLY the JSON object. Do NOT include any prose, narrative text, or explanation before or after the JSON. Do NOT write the narrative twice. The narrative goes inside the JSON structure in the "narrative" field. Your entire response must start with { and end with }.
+
+You are the game engine for a detective investigation game. The player is a lead investigator. They have submitted an action they want to take. Your job is to resolve that action against the case data.
 
 RULES:
 1. ONLY return information that exists in or can be directly inferred from the case data. Do not invent evidence, witnesses, locations, or facts not present in the case.
@@ -2728,7 +2841,16 @@ function processActionResult(input, narrative, cost, cost_label, discovered, tim
   });
 
   // Push remaining clock events (day_end, item_resolved) — appear above main action
-  for (const ev of otherClockEvents) G.actions.push(ev);
+  for (const ev of otherClockEvents) {
+    G.actions.push(ev);
+    // Fire a toast for each resolved item
+    if (ev.type === 'item_resolved') {
+      const count = (ev.evidence_ids || []).length + (ev.document_ids || []).length;
+      const note  = count > 0 ? ` <strong>${count} item${count > 1 ? 's' : ''}</strong> added to Case File.` : '';
+      showToast(`&#9989; <strong>${esc(ev.label)}</strong> is ready.${note}`);
+      updateCaseFileBadge();
+    }
+  }
 
   // --- Re-render ---
   refreshActionResults();
@@ -2758,6 +2880,40 @@ function processActionResult(input, narrative, cost, cost_label, discovered, tim
       buildAdvisorButtons(context);
     }
   }
+}
+
+// Robustly extract a JSON object from a response that may contain surrounding prose.
+// Strategy 1: strip markdown fences, parse whole string.
+// Strategy 2: locate the first { and walk forward counting braces to find the balanced close.
+// Returns the parsed object or null if all strategies fail.
+function _extractActionJson(text) {
+  // Strategy 1 — strip fences
+  try {
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    return JSON.parse(cleaned);
+  } catch {}
+
+  // Strategy 2 — find balanced { ... }
+  const start = text.indexOf('{');
+  if (start !== -1) {
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (esc)            { esc = false; continue; }
+      if (ch === '\\' && inStr) { esc = true;  continue; }
+      if (ch === '"')     { inStr = !inStr; continue; }
+      if (inStr)          continue;
+      if (ch === '{')     depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          try { return JSON.parse(text.slice(start, i + 1)); } catch {}
+          break;
+        }
+      }
+    }
+  }
+  return null;
 }
 
 async function resolveAction(input) {
@@ -2888,14 +3044,9 @@ async function resolveAction(input) {
     const data    = await res.json();
     const rawText = data.content[0].text.trim();
 
-    // Parse JSON response (strip markdown fences if present)
-    let parsed;
-    try {
-      const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
-      parsed = JSON.parse(cleaned);
-    } catch {
-      parsed = { narrative: rawText, cost: 0, cost_label: '', discovered: {} };
-    }
+    // Parse JSON response — try multiple strategies before falling back to raw text
+    const parsed = _extractActionJson(rawText) ||
+      { narrative: rawText, cost: 0, cost_label: '', time_cost: 0, time_label: '', pending_item: null, discovered: {} };
 
     const narrative    = String(parsed.narrative  || '');
     const cost         = typeof parsed.cost       === 'number' ? Math.max(0, Math.round(parsed.cost)) : 0;
@@ -2942,8 +3093,9 @@ function renderCaseFile() {
   let evHtml = evidence.map(e => {
     const unlocked = G.unlocked.has(e.id);
     if (unlocked) {
-      return `<div class="item-card">
-        <div class="item-id">${esc(e.id)}<span class="phase-tag">phase ${e.available_at_phase}</span></div>
+      const isNew = !G.seenUnlocked.has(e.id);
+      return `<div class="item-card${isNew ? ' new-item' : ''}">
+        <div class="item-id">${esc(e.id)}${isNew ? '<span class="new-badge">new</span>' : ''}<span class="phase-tag">phase ${e.available_at_phase}</span></div>
         <div class="item-type">${esc(e.type || '')}</div>
         <div class="item-desc">${esc(e.description || '')}</div>
         <div class="item-points">→ ${esc(e.points_to || '')}</div>
@@ -2959,8 +3111,9 @@ function renderCaseFile() {
   let docHtml = documents.map(d => {
     const unlocked = G.unlocked.has(d.id);
     if (unlocked) {
-      return `<div class="item-card">
-        <div class="item-id">${esc(d.id)}<span class="phase-tag">phase ${d.phase}</span></div>
+      const isNew = !G.seenUnlocked.has(d.id);
+      return `<div class="item-card${isNew ? ' new-item' : ''}">
+        <div class="item-id">${esc(d.id)}${isNew ? '<span class="new-badge">new</span>' : ''}<span class="phase-tag">phase ${d.phase}</span></div>
         <div class="item-type">${esc(d.type || '')}</div>
         <div class="item-desc">${esc(d.content || '')}</div>
       </div>`;

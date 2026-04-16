@@ -465,10 +465,15 @@
     }
     .hub-header-left { display: flex; align-items: center; gap: 12px; }
     .hub-header-left h1 { font-family: var(--serif); font-size: 1.4rem; line-height: 1.2; }
+    /* Hub resources row: clock + budget */
+    .hub-resources { display: flex; gap: 24px; align-items: flex-end; }
     .hub-budget { text-align: right; }
     .hub-budget-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 2px; }
     .hub-budget-val { font-family: var(--mono); font-size: 1.6rem; font-weight: 600; color: var(--amber); line-height: 1; }
     .hub-budget-val.low { color: var(--red); }
+    .hub-clock { text-align: right; }
+    .hub-clock-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 2px; }
+    .hub-clock-val { font-family: var(--mono); font-size: 1.1rem; font-weight: 600; color: var(--teal); line-height: 1; white-space: nowrap; }
 
     .hub-brief-body {
       border: 1px solid var(--border);
@@ -545,10 +550,13 @@
       padding: 3px 8px;
       border-radius: 3px;
     }
-    .feed-tag.investigation { background: rgba(212, 168, 67, 0.15); color: var(--amber); }
-    .feed-tag.interview     { background: rgba(92, 138, 138, 0.15); color: var(--teal); }
-    .feed-tag.evidence      { background: rgba(92, 138, 138, 0.2);  color: #6fa8a8; }
-    .feed-tag.advisor       { background: rgba(160, 120, 200, 0.15); color: #a88cc8; }
+    .feed-tag.investigation  { background: rgba(212, 168, 67, 0.15); color: var(--amber); }
+    .feed-tag.interview      { background: rgba(92, 138, 138, 0.15); color: var(--teal); }
+    .feed-tag.evidence       { background: rgba(92, 138, 138, 0.2);  color: #6fa8a8; }
+    .feed-tag.advisor        { background: rgba(160, 120, 200, 0.15); color: #a88cc8; }
+    .feed-tag.day-transition { background: rgba(30, 70, 110, 0.3); color: #6fa0c0; }
+    .feed-tag.resolved       { background: rgba(40, 140, 80, 0.2);  color: #5caa7a; }
+    .feed-tag.pending-item   { background: rgba(160, 120, 50, 0.2); color: #b8924a; }
     .feed-prompt {
       font-size: 14px;
       color: var(--text-muted);
@@ -566,32 +574,128 @@
       border-top: 1px solid var(--border);
     }
     .feed-cost { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+    .feed-time { font-family: var(--mono); font-size: 12px; color: var(--teal); }
+    .feed-sep  { font-size: 12px; color: var(--text-dim); }
     .feed-budget-after { font-family: var(--mono); font-size: 12px; color: var(--amber); }
-    .feed-card.typing { opacity: 0.6; }
+    .feed-time-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .feed-card.typing      { opacity: 0.6; }
+    .feed-card.day-end-card  { border-color: rgba(30, 70, 110, 0.35); background: rgba(10, 20, 35, 0.6); }
+    .feed-card.resolved-card { border-color: rgba(40, 140, 80, 0.3);  background: rgba(10, 25, 15, 0.6); }
+    .feed-card.pending-card  { border-color: rgba(160, 120, 50, 0.25); background: rgba(20, 15, 10, 0.5); }
 
-    /* --- BOTTOM NAV --- */
-    .hub-nav {
+    /* --- HUB TWO-COLUMN LAYOUT --- */
+    .hub-layout {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 32px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
+      grid-template-columns: 1fr 220px;
+      gap: 24px;
+      align-items: start;
+    }
+    .hub-main { min-width: 0; }
+    .hub-sidebar {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* --- SIDEBAR NAV --- */
+    .hub-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .hub-nav-tile {
       background: rgba(15, 52, 96, 0.25);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px;
-      text-align: center;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
     .hub-nav-tile:hover { background: rgba(15, 52, 96, 0.45); border-color: var(--text-dim); }
-    .hub-nav-tile .tile-icon { font-size: 24px; margin-bottom: 6px; }
-    .hub-nav-tile .tile-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-    .hub-nav-tile .tile-count { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
-    .hub-accuse { text-align: center; margin-top: 20px; }
+    .hub-nav-tile .tile-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
+    .hub-nav-tile .tile-info { display: flex; flex-direction: column; min-width: 0; }
+    .hub-nav-tile .tile-label { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .hub-nav-tile .tile-count { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hub-accuse { margin-top: 4px; }
+    .hub-accuse .danger { width: 100%; }
+    .hub-restart { margin-top: 4px; text-align: center; }
+    .hub-restart-btn {
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px 0;
+      text-decoration: underline;
+      letter-spacing: 0.02em;
+    }
+    .hub-restart-btn:hover { color: var(--text-muted); }
+
+    /* In-progress badge on case library cards */
+    .inprogress-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(212, 168, 67, 0.15);
+      color: var(--amber);
+      border: 1px solid var(--amber-dim);
+      border-radius: 3px;
+      padding: 1px 5px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    /* --- MOBILE: stack layout --- */
+    @media (max-width: 680px) {
+      .hub-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .hub-sidebar {
+        position: static;
+        order: -1;
+        background: rgba(10, 10, 20, 0.4);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px;
+      }
+      .hub-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .hub-nav-tile {
+        flex: 1;
+        min-width: 80px;
+        flex-direction: column;
+        text-align: center;
+        justify-content: center;
+        padding: 10px 8px;
+        gap: 4px;
+      }
+      .hub-nav-tile .tile-icon { font-size: 18px; }
+      .hub-nav-tile .tile-info { align-items: center; }
+      .hub-nav-tile .tile-label { font-size: 12px; }
+      .hub-nav-tile .tile-count { display: none; }
+      .hub-accuse { margin-top: 0; }
+    }
 
     /* ===========================
        CASE FILE SCREEN
@@ -1276,59 +1380,90 @@
         <h1 id="hub-title"></h1>
         <span class="role-badge" id="hub-role-badge"></span>
       </div>
-      <div class="hub-budget">
-        <div class="hub-budget-label">Budget Remaining</div>
-        <div class="hub-budget-val" id="hub-budget"></div>
+      <div class="hub-resources">
+        <div class="hub-clock">
+          <div class="hub-clock-label">Time</div>
+          <div class="hub-clock-val" id="hub-clock">Day 1 &mdash; 8:00 AM</div>
+        </div>
+        <div class="hub-budget">
+          <div class="hub-budget-label">Budget</div>
+          <div class="hub-budget-val" id="hub-budget"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Action Input (centerpiece) -->
-    <div class="action-box">
-      <textarea id="action-in" rows="2" placeholder="What do you want to do next?" autocomplete="off"></textarea>
-      <div class="action-box-footer">
-        <span class="action-hint">Describe any investigative action — visit locations, interview witnesses, request records, run surveillance. Press Ctrl+Enter or click Investigate.</span>
-        <button class="primary" id="action-btn">Investigate</button>
-      </div>
-    </div>
-    <div id="action-err" class="err" style="min-height:1.1em;margin-bottom:16px"></div>
+    <!-- Two-column layout -->
+    <div class="hub-layout">
 
-    <!-- Advisor area -->
-    <div id="advisor-prompt-hub" class="advisor-prompt" style="display:none;margin-bottom:16px">
-      <div class="advisor-prompt-label">Advisor consultation available</div>
-      <div id="advisor-btn-row-hub" class="advisor-btn-row"></div>
-    </div>
-    <div id="advisor-response-hub" style="display:none;margin-bottom:12px"></div>
+      <!-- Main content: action input + log -->
+      <div class="hub-main">
 
-    <!-- Investigation Feed -->
-    <div class="feed-label" id="feed-label" style="display:none">Investigation Log</div>
-    <div id="action-results"></div>
+        <!-- Action Input (centerpiece) -->
+        <div class="action-box">
+          <textarea id="action-in" rows="2" placeholder="What do you want to do next?" autocomplete="off"></textarea>
+          <div class="action-box-footer">
+            <span class="action-hint">Describe any investigative action — visit locations, interview witnesses, request records, run surveillance. Press Ctrl+Enter or click Investigate.</span>
+            <button class="primary" id="action-btn">Investigate</button>
+          </div>
+        </div>
+        <div id="action-err" class="err" style="min-height:1.1em;margin-bottom:16px"></div>
 
-    <!-- Bottom Nav -->
-    <div class="hub-nav">
-      <div class="hub-nav-tile" id="nav-casefile">
-        <div class="tile-icon">&#128451;</div>
-        <div class="tile-label">Case File</div>
-        <div class="tile-count" id="nav-c-val"></div>
-      </div>
-      <div class="hub-nav-tile" id="nav-suspects">
-        <div class="tile-icon">&#128101;</div>
-        <div class="tile-label">Suspects</div>
-        <div class="tile-count" id="nav-s-val"></div>
-      </div>
-      <div class="hub-nav-tile" id="nav-brief-tile">
-        <div class="tile-icon">&#128203;</div>
-        <div class="tile-label">Case Brief</div>
-        <div class="tile-count">Review briefing</div>
-      </div>
-    </div>
+        <!-- Advisor area -->
+        <div id="advisor-prompt-hub" class="advisor-prompt" style="display:none;margin-bottom:16px">
+          <div class="advisor-prompt-label">Advisor consultation available</div>
+          <div id="advisor-btn-row-hub" class="advisor-btn-row"></div>
+        </div>
+        <div id="advisor-response-hub" style="display:none;margin-bottom:12px"></div>
 
-    <!-- Collapsible brief (opened by Case Brief tile) -->
-    <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
+        <!-- Investigation Feed -->
+        <div class="feed-label" id="feed-label" style="display:none">Investigation Log</div>
+        <div id="action-results"></div>
 
-    <!-- Accusation -->
-    <div class="hub-accuse">
-      <button class="danger" id="nav-accuse">Make Accusation</button>
-    </div>
+      </div><!-- /.hub-main -->
+
+      <!-- Persistent Sidebar: nav + brief + accusation -->
+      <div class="hub-sidebar">
+
+        <div class="hub-nav">
+          <div class="hub-nav-tile" id="nav-casefile">
+            <div class="tile-icon">&#128451;</div>
+            <div class="tile-info">
+              <div class="tile-label">Case File</div>
+              <div class="tile-count" id="nav-c-val"></div>
+            </div>
+          </div>
+          <div class="hub-nav-tile" id="nav-suspects">
+            <div class="tile-icon">&#128101;</div>
+            <div class="tile-info">
+              <div class="tile-label">Suspects</div>
+              <div class="tile-count" id="nav-s-val"></div>
+            </div>
+          </div>
+          <div class="hub-nav-tile" id="nav-brief-tile">
+            <div class="tile-icon">&#128203;</div>
+            <div class="tile-info">
+              <div class="tile-label">Case Brief</div>
+              <div class="tile-count">Review briefing</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible brief (opened by Case Brief tile) -->
+        <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
+
+        <!-- Accusation -->
+        <div class="hub-accuse">
+          <button class="danger" id="nav-accuse">Make Accusation</button>
+        </div>
+
+        <!-- Restart -->
+        <div class="hub-restart" id="hub-restart-row" style="display:none">
+          <button class="hub-restart-btn" id="hub-restart-btn">Restart Case</button>
+        </div>
+
+      </div><!-- /.hub-sidebar -->
+
+    </div><!-- /.hub-layout -->
 
   </div>
 </div>
@@ -1434,6 +1569,7 @@
 // ============================================================
 const G = {
   case:    null,
+  caseKey: null,        // key of the currently loaded case (used for localStorage persistence)
   apiKey:  '',
   budget:  0,
   unlocked: new Set(),  // IDs of unlocked evidence / documents
@@ -1460,7 +1596,161 @@ const G = {
   },
   entityRegistry: { names: [], locations: [], times: [] },
   pendingAdvisorContext: null,  // set when advisor buttons are shown
+  clockMinutes: 0,     // total minutes elapsed since Day 1, 8:00 AM
+  pendingItems: [],    // [{id, label, readyAt, evidence_ids, document_ids}] — time-gated items
 };
+
+// ============================================================
+// SAVE STATE (localStorage persistence)
+// ============================================================
+const _LS_PREFIX = 'lockbox_state_';
+
+function saveState(key) {
+  if (!key) return;
+  try {
+    syncJournalContent(); // flush any in-progress journal typing
+    const state = {
+      actions:       G.actions,
+      chats:         G.chats,
+      unlocked:      [...G.unlocked],
+      discoveredInfo: G.discoveredInfo,
+      budget:        G.budget,
+      role:          G.role,
+      setupFormat:   G.setupFormat,
+      setupAdvisor:  G.setupAdvisor,
+      startBudget:   G.startBudget,
+      accused:       G.accused,
+      journal:       G.journal,
+      clockMinutes:  G.clockMinutes,
+      pendingItems:  G.pendingItems,
+    };
+    localStorage.setItem(_LS_PREFIX + key, JSON.stringify(state));
+  } catch (e) {
+    console.warn('lockbox: state save failed', e);
+  }
+}
+
+function clearState(key) {
+  if (!key) return;
+  localStorage.removeItem(_LS_PREFIX + key);
+}
+
+function hasSavedState(key) {
+  return !!localStorage.getItem(_LS_PREFIX + key);
+}
+
+function _loadSavedState(key) {
+  try {
+    const raw = localStorage.getItem(_LS_PREFIX + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.warn('lockbox: state load failed', e);
+    return null;
+  }
+}
+
+// ============================================================
+// CLOCK SYSTEM
+// ============================================================
+const CLOCK_DAY_LEN   = 840;  // 14 usable hours (8 AM–10 PM) × 60
+const CLOCK_DAY_START = 8;    // 8:00 AM
+
+// Default time costs in minutes (can be overridden per-case via case.default_time_costs)
+const TIME_COST_DEFAULTS = {
+  travel:    40,
+  interview: 30,
+  warrant:   15,
+  lab:       20,
+  default:   20,
+};
+
+function clockMinutesToDisplay(totalMinutes) {
+  const day    = Math.floor(totalMinutes / CLOCK_DAY_LEN) + 1;
+  const mOfDay = totalMinutes % CLOCK_DAY_LEN;
+  const hour24 = CLOCK_DAY_START + Math.floor(mOfDay / 60);
+  const min    = mOfDay % 60;
+  const ampm   = hour24 >= 12 ? 'PM' : 'AM';
+  const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+  return `Day ${day} \u2014 ${hour12}:${String(min).padStart(2, '0')} ${ampm}`;
+}
+
+function clockRemainingToday(totalMinutes) {
+  return CLOCK_DAY_LEN - (totalMinutes % CLOCK_DAY_LEN);
+}
+
+function inferTimeCost(input, cost_label) {
+  const caseDefaults = (G.case && G.case.default_time_costs) || {};
+  const dflt = { ...TIME_COST_DEFAULTS, ...caseDefaults };
+  const text = ((input || '') + ' ' + (cost_label || '')).toLowerCase();
+  if (/\b(travel|drive|walk|head to|go to|visit|site|location|scene|canvass)\b/.test(text)) return dflt.travel;
+  if (/\b(interview|talk|speak|question|meet|conversation|debrief)\b/.test(text))           return dflt.interview;
+  if (/\b(warrant|subpoena|court order)\b/.test(text))                                       return dflt.warrant;
+  if (/\b(lab|forensic|analysis|analyze|test|dna|fingerprint|process|autopsy)\b/.test(text)) return dflt.lab;
+  return dflt.default;
+}
+
+// Advance the clock by `minutes`. Registers `pendingItem` if provided.
+// Returns array of feed events to append to G.actions.
+function advanceClock(minutes, pendingItem) {
+  const events    = [];
+  const dayBefore = Math.floor(G.clockMinutes / CLOCK_DAY_LEN);
+  G.clockMinutes += Math.min(minutes, CLOCK_DAY_LEN); // cap at one day per action
+  const dayAfter  = Math.floor(G.clockMinutes / CLOCK_DAY_LEN);
+
+  // Register new pending item
+  if (pendingItem && pendingItem.label && (pendingItem.resolution_minutes || 0) > 0) {
+    const evidenceIds = new Set((G.case.evidence  || []).map(e => e.id));
+    const docIds      = new Set((G.case.documents || []).map(d => d.id));
+    const reveals     = Array.isArray(pendingItem.reveals) ? pendingItem.reveals : [];
+    const readyAt     = G.clockMinutes + pendingItem.resolution_minutes;
+    G.pendingItems.push({
+      id:           Date.now().toString(36),
+      label:        pendingItem.label,
+      readyAt,
+      evidence_ids: reveals.filter(id => evidenceIds.has(id)),
+      document_ids: reveals.filter(id => docIds.has(id)),
+    });
+    events.push({ type: 'pending_added', label: pendingItem.label, readyAt });
+  }
+
+  // Day-end events
+  for (let d = dayBefore + 1; d <= dayAfter; d++) {
+    events.push({ type: 'day_end', day: d });
+  }
+
+  // Resolve pending items whose readyAt has passed
+  const stillPending = [];
+  for (const item of G.pendingItems) {
+    if (G.clockMinutes >= item.readyAt) {
+      const evidenceSet = new Set((G.case.evidence  || []).map(e => e.id));
+      const docSet      = new Set((G.case.documents || []).map(d => d.id));
+      for (const id of (item.evidence_ids || [])) {
+        if (evidenceSet.has(id) && !G.discoveredInfo.evidence_ids.includes(id)) {
+          G.discoveredInfo.evidence_ids.push(id);
+          G.unlocked.add(id);
+        }
+      }
+      for (const id of (item.document_ids || [])) {
+        if (docSet.has(id) && !G.discoveredInfo.document_ids.includes(id)) {
+          G.discoveredInfo.document_ids.push(id);
+          G.unlocked.add(id);
+        }
+      }
+      events.push({ type: 'item_resolved', label: item.label,
+                    evidence_ids: item.evidence_ids, document_ids: item.document_ids });
+    } else {
+      stillPending.push(item);
+    }
+  }
+  G.pendingItems = stillPending;
+
+  return events;
+}
+
+function renderClockDisplay() {
+  const el = document.getElementById('hub-clock');
+  if (el) el.textContent = clockMinutesToDisplay(G.clockMinutes);
+}
 
 // ============================================================
 // SCREEN HELPERS
@@ -1602,15 +1892,18 @@ function renderCategories() {
     const countLabel = count === 1 ? '1 case' : `${count} cases`;
     const casesHtml = empty
       ? `<div class="cat-coming-soon">Coming soon</div>`
-      : cases.map(c =>
-          `<div class="case-row" data-key="${esc(c.key)}">
+      : cases.map(c => {
+          const badge = hasSavedState(c.key)
+            ? ' <span class="inprogress-badge">In Progress</span>'
+            : '';
+          return `<div class="case-row" data-key="${esc(c.key)}">
             <div class="case-row-info">
-              <h3>${esc(c.title)}</h3>
+              <h3>${esc(c.title)}${badge}</h3>
               <p>${esc(c.description || cat.description || '')}</p>
             </div>
             <span class="case-row-select">Select &#8594;</span>
-          </div>`
-        ).join('');
+          </div>`;
+        }).join('');
     return `<div class="cat-item${empty ? ' empty' : ''}">
       <div class="cat-header">
         <div class="cat-header-left">
@@ -1648,8 +1941,43 @@ function loadCase(key) {
     console.error('Case data not found for key:', key);
     return;
   }
-  G.case     = caseData;
-  G.budget   = typeof G.case.budget === 'number' ? G.case.budget : 0;
+  G.case    = caseData;
+  G.caseKey = key;
+  // Build entity registry from case data (always needed)
+  G.entityRegistry = buildEntityRegistry();
+
+  // Check for a saved state and restore if found
+  const saved = _loadSavedState(key);
+  if (saved) {
+    G.actions      = saved.actions      || [];
+    G.chats        = saved.chats        || {};
+    G.unlocked     = new Set(saved.unlocked || []);
+    G.discoveredInfo = saved.discoveredInfo || {
+      names: [], locations: [], times: [],
+      evidence_ids: [], document_ids: [],
+      raw_statements: {},
+    };
+    G.budget       = typeof saved.budget === 'number' ? saved.budget : (caseData.budget || 0);
+    G.role         = saved.role         || 'detective';
+    G.setupFormat  = saved.setupFormat  || 'briefing';
+    G.setupAdvisor = saved.setupAdvisor !== undefined ? saved.setupAdvisor : true;
+    G.startBudget  = saved.startBudget  || 0;
+    G.journal      = saved.journal      || { tabs: [], activeIdx: -1 };
+    G.accused      = null;
+    G.suspect      = null;
+    G.tab          = 'ev';
+    G.setupRole    = G.role;
+    G.pendingAdvisorContext = null;
+    G.clockMinutes = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
+    G.pendingItems = Array.isArray(saved.pendingItems) ? saved.pendingItems : [];
+    refreshActionResults();
+    renderHub();
+    show('hub');
+    return;
+  }
+
+  // Fresh start — reset all state to defaults
+  G.budget   = typeof caseData.budget === 'number' ? caseData.budget : 0;
   G.unlocked = new Set();
   G.actions  = [];
   refreshActionResults();
@@ -1658,21 +1986,19 @@ function loadCase(key) {
   G.accused  = null;
   G.tab      = 'ev';
   G.journal  = { tabs: [], activeIdx: -1 };
-  // Reset setup to defaults
   G.setupFormat  = 'briefing';
   G.setupAdvisor = true;
   G.setupRole    = 'detective';
   G.role         = 'detective';
   G.startBudget  = 0;
-  // Reset discovered info
   G.discoveredInfo = {
     names: [], locations: [], times: [],
     evidence_ids: [], document_ids: [],
     raw_statements: {},
   };
   G.pendingAdvisorContext = null;
-  // Build entity registry from case data
-  G.entityRegistry = buildEntityRegistry();
+  G.clockMinutes = 0;
+  G.pendingItems = [];
   renderSetup();
   show('setup');
 }
@@ -1890,6 +2216,7 @@ function renderFmtMix(tpl) {
 }
 
 document.getElementById('begin-btn').addEventListener('click', () => {
+  saveState(G.caseKey);
   renderHub();
   show('hub');
 });
@@ -2078,6 +2405,12 @@ function renderHub() {
   // Populate collapsible brief (hidden by default, fresh each time)
   document.getElementById('hub-brief-body').innerHTML = renderCaseOpening();
   document.getElementById('hub-brief-body').style.display = 'none';
+
+  // Show restart button only when a save exists for this case
+  document.getElementById('hub-restart-row').style.display =
+    hasSavedState(G.caseKey) ? '' : 'none';
+
+  renderClockDisplay();
 }
 
 document.getElementById('nav-brief-tile').addEventListener('click', () => {
@@ -2090,6 +2423,15 @@ document.getElementById('nav-suspects').addEventListener('click', () => { render
 document.getElementById('nav-accuse')  .addEventListener('click', () => { renderAccuse();    show('accuse'); });
 
 document.getElementById('hub-home')  .addEventListener('click', () => show('categories'));
+
+document.getElementById('hub-restart-btn').addEventListener('click', () => {
+  if (!confirm('Restart this case from scratch? Your progress will be lost.')) return;
+  clearState(G.caseKey);
+  // Re-load the case as a fresh start
+  const key = G.caseKey;
+  G.caseKey = null; // prevent re-entry into save path
+  loadCase(key);
+});
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
 document.getElementById('setup-back').addEventListener('click', () => show('categories'));
 document.getElementById('brief-back').addEventListener('click', () => { renderSetup(); show('setup'); });
@@ -2110,7 +2452,7 @@ RULES:
 3. If the action targets something NOT in the case data, return a plausible dead-end. Examples: "You check but find nothing relevant." / "The office is closed." / "No one matching that description is available." Do NOT fabricate new information.
 4. If a suspect made a claim (alibi, timeline, fact), and the case data contains the ground truth, the player CAN verify it through a reasonable action. Return whether the claim checks out based on the case data.
 5. Respond in second person, present tense. Concise — 2 to 5 sentences unless the player is discovering a significant evidence item, in which case describe it fully.
-6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "".
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items (warrants, lab results) use: "pending_item": {"label": "Warrant for 15 Oak St", "resolution_minutes": 480, "reveals": ["ev-01"]} — do NOT include those IDs in discovered; they will be unlocked automatically when the item resolves.
 7. If the action is vague or nonsensical, ask for clarification in the narrative field. Set cost to 0.
 8. Never reveal information the player has not earned through their actions. No freebies.
 9. If the player has already taken this exact action, note it in the narrative and reference the prior result. Set cost to 0.
@@ -2127,6 +2469,18 @@ COST GUIDELINES (include cost in response so the game engine can deduct it):
 - Warrant application: $300–500
 - Multi-person canvass operation: $200–400
 Use your judgment within these ranges. If the action doesn't fit a category, price it reasonably.
+
+TIME COST GUIDELINES (always include time_cost in minutes and time_label in the response):
+- Phone calls, quick questions: 5–15 min (e.g., "time_label": "Phone call — 10 min")
+- Travel to a location: 30–60 min (e.g., "time_label": "Travel to scene — 40 min")
+- Visiting and searching a location: 45–90 min
+- In-person interview or conversation: 30–60 min
+- Filing records requests: 10–20 min (the actual records may take hours — use pending_item if so)
+- Surveillance session: 60–180 min
+- Warrant application (filing only): 10–20 min — the warrant itself takes hours; return a pending_item with resolution_minutes 240–480 and any evidence_ids it would reveal
+- Lab submission (filing only): 10–20 min — results take hours; return a pending_item with resolution_minutes 120–1440
+- Expert consultation in person: 30–60 min
+The CURRENT TIME is in the user message. Use it for time-appropriate context (e.g., "It's 9:40 PM — the bar is closing soon" or "It's 9:00 AM on Day 2"). When the day is running short, acknowledge it if relevant to the action.
 
 You are a resolver, not a storyteller. Do not advance the plot. Do not introduce twists. Report what the player finds based on the case data, nothing more.
 
@@ -2168,18 +2522,57 @@ function buildActionSystemPrompt() {
 let _actionInFlight = false;
 
 function renderActionCard(action, idx) {
-  const costLine = (action.cost > 0)
-    ? `<div class="feed-footer">
-        <span class="feed-cost">${esc(action.cost_label)} &mdash; $${action.cost.toLocaleString()}</span>
-       </div>`
+  // Day-end transition card
+  if (action.type === 'day_end') {
+    return `<div class="feed-card day-end-card">
+      <div class="feed-card-top"><span class="feed-tag day-transition">Day ${action.day} Complete</span></div>
+      <div class="feed-narrative" style="margin-bottom:0">You wrap up for the evening. Day ${action.day + 1} begins at 8:00 AM.</div>
+    </div>`;
+  }
+
+  // Pending item resolved card
+  if (action.type === 'item_resolved') {
+    const count = (action.evidence_ids || []).length + (action.document_ids || []).length;
+    const note  = count > 0 ? ` ${count} item${count > 1 ? 's' : ''} added to your Case File.` : '';
+    return `<div class="feed-card resolved-card">
+      <div class="feed-card-top"><span class="feed-tag resolved">Ready</span></div>
+      <div class="feed-narrative" style="margin-bottom:0"><strong>${esc(action.label)}</strong> is ready.${note}</div>
+    </div>`;
+  }
+
+  // Pending item registered card
+  if (action.type === 'pending_added') {
+    return `<div class="feed-card pending-card">
+      <div class="feed-card-top"><span class="feed-tag pending-item">Pending</span></div>
+      <div class="feed-narrative" style="margin-bottom:0">${esc(action.label)} — ready at <strong>${clockMinutesToDisplay(action.readyAt)}</strong>.</div>
+    </div>`;
+  }
+
+  // Standard investigation action (type === 'action' or legacy entries without type)
+  const footerParts = [];
+  if (action.cost > 0) {
+    footerParts.push(`<span class="feed-cost">${esc(action.cost_label)} &mdash; $${action.cost.toLocaleString()}</span>`);
+  }
+  if (action.time_cost > 0) {
+    const tLabel = action.time_label || `${action.time_cost} min`;
+    footerParts.push(`<span class="feed-time">${esc(tLabel)}</span>`);
+  }
+  const footerHtml = footerParts.length
+    ? `<div class="feed-footer">${footerParts.join('<span class="feed-sep"> &nbsp;|&nbsp; </span>')}</div>`
     : '';
+
+  const timeBadge = (action.clockAfter !== undefined)
+    ? `<span class="feed-time-badge">${esc(clockMinutesToDisplay(action.clockAfter))}</span>`
+    : '';
+
   return `<div class="feed-card" data-action-idx="${idx}">
     <div class="feed-card-top">
       <span class="feed-tag investigation">Investigation</span>
+      ${timeBadge}
     </div>
     <div class="feed-prompt">${esc(action.input)}</div>
     <div class="feed-narrative">${esc(action.narrative)}</div>
-    ${costLine}
+    ${footerHtml}
   </div>`;
 }
 
@@ -2194,22 +2587,25 @@ function refreshActionResults() {
   ).join('');
 }
 
-function processActionResult(input, narrative, cost, cost_label, discovered) {
-  // Enforce budget cap
+function processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item) {
+  // --- Budget ---
   const actualCost = Math.min(cost, G.budget);
   G.budget -= actualCost;
 
-  // Update discoveredInfo
+  // --- Time cost ---
+  const actualTimeCost = (typeof time_cost === 'number' && time_cost > 0)
+    ? Math.min(time_cost, CLOCK_DAY_LEN)
+    : inferTimeCost(input, cost_label);
+
+  // --- discoveredInfo ---
   const addUniq = (arr, items) => {
-    for (const v of (items || [])) {
-      if (v && !arr.includes(v)) arr.push(v);
-    }
+    for (const v of (items || [])) { if (v && !arr.includes(v)) arr.push(v); }
   };
   addUniq(G.discoveredInfo.names,     discovered.names);
   addUniq(G.discoveredInfo.locations, discovered.locations);
   addUniq(G.discoveredInfo.times,     discovered.times);
 
-  // Unlock any evidence IDs surfaced
+  // Unlock evidence/docs returned by this action
   const newlyUnlocked = [];
   for (const id of (discovered.evidence_ids || [])) {
     if (!G.discoveredInfo.evidence_ids.includes(id)) {
@@ -2217,8 +2613,6 @@ function processActionResult(input, narrative, cost, cost_label, discovered) {
       if (!G.unlocked.has(id)) { G.unlocked.add(id); newlyUnlocked.push(id); }
     }
   }
-
-  // Unlock any document IDs surfaced
   for (const id of (discovered.document_ids || [])) {
     if (!G.discoveredInfo.document_ids.includes(id)) {
       G.discoveredInfo.document_ids.push(id);
@@ -2226,17 +2620,37 @@ function processActionResult(input, narrative, cost, cost_label, discovered) {
     }
   }
 
-  // Store raw narrative in discoveredInfo
+  // Raw narrative storage (for advisor context)
   const actionIdx = G.actions.length;
   if (!G.discoveredInfo.raw_statements[`action_${actionIdx}`])
     G.discoveredInfo.raw_statements[`action_${actionIdx}`] = [];
   G.discoveredInfo.raw_statements[`action_${actionIdx}`].push(narrative);
 
-  // Log action
-  G.actions.push({ input, narrative, cost: actualCost, cost_label });
+  // --- Advance clock (may register pending item, trigger day-ends, resolve items) ---
+  const clockEvents = advanceClock(actualTimeCost, pending_item || null);
 
-  // Re-render results + hub budget
+  // Separate pending_added from other events so it renders below the main action card
+  const pendingAddedEvents = clockEvents.filter(ev => ev.type === 'pending_added');
+  const otherClockEvents   = clockEvents.filter(ev => ev.type !== 'pending_added');
+
+  // Push pending_added BEFORE the main action (appears below it in reversed feed)
+  for (const ev of pendingAddedEvents) G.actions.push(ev);
+
+  // Push main action entry
+  G.actions.push({
+    type: 'action',
+    input, narrative,
+    cost: actualCost, cost_label,
+    time_cost: actualTimeCost, time_label: time_label || '',
+    clockAfter: G.clockMinutes,
+  });
+
+  // Push remaining clock events (day_end, item_resolved) — appear above main action
+  for (const ev of otherClockEvents) G.actions.push(ev);
+
+  // --- Re-render ---
   refreshActionResults();
+  renderClockDisplay();
   const bEl = document.getElementById('hub-budget');
   if (bEl) {
     bEl.textContent = '$' + G.budget.toLocaleString();
@@ -2247,7 +2661,10 @@ function processActionResult(input, narrative, cost, cost_label, discovered) {
   const inputEl = document.getElementById('action-in');
   if (inputEl) inputEl.value = '';
 
-  // Advisor trigger: check same conditions as interview/evidence triggers
+  // Persist
+  saveState(G.caseKey);
+
+  // Advisor trigger
   if (advisorActive() && !G.pendingAdvisorContext) {
     const hasNewEntity =
       G.discoveredInfo.names.some(n     => !G.entityRegistry.names.includes(n)) ||
@@ -2275,10 +2692,14 @@ async function resolveAction(input) {
   btn.disabled = true;
   inputEl.disabled = true;
 
-  // Build action history summary for the resolver
-  const actionHistory = G.actions.map((a, i) =>
-    `[Action ${i + 1}] Player: "${a.input}" → Result: "${a.narrative.slice(0, 120)}${a.narrative.length > 120 ? '…' : ''}"${a.cost > 0 ? ` (Cost: $${a.cost})` : ''}`
-  ).join('\n') || '(none yet)';
+  // Build action history summary (investigation actions only)
+  const actionHistory = G.actions
+    .filter(a => a.type === 'action' || !a.type)
+    .map((a, i) => {
+      const costStr = a.cost > 0 ? ` (Cost: $${a.cost})` : '';
+      const timeStr = a.time_cost > 0 ? ` (Time: ${a.time_cost} min)` : '';
+      return `[Action ${i + 1}] Player: "${a.input}" → Result: "${a.narrative.slice(0, 120)}${a.narrative.length > 120 ? '…' : ''}"${costStr}${timeStr}`;
+    }).join('\n') || '(none yet)';
 
   // Build discovered info summary
   const diSummary = [
@@ -2296,6 +2717,9 @@ async function resolveAction(input) {
   // Build briefing text the player started with
   const briefingText = G.case.briefing || '(no briefing)';
 
+  const remainingToday = clockRemainingToday(G.clockMinutes);
+  const currentTimeStr = `${clockMinutesToDisplay(G.clockMinutes)} (${remainingToday} min remaining today)`;
+
   const userMsg = [
     `CASE DATA:\n${JSON.stringify(G.case, null, 2)}`,
     '',
@@ -2306,6 +2730,7 @@ async function resolveAction(input) {
     `ACTION HISTORY:\n${actionHistory}`,
     '',
     `REMAINING BUDGET: $${G.budget.toLocaleString()}`,
+    `CURRENT TIME: ${currentTimeStr}`,
     '',
     `PLAYER'S ACTION: "${input}"`,
   ].join('\n');
@@ -2328,6 +2753,8 @@ async function resolveAction(input) {
         const narrative  = String(ctx.response_template || '');
         const cost       = typeof ctx.cost === 'number' ? Math.max(0, Math.round(ctx.cost)) : 0;
         const cost_label = String(ctx.context_id || 'Action context');
+        const time_cost  = typeof ctx.time_cost === 'number' ? ctx.time_cost : 0;
+        const time_label = String(ctx.time_label || '');
         // Classify reveals into evidence vs document IDs
         const evidenceIds = new Set((G.case.evidence  || []).map(ev => ev.id));
         const documentIds = new Set((G.case.documents || []).map(d  => d.id));
@@ -2337,7 +2764,7 @@ async function resolveAction(input) {
           else if (documentIds.has(id)) discovered.document_ids.push(id);
         }
         try {
-          processActionResult(input, narrative, cost, cost_label, discovered);
+          processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, null);
         } catch (e) {
           errEl.textContent = 'Action failed: ' + e.message;
         } finally {
@@ -2388,12 +2815,15 @@ async function resolveAction(input) {
       parsed = { narrative: rawText, cost: 0, cost_label: '', discovered: {} };
     }
 
-    const narrative  = String(parsed.narrative  || '');
-    const cost       = typeof parsed.cost === 'number' ? Math.max(0, Math.round(parsed.cost)) : 0;
-    const cost_label = String(parsed.cost_label || '');
-    const discovered = parsed.discovered || {};
+    const narrative    = String(parsed.narrative  || '');
+    const cost         = typeof parsed.cost       === 'number' ? Math.max(0, Math.round(parsed.cost)) : 0;
+    const cost_label   = String(parsed.cost_label || '');
+    const time_cost    = typeof parsed.time_cost  === 'number' ? Math.max(0, Math.round(parsed.time_cost)) : 0;
+    const time_label   = String(parsed.time_label || '');
+    const pending_item = (parsed.pending_item && typeof parsed.pending_item === 'object') ? parsed.pending_item : null;
+    const discovered   = parsed.discovered || {};
 
-    processActionResult(input, narrative, cost, cost_label, discovered);
+    processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item);
 
   } catch (e) {
     typingCard.remove();
@@ -2613,6 +3043,7 @@ function createJournalTab() {
   G.journal.tabs.push({ name, content: '' });
   G.journal.activeIdx = G.journal.tabs.length - 1;
   renderJournal();
+  saveState(G.caseKey);
   document.getElementById('journal-area').focus();
 }
 
@@ -2621,10 +3052,12 @@ function selectJournalTab(idx) {
   syncJournalContent();
   G.journal.activeIdx = idx;
   renderJournal();
+  saveState(G.caseKey);
   document.getElementById('journal-area').focus();
 }
 
 document.getElementById('journal-area').addEventListener('input', syncJournalContent);
+document.getElementById('journal-area').addEventListener('blur', () => saveState(G.caseKey));
 
 document.getElementById('chat-send').addEventListener('click', sendMessage);
 document.getElementById('chat-in').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
@@ -2662,6 +3095,7 @@ async function sendMessage() {
     G.discoveredInfo.raw_statements[name].push(reply);
 
     renderChatWindow();
+    saveState(G.caseKey);
 
     // Evaluate advisor triggers
     if (advisorActive()) {
@@ -3163,6 +3597,7 @@ document.getElementById('acc-confirm').addEventListener('click', () => {
       `Law enforcement accepted your evidence package and opened an arrest warrant.<br>
        Budget spent: $${spent.toLocaleString()} &nbsp;|&nbsp; Remaining: $${G.budget.toLocaleString()}`;
     document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+    clearState(G.caseKey);
     show('result');
 
   } else {
@@ -3190,6 +3625,7 @@ document.getElementById('acc-confirm').addEventListener('click', () => {
       : `<strong style="color:#ddd">${esc(G.accused)}</strong> is not the perpetrator. The case remains open.`;
 
     document.getElementById('res-solution').textContent = G.case.solution || 'No solution text provided.';
+    clearState(G.caseKey);
     show('result');
   }
 });

@@ -889,6 +889,7 @@
     .iview-header { margin-bottom: 10px; flex-shrink: 0; }
     .iview-name { font-family: var(--serif); font-size: 1.2rem; color: var(--text); margin-bottom: 3px; }
     .iview-role { font-size: 13px; color: var(--text-muted); }
+    .iview-clock { font-family: var(--mono); font-size: 11px; color: var(--teal); margin-top: 5px; }
 
     /* Collapsible suspect info */
     .si-toggle-btn {
@@ -1549,6 +1550,7 @@
       <div class="iview-header">
         <div class="iview-name" id="iview-name"></div>
         <div class="iview-role" id="iview-role"></div>
+        <div class="iview-clock" id="iview-clock"></div>
       </div>
       <button class="si-toggle-btn" id="si-toggle-btn">Suspect Info ▸</button>
       <div class="si-body" id="si-body" style="display:none"></div>
@@ -1708,8 +1710,9 @@ function _loadSavedState(key) {
 // ============================================================
 // CLOCK SYSTEM
 // ============================================================
-const CLOCK_DAY_LEN   = 840;  // 14 usable hours (8 AM–10 PM) × 60
-const CLOCK_DAY_START = 8;    // 8:00 AM
+const CLOCK_DAY_LEN             = 840;  // 14 usable hours (8 AM–10 PM) × 60
+const CLOCK_DAY_START           = 8;    // 8:00 AM
+const INTERVIEW_QUESTION_MINUTES = 5;   // default clock cost per interview exchange
 
 // Default time costs in minutes (can be overridden per-case via case.default_time_costs)
 const TIME_COST_DEFAULTS = {
@@ -1805,6 +1808,11 @@ function advanceClock(minutes, pendingItem) {
 
 function renderClockDisplay() {
   const el = document.getElementById('hub-clock');
+  if (el) el.textContent = clockMinutesToDisplay(G.clockMinutes);
+}
+
+function renderInterviewClock() {
+  const el = document.getElementById('iview-clock');
   if (el) el.textContent = clockMinutesToDisplay(G.clockMinutes);
 }
 
@@ -3016,6 +3024,7 @@ function openInterview(name) {
   hideAdvisorPrompt();
   document.getElementById('iview-name').textContent = suspect.name;
   document.getElementById('iview-role').textContent = suspect.relationship_to_victim || '';
+  renderInterviewClock();
   document.getElementById('iview-err').textContent  = '';
   document.getElementById('chat-in').value = '';
 
@@ -3169,6 +3178,14 @@ async function sendMessage() {
     G.discoveredInfo.raw_statements[name].push(reply);
 
     renderChatWindow();
+
+    // Advance clock — 5 min per exchange (overridable via case.default_time_costs.interview_question)
+    const qCost = (G.case && G.case.default_time_costs && G.case.default_time_costs.interview_question)
+      || INTERVIEW_QUESTION_MINUTES;
+    advanceClock(qCost, null);
+    renderInterviewClock();
+    renderClockDisplay();
+
     saveState(G.caseKey);
 
     // Evaluate advisor triggers

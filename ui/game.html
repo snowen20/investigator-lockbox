@@ -475,14 +475,62 @@
     .hub-clock-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 2px; }
     .hub-clock-val { font-family: var(--mono); font-size: 1.1rem; font-weight: 600; color: var(--teal); line-height: 1; white-space: nowrap; }
 
-    .hub-brief-body {
-      border: 1px solid var(--border);
+    /* --- BRIEF MODAL --- */
+    .brief-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(10, 10, 20, 0.75);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .brief-modal {
+      position: relative;
+      width: min(700px, 65vw);
+      max-height: 85vh;
+      background: #1a1a2e;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .brief-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .brief-modal-title {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .brief-modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 6px;
       border-radius: var(--radius);
-      padding: 20px 16px;
-      margin-top: 8px;
-      background: rgba(10, 10, 20, 0.5);
-      max-height: 420px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .brief-modal-close:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+    .brief-modal-body {
+      padding: 24px 28px;
       overflow-y: auto;
+      flex: 1;
+    }
+    @media (max-width: 680px) {
+      .brief-modal { width: min(700px, 92vw); }
     }
 
     /* --- ACTION BOX (CENTERPIECE) --- */
@@ -1448,9 +1496,6 @@
           </div>
         </div>
 
-        <!-- Collapsible brief (opened by Case Brief tile) -->
-        <div id="hub-brief-body" class="hub-brief-body" style="display:none"></div>
-
         <!-- Accusation -->
         <div class="hub-accuse">
           <button class="danger" id="nav-accuse">Make Accusation</button>
@@ -1558,6 +1603,17 @@
     <div class="dim" style="letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Case Solution</div>
     <div id="res-solution" class="result-solution"></div>
     <button id="res-restart">New Case</button>
+  </div>
+</div>
+
+<!-- ===================== BRIEF MODAL ===================== -->
+<div id="brief-modal-backdrop" class="brief-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="brief-modal-title-el">
+  <div class="brief-modal" id="brief-modal">
+    <div class="brief-modal-header">
+      <span class="brief-modal-title" id="brief-modal-title-el">Case Brief</span>
+      <button class="brief-modal-close" id="brief-modal-close" aria-label="Close brief">&#10005;</button>
+    </div>
+    <div class="brief-modal-body" id="brief-modal-body"></div>
   </div>
 </div>
 
@@ -2133,7 +2189,7 @@ function renderFmtNarrative(tpl) {
     }
   });
   if ((tpl.withheld_until_play || []).length > 0) {
-    html += `<div style="color:var(--green-lo);font-size:1rem;margin-top:12px;border:1px dashed var(--green-lo);padding:10px">
+    html += `<div style="color:var(--text-muted);font-size:0.95rem;margin-top:12px;border:1px dashed var(--border-light);padding:10px;border-radius:4px">
       [Suspects and evidence withheld — revealed as you investigate]
     </div>`;
   }
@@ -2402,10 +2458,6 @@ function renderHub() {
     accuseBtn.textContent = 'Make Accusation';
   }
 
-  // Populate collapsible brief (hidden by default, fresh each time)
-  document.getElementById('hub-brief-body').innerHTML = renderCaseOpening();
-  document.getElementById('hub-brief-body').style.display = 'none';
-
   // Show restart button only when a save exists for this case
   document.getElementById('hub-restart-row').style.display =
     hasSavedState(G.caseKey) ? '' : 'none';
@@ -2413,9 +2465,28 @@ function renderHub() {
   renderClockDisplay();
 }
 
-document.getElementById('nav-brief-tile').addEventListener('click', () => {
-  const body = document.getElementById('hub-brief-body');
-  body.style.display = body.style.display !== 'none' ? 'none' : '';
+// Brief modal
+function openBriefModal() {
+  document.getElementById('brief-modal-body').innerHTML = renderCaseOpening();
+  document.getElementById('brief-modal-backdrop').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeBriefModal() {
+  document.getElementById('brief-modal-backdrop').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('nav-brief-tile').addEventListener('click', openBriefModal);
+document.getElementById('brief-modal-close').addEventListener('click', closeBriefModal);
+
+document.getElementById('brief-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('brief-modal-backdrop')) closeBriefModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('brief-modal-backdrop').style.display !== 'none') {
+    closeBriefModal();
+  }
 });
 
 document.getElementById('nav-casefile').addEventListener('click', () => { renderCaseFile();  show('casefile'); });
@@ -2954,7 +3025,7 @@ function openInterview(name) {
   document.getElementById('si-body').style.display      = 'none';
   document.getElementById('si-toggle-btn').textContent  = 'Suspect Info ▸';
 
-  document.getElementById('briefing-content').textContent = G.case.briefing || '';
+  document.getElementById('briefing-content').innerHTML = renderCaseOpening();
 
   renderChatWindow();
   renderJournal();

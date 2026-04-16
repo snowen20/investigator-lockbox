@@ -1476,6 +1476,10 @@ function show(id) {
     const layer = document.getElementById('bg-layer');
     layer.style.backgroundImage = "url('../images/background images/briefing screen.jpg')";
     layer.style.opacity = '0.85';
+  } else if (id === 'categories') {
+    const layer = document.getElementById('bg-layer');
+    layer.style.backgroundImage = "url('../images/background images/wilderness-rescue.jpg')";
+    layer.style.opacity = '0.85';
   } else setCategoryBg(null);
 }
 
@@ -1629,9 +1633,6 @@ function renderCategories() {
       });
       if (!wasOpen) {
         item.classList.add('open');
-        setCategoryBg(header.querySelector('.cat-title').textContent);
-      } else {
-        setCategoryBg(null);
       }
     });
   });

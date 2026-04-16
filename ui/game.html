@@ -1472,6 +1472,10 @@ function show(id) {
     const layer = document.getElementById('bg-layer');
     layer.style.backgroundImage = "url('../images/background images/wilderness-rescue_light.jpg')";
     layer.style.opacity = '0.85';
+  } else if (id === 'setup') {
+    const layer = document.getElementById('bg-layer');
+    layer.style.backgroundImage = "url('../images/background images/briefing screen.jpg')";
+    layer.style.opacity = '0.85';
   } else setCategoryBg(null);
 }
 

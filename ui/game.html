@@ -813,34 +813,13 @@
     /* ====================================================
        PHONE NOTIFICATION BUTTON
        ==================================================== */
-    #phone-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 400;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: #111a28;
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 22px;
-      line-height: 1;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, border-color 0.2s;
-      padding: 0;
-    }
-    #phone-btn:hover { background: #1c2d48; border-color: var(--text-dim); }
-    #phone-btn.has-unread { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
-
-    /* Unread badge (red dot with count) */
+    /* Unread badge on sidebar phone tile */
+    #nav-phone { position: relative; }
+    #nav-phone.has-unread { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
     #phone-badge {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: 6px;
+      right: 8px;
       background: #c0392b;
       color: #fff;
       font-family: var(--mono);
@@ -862,7 +841,7 @@
       60%  { box-shadow: 0 0 0 16px rgba(212,168,67,0),   0 0 0 1px var(--amber); }
       100% { box-shadow: 0 0 0 0   rgba(212,168,67,0),   0 0 0 1px var(--amber); }
     }
-    #phone-btn.pulsing { animation: phone-ring 1.4s ease-out infinite; }
+    #nav-phone.pulsing { animation: phone-ring 1.4s ease-out infinite; }
 
     /* ====================================================
        PHONE MODAL (styled as phone screen, bottom-right)
@@ -875,7 +854,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 0 24px 88px 0;   /* clears the phone button below */
+      padding: 0 24px 24px 0;
     }
     #phone-modal {
       width: 320px;
@@ -1805,6 +1784,14 @@
       <div class="hub-sidebar">
 
         <div class="hub-nav">
+          <div class="hub-nav-tile" id="nav-phone">
+            <div class="tile-icon">&#128241;</div>
+            <div class="tile-info">
+              <div class="tile-label">Messages</div>
+              <div class="tile-count" id="nav-phone-val"></div>
+            </div>
+            <span id="phone-badge" style="display:none"></span>
+          </div>
           <div class="hub-nav-tile" id="nav-casefile">
             <div class="tile-icon">&#128451;</div>
             <div class="tile-info">
@@ -1971,12 +1958,6 @@
 
 <!-- ===================== TOAST CONTAINER ===================== -->
 <div id="toast-container"></div>
-
-<!-- Phone notification button (fixed bottom-right; visible during in-game screens) -->
-<button id="phone-btn" title="Messages" style="display:none" aria-label="Open messages">
-  &#128241;
-  <span id="phone-badge" style="display:none"></span>
-</button>
 
 <!-- Phone message modal -->
 <div id="phone-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-label="Messages">
@@ -2263,17 +2244,20 @@ function _phoneUnreadCount() {
 }
 
 function updatePhoneBadge() {
-  const btn   = document.getElementById('phone-btn');
+  const tile  = document.getElementById('nav-phone');
   const badge = document.getElementById('phone-badge');
-  if (!btn || !badge) return;
+  const val   = document.getElementById('nav-phone-val');
+  if (!tile || !badge) return;
   const n = _phoneUnreadCount();
   if (n > 0) {
-    badge.textContent  = n > 99 ? '99+' : String(n);
+    badge.textContent   = n > 99 ? '99+' : String(n);
     badge.style.display = 'flex';
-    btn.classList.add('has-unread', 'pulsing');
+    tile.classList.add('has-unread', 'pulsing');
+    if (val) val.textContent = `${n} unread`;
   } else {
     badge.style.display = 'none';
-    btn.classList.remove('has-unread', 'pulsing');
+    tile.classList.remove('has-unread', 'pulsing');
+    if (val) val.textContent = G.phoneMessages.length ? `${G.phoneMessages.length} message${G.phoneMessages.length > 1 ? 's' : ''}` : '';
   }
 }
 
@@ -2374,7 +2358,7 @@ function closePhoneModal() {
 }
 
 // Wire up phone button and modal
-document.getElementById('phone-btn').addEventListener('click', openPhoneModal);
+document.getElementById('nav-phone').addEventListener('click', openPhoneModal);
 document.getElementById('phone-modal-close').addEventListener('click', closePhoneModal);
 document.getElementById('phone-modal-backdrop').addEventListener('click', e => {
   if (e.target === document.getElementById('phone-modal-backdrop')) closePhoneModal();
@@ -2413,9 +2397,6 @@ const _INGAME_SCREENS = new Set(['hub','interview','suspects','casefile','accusa
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('s-' + id).classList.add('active');
-  // Phone button only shows during in-game screens
-  const phoneBtn = document.getElementById('phone-btn');
-  if (phoneBtn) phoneBtn.style.display = _INGAME_SCREENS.has(id) ? 'flex' : 'none';
   if (id === 'start') {
     const layer = document.getElementById('bg-layer');
     layer.style.backgroundImage = "url('../images/background images/wilderness-rescue_light.jpg')";

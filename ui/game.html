@@ -850,18 +850,19 @@
       position: fixed;
       inset: 0;
       z-index: 450;
-      background: rgba(0,0,0,0.45);
+      background: rgba(10,10,20,0.75);
+      backdrop-filter: blur(3px);
       display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      padding: 0 24px 24px 0;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
     }
     #phone-modal {
-      width: 320px;
-      max-height: 560px;
+      width: min(700px, 65vw);
+      max-height: 85vh;
       background: #0c1420;
       border: 1px solid rgba(212,168,67,0.25);
-      border-radius: 22px;
+      border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -869,7 +870,7 @@
       animation: phone-modal-in 0.18s ease;
     }
     @keyframes phone-modal-in {
-      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
       to   { opacity: 1; transform: none; }
     }
     .phone-modal-header {
@@ -955,8 +956,7 @@
       font-size: 13px;
     }
     @media (max-width: 400px) {
-      #phone-modal { width: calc(100vw - 16px); border-radius: 16px; }
-      #phone-modal-backdrop { padding: 0 8px 88px 8px; }
+      #phone-modal { width: calc(100vw - 32px); border-radius: 16px; }
     }
 
     /* --- NEW-ITEM BADGE on sidebar Case File tile --- */

@@ -603,6 +603,7 @@
     .feed-tag.evidence       { background: rgba(92, 138, 138, 0.2);  color: #6fa8a8; }
     .feed-tag.advisor        { background: rgba(160, 120, 200, 0.15); color: #a88cc8; }
     .feed-tag.witness        { background: rgba(80, 160, 120, 0.15); color: #5caa90; }
+    .feed-tag.warrant        { background: rgba(200, 130, 40, 0.18); color: #d4913a; }
     .feed-tag.day-transition { background: rgba(30, 70, 110, 0.3); color: #6fa0c0; }
     .feed-tag.resolved       { background: rgba(40, 140, 80, 0.2);  color: #5caa7a; }
     .feed-tag.pending-item   { background: rgba(160, 120, 50, 0.2); color: #b8924a; }
@@ -809,6 +810,176 @@
       to { opacity: 0; transform: translateY(-8px); }
     }
 
+    /* ====================================================
+       PHONE NOTIFICATION BUTTON
+       ==================================================== */
+    #phone-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 400;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #111a28;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      padding: 0;
+    }
+    #phone-btn:hover { background: #1c2d48; border-color: var(--text-dim); }
+    #phone-btn.has-unread { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+
+    /* Unread badge (red dot with count) */
+    #phone-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #c0392b;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      pointer-events: none;
+    }
+
+    /* Pulse ring animation — makes unread state impossible to miss */
+    @keyframes phone-ring {
+      0%   { box-shadow: 0 0 0 0   rgba(212,168,67,0.7), 0 0 0 1px var(--amber); }
+      60%  { box-shadow: 0 0 0 16px rgba(212,168,67,0),   0 0 0 1px var(--amber); }
+      100% { box-shadow: 0 0 0 0   rgba(212,168,67,0),   0 0 0 1px var(--amber); }
+    }
+    #phone-btn.pulsing { animation: phone-ring 1.4s ease-out infinite; }
+
+    /* ====================================================
+       PHONE MODAL (styled as phone screen, bottom-right)
+       ==================================================== */
+    #phone-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 450;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 0 24px 88px 0;   /* clears the phone button below */
+    }
+    #phone-modal {
+      width: 320px;
+      max-height: 560px;
+      background: #0c1420;
+      border: 1px solid rgba(212,168,67,0.25);
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+      animation: phone-modal-in 0.18s ease;
+    }
+    @keyframes phone-modal-in {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .phone-modal-header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .phone-modal-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .phone-modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .phone-modal-close:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+    .phone-modal-body { overflow-y: auto; flex: 1; }
+    .phone-msg {
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: background 0.12s;
+      border-left: 3px solid transparent;
+    }
+    .phone-msg:hover { background: rgba(255,255,255,0.04); }
+    .phone-msg:last-child { border-bottom: none; }
+    .phone-msg.unread { border-left-color: var(--amber); }
+    .phone-msg-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      gap: 8px;
+    }
+    .phone-msg-sender {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      white-space: nowrap;
+    }
+    .phone-msg-time {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .phone-msg-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .phone-msg-action {
+      display: inline-block;
+      margin-top: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .phone-empty {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    @media (max-width: 400px) {
+      #phone-modal { width: calc(100vw - 16px); border-radius: 16px; }
+      #phone-modal-backdrop { padding: 0 8px 88px 8px; }
+    }
+
     /* --- NEW-ITEM BADGE on sidebar Case File tile --- */
     .new-badge {
       display: inline-block;
@@ -899,6 +1070,108 @@
       transition: all 0.2s;
     }
     .iview-btn:hover { background: var(--amber-glow); border-color: var(--amber); }
+    /* ====================================================
+       SCENE SCREEN
+       ==================================================== */
+    #s-scene.active {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .scene-outer {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .scene-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .scene-title-block { flex: 1; min-width: 0; }
+    .scene-location-name {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .scene-location-sub { font-size: 12px; color: var(--text-muted); }
+    #scene-clock {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--teal);
+      white-space: nowrap;
+    }
+    .scene-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding-top: 12px;
+    }
+    #scene-chat {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    /* Scene narration bubble */
+    .msg.scene-narration {
+      background: rgba(8, 14, 24, 0.65);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid rgba(92,138,138,0.45);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .msg.scene-narration.critical {
+      border-left-color: var(--amber);
+      background: rgba(40, 24, 4, 0.6);
+    }
+    /* Evidence discovery callout inside scene */
+    .scene-evidence-found {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(92,138,138,0.12);
+      border: 1px solid rgba(92,138,138,0.3);
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--teal);
+    }
+    .scene-evidence-found .ev-item { margin-bottom: 2px; }
+    .scene-evidence-found .ev-item:last-child { margin-bottom: 0; }
+    /* Scene action input row */
+    .scene-input-area {
+      flex-shrink: 0;
+      padding-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .scene-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .scene-input-row textarea {
+      flex: 1;
+      resize: none;
+    }
+    #scene-err { min-height: 1em; font-size: 13px; }
+
     .suspects-empty {
       grid-column: 1 / -1;
       border: 1px dashed var(--text-dim);
@@ -1642,6 +1915,36 @@
   </div>
 </div>
 
+<!-- ===================== SCENE ===================== -->
+<div id="s-scene" class="screen">
+  <div class="scene-outer">
+
+    <!-- Header: location name + clock + leave button -->
+    <div class="scene-header">
+      <button class="back-btn" id="scene-back">&#8592; Leave Scene</button>
+      <div class="scene-title-block">
+        <div class="scene-location-name" id="scene-location-name"></div>
+        <div class="scene-location-sub" id="scene-location-sub"></div>
+      </div>
+      <span id="scene-clock"></span>
+    </div>
+
+    <!-- Chat / narration area + input -->
+    <div class="scene-body">
+      <div id="scene-chat"></div>
+
+      <div class="scene-input-area">
+        <div class="scene-input-row">
+          <textarea id="scene-in" rows="2" placeholder="What do you examine or do?" autocomplete="off"></textarea>
+          <button class="primary" id="scene-send">Act</button>
+        </div>
+        <div id="scene-err" class="err"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ===================== ACCUSATION ===================== -->
 <div id="s-accuse" class="screen">
   <div class="page">
@@ -1668,6 +1971,23 @@
 
 <!-- ===================== TOAST CONTAINER ===================== -->
 <div id="toast-container"></div>
+
+<!-- Phone notification button (fixed bottom-right; visible during in-game screens) -->
+<button id="phone-btn" title="Messages" style="display:none" aria-label="Open messages">
+  &#128241;
+  <span id="phone-badge" style="display:none"></span>
+</button>
+
+<!-- Phone message modal -->
+<div id="phone-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-label="Messages">
+  <div id="phone-modal">
+    <div class="phone-modal-header">
+      <span class="phone-modal-title">Messages</span>
+      <button class="phone-modal-close" id="phone-modal-close" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="phone-modal-body" id="phone-modal-body"></div>
+  </div>
+</div>
 
 <!-- ===================== BRIEF MODAL ===================== -->
 <div id="brief-modal-backdrop" class="brief-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="brief-modal-title-el">
@@ -1714,13 +2034,17 @@ const G = {
   discoveredInfo: {
     names: [], locations: [], times: [],
     evidence_ids: [], document_ids: [],
-    raw_statements: {},  // suspectName -> [raw response string, ...]
+    scene_evidence_ids: [],  // subset of evidence_ids found via warrant scene searches (double-weighted)
+    raw_statements: {},      // suspectName -> [raw response string, ...]
   },
   entityRegistry: { names: [], locations: [], times: [] },
   pendingAdvisorContext: null,  // set when advisor buttons are shown
   clockMinutes: 0,     // total minutes elapsed since Day 1, 8:00 AM
-  pendingItems: [],    // [{id, label, readyAt, evidence_ids, document_ids}] — time-gated items
-  seenUnlocked: new Set(), // IDs the player has seen in the Case File (clears "new" badges)
+  pendingItems:   [],    // [{id, label, readyAt, evidence_ids, document_ids, is_warrant, warrant_location}]
+  readyWarrants:  [],    // warrants fully served and awaiting player scene entry
+  currentScene:   null,  // warrant object currently being explored in the scene screen
+  seenUnlocked:   new Set(), // IDs the player has seen in the Case File (clears "new" badges)
+  phoneMessages:  [],   // [{id, time, sender, text, read, action}]
 };
 
 // ============================================================
@@ -1748,6 +2072,8 @@ function saveState(key) {
       pendingItems:  G.pendingItems,
       seenUnlocked:  [...G.seenUnlocked],
       aiWitnesses:   G.aiWitnesses,
+      readyWarrants: G.readyWarrants,
+      phoneMessages: G.phoneMessages,
     };
     localStorage.setItem(_LS_PREFIX + key, JSON.stringify(state));
   } catch (e) {
@@ -1835,11 +2161,13 @@ function advanceClock(minutes, pendingItem) {
     const reveals     = Array.isArray(pendingItem.reveals) ? pendingItem.reveals : [];
     const readyAt     = G.clockMinutes + pendingItem.resolution_minutes;
     G.pendingItems.push({
-      id:           Date.now().toString(36),
-      label:        pendingItem.label,
+      id:              Date.now().toString(36),
+      label:           pendingItem.label,
       readyAt,
-      evidence_ids: reveals.filter(id => evidenceIds.has(id)),
-      document_ids: reveals.filter(id => docIds.has(id)),
+      evidence_ids:    reveals.filter(id => evidenceIds.has(id)),
+      document_ids:    reveals.filter(id => docIds.has(id)),
+      is_warrant:      pendingItem.is_warrant === true,
+      warrant_location: pendingItem.location || '',
     });
     events.push({ type: 'pending_added', label: pendingItem.label, readyAt });
   }
@@ -1853,22 +2181,39 @@ function advanceClock(minutes, pendingItem) {
   const stillPending = [];
   for (const item of G.pendingItems) {
     if (G.clockMinutes >= item.readyAt) {
-      const evidenceSet = new Set((G.case.evidence  || []).map(e => e.id));
-      const docSet      = new Set((G.case.documents || []).map(d => d.id));
-      for (const id of (item.evidence_ids || [])) {
-        if (evidenceSet.has(id) && !G.discoveredInfo.evidence_ids.includes(id)) {
-          G.discoveredInfo.evidence_ids.push(id);
-          G.unlocked.add(id);
+      if (item.is_warrant) {
+        // Warrants: do NOT auto-unlock evidence — player must enter the scene
+        const warrantEntry = {
+          id:           item.id,
+          label:        item.label,
+          location:     item.warrant_location || '',
+          evidence_ids: item.evidence_ids || [],
+          document_ids: item.document_ids || [],
+          status:       'ready',
+        };
+        G.readyWarrants.push(warrantEntry);
+        events.push({ type: 'warrant_ready', id: item.id, label: item.label,
+                      location: item.warrant_location || '', evidence_ids: item.evidence_ids,
+                      document_ids: item.document_ids });
+      } else {
+        // Non-warrant items: auto-unlock as before
+        const evidenceSet = new Set((G.case.evidence  || []).map(e => e.id));
+        const docSet      = new Set((G.case.documents || []).map(d => d.id));
+        for (const id of (item.evidence_ids || [])) {
+          if (evidenceSet.has(id) && !G.discoveredInfo.evidence_ids.includes(id)) {
+            G.discoveredInfo.evidence_ids.push(id);
+            G.unlocked.add(id);
+          }
         }
-      }
-      for (const id of (item.document_ids || [])) {
-        if (docSet.has(id) && !G.discoveredInfo.document_ids.includes(id)) {
-          G.discoveredInfo.document_ids.push(id);
-          G.unlocked.add(id);
+        for (const id of (item.document_ids || [])) {
+          if (docSet.has(id) && !G.discoveredInfo.document_ids.includes(id)) {
+            G.discoveredInfo.document_ids.push(id);
+            G.unlocked.add(id);
+          }
         }
+        events.push({ type: 'item_resolved', label: item.label,
+                      evidence_ids: item.evidence_ids, document_ids: item.document_ids });
       }
-      events.push({ type: 'item_resolved', label: item.label,
-                    evidence_ids: item.evidence_ids, document_ids: item.document_ids });
     } else {
       stillPending.push(item);
     }
@@ -1910,6 +2255,137 @@ function showToast(html, durationMs) {
 }
 
 // ============================================================
+// PHONE NOTIFICATION SYSTEM
+// ============================================================
+
+function _phoneUnreadCount() {
+  return G.phoneMessages.filter(m => !m.read).length;
+}
+
+function updatePhoneBadge() {
+  const btn   = document.getElementById('phone-btn');
+  const badge = document.getElementById('phone-badge');
+  if (!btn || !badge) return;
+  const n = _phoneUnreadCount();
+  if (n > 0) {
+    badge.textContent  = n > 99 ? '99+' : String(n);
+    badge.style.display = 'flex';
+    btn.classList.add('has-unread', 'pulsing');
+  } else {
+    badge.style.display = 'none';
+    btn.classList.remove('has-unread', 'pulsing');
+  }
+}
+
+// Push a new message and trigger the animated badge.
+// `action` is optional: { type: 'navigate', target: 'casefile'|'suspects'|'hub' }
+function addPhoneMessage(sender, text, action) {
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  G.phoneMessages.push({
+    id,
+    time:   clockMinutesToDisplay(G.clockMinutes),
+    sender: sender || 'Dispatch',
+    text:   text   || '',
+    read:   false,
+    action: action || null,
+  });
+  updatePhoneBadge();
+  saveState(G.caseKey);
+}
+
+function _phoneActionLabel(action) {
+  if (!action) return null;
+  const map = { casefile: 'View Case File', suspects: 'View Suspects', hub: 'Back to Hub' };
+  return map[action.target] || null;
+}
+
+function renderPhoneMessages() {
+  const body = document.getElementById('phone-modal-body');
+  if (!body) return;
+  if (!G.phoneMessages.length) {
+    body.innerHTML = '<div class="phone-empty">No messages yet.</div>';
+    return;
+  }
+  // Newest first
+  const msgs = [...G.phoneMessages].reverse();
+  body.innerHTML = msgs.map(m => {
+    const unreadCls = m.read ? '' : ' unread';
+    const actionLabel = _phoneActionLabel(m.action);
+    const actionHtml  = actionLabel
+      ? `<span class="phone-msg-action">&#9654; ${esc(actionLabel)}</span>`
+      : '';
+    return `<div class="phone-msg${unreadCls}" data-msg-id="${esc(m.id)}">
+      <div class="phone-msg-meta">
+        <span class="phone-msg-sender">${esc(m.sender)}</span>
+        <span class="phone-msg-time">${esc(m.time)}</span>
+      </div>
+      <div class="phone-msg-text">${esc(m.text)}</div>
+      ${actionHtml}
+    </div>`;
+  }).join('');
+
+  // Click handler for each message
+  body.querySelectorAll('.phone-msg').forEach(el => {
+    el.addEventListener('click', () => {
+      const id  = el.dataset.msgId;
+      const msg = G.phoneMessages.find(m => m.id === id);
+      if (!msg) return;
+      msg.read = true;
+      updatePhoneBadge();
+      saveState(G.caseKey);
+      if (msg.action && msg.action.type === 'navigate') {
+        closePhoneModal();
+        const target = msg.action.target;
+        if (target === 'casefile') {
+          // Mirror the nav-casefile click: mark seen, render, navigate
+          for (const id of G.unlocked) G.seenUnlocked.add(id);
+          updateCaseFileBadge();
+          saveState(G.caseKey);
+          renderCaseFile();
+          show('casefile');
+        } else if (target === 'suspects') {
+          renderSuspects(); show('suspects');
+        } else if (target === 'hub') {
+          renderHub(); show('hub');
+        } else if (target === 'scene' && msg.action.warrantId) {
+          openScene(msg.action.warrantId);
+        }
+      }
+    });
+  });
+}
+
+function openPhoneModal() {
+  // Mark all current messages as read when opening
+  let changed = false;
+  for (const m of G.phoneMessages) {
+    if (!m.read) { m.read = true; changed = true; }
+  }
+  if (changed) {
+    updatePhoneBadge();
+    saveState(G.caseKey);
+  }
+  renderPhoneMessages();
+  document.getElementById('phone-modal-backdrop').style.display = 'flex';
+}
+
+function closePhoneModal() {
+  document.getElementById('phone-modal-backdrop').style.display = 'none';
+}
+
+// Wire up phone button and modal
+document.getElementById('phone-btn').addEventListener('click', openPhoneModal);
+document.getElementById('phone-modal-close').addEventListener('click', closePhoneModal);
+document.getElementById('phone-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('phone-modal-backdrop')) closePhoneModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('phone-modal-backdrop').style.display !== 'none') {
+    closePhoneModal();
+  }
+});
+
+// ============================================================
 // CASE FILE BADGE
 // ============================================================
 // Count unlocked IDs not yet in G.seenUnlocked
@@ -1933,9 +2409,13 @@ function updateCaseFileBadge() {
 // ============================================================
 // SCREEN HELPERS
 // ============================================================
+const _INGAME_SCREENS = new Set(['hub','interview','suspects','casefile','accusation','result','scene']);
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('s-' + id).classList.add('active');
+  // Phone button only shows during in-game screens
+  const phoneBtn = document.getElementById('phone-btn');
+  if (phoneBtn) phoneBtn.style.display = _INGAME_SCREENS.has(id) ? 'flex' : 'none';
   if (id === 'start') {
     const layer = document.getElementById('bg-layer');
     layer.style.backgroundImage = "url('../images/background images/wilderness-rescue_light.jpg')";
@@ -2136,8 +2616,13 @@ function loadCase(key) {
     G.discoveredInfo = saved.discoveredInfo || {
       names: [], locations: [], times: [],
       evidence_ids: [], document_ids: [],
+      scene_evidence_ids: [],
       raw_statements: {},
     };
+    // Backward compat: old saves lack scene_evidence_ids
+    if (!Array.isArray(G.discoveredInfo.scene_evidence_ids)) {
+      G.discoveredInfo.scene_evidence_ids = [];
+    }
     G.budget       = typeof saved.budget === 'number' ? saved.budget : (caseData.budget || 0);
     G.role         = saved.role         || 'detective';
     G.setupFormat  = saved.setupFormat  || 'briefing';
@@ -2153,9 +2638,13 @@ function loadCase(key) {
     G.pendingItems  = Array.isArray(saved.pendingItems)  ? saved.pendingItems  : [];
     G.seenUnlocked  = new Set(Array.isArray(saved.seenUnlocked) ? saved.seenUnlocked : []);
     G.aiWitnesses   = (saved.aiWitnesses && typeof saved.aiWitnesses === 'object') ? saved.aiWitnesses : {};
+    G.readyWarrants = Array.isArray(saved.readyWarrants) ? saved.readyWarrants : [];
+    G.currentScene  = null;
+    G.phoneMessages = Array.isArray(saved.phoneMessages) ? saved.phoneMessages : [];
     G.witness       = null;
     G.interviewMode = 'suspect';
     refreshActionResults();
+    updatePhoneBadge();
     renderHub();
     show('hub');
     return;
@@ -2182,12 +2671,16 @@ function loadCase(key) {
   G.discoveredInfo = {
     names: [], locations: [], times: [],
     evidence_ids: [], document_ids: [],
+    scene_evidence_ids: [],
     raw_statements: {},
   };
   G.pendingAdvisorContext = null;
   G.clockMinutes  = 0;
   G.pendingItems  = [];
   G.seenUnlocked  = new Set();
+  G.readyWarrants = [];
+  G.currentScene  = null;
+  G.phoneMessages = [];
   renderSetup();
   show('setup');
 }
@@ -2657,6 +3150,20 @@ document.getElementById('iview-back').addEventListener('click', () => {
   }
 });
 document.getElementById('acc-back')  .addEventListener('click', () => { renderHub(); show('hub'); });
+document.getElementById('scene-back') .addEventListener('click', () => {
+  G.currentScene = null;
+  renderHub(); show('hub');
+});
+document.getElementById('scene-send').addEventListener('click', () => {
+  const val = document.getElementById('scene-in').value.trim();
+  if (val) { document.getElementById('scene-in').value = ''; _sendSceneMessage(val); }
+});
+document.getElementById('scene-in').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    const val = e.target.value.trim();
+    if (val) { e.target.value = ''; _sendSceneMessage(val); }
+  }
+});
 
 // ============================================================
 // FREE-FORM ACTION RESOLVER
@@ -2672,7 +3179,10 @@ RULES:
 3. If the action targets something NOT in the case data, return a plausible dead-end. Examples: "You check but find nothing relevant." / "The office is closed." / "No one matching that description is available." Do NOT fabricate new information.
 4. If a suspect made a claim (alibi, timeline, fact), and the case data contains the ground truth, the player CAN verify it through a reasonable action. Return whether the claim checks out based on the case data.
 5. Respond in second person, present tense. Concise — 2 to 5 sentences unless the player is discovering a significant evidence item, in which case describe it fully.
-6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items (warrants, lab results) use: "pending_item": {"label": "Warrant for 15 Oak St", "resolution_minutes": 480, "reveals": ["ev-01"]} — do NOT include those IDs in discovered; they will be unlocked automatically when the item resolves. If you introduce interviewable characters, set witnesses_present to an array of {name, role} objects; otherwise set it to null.
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items use one of these forms:
+- Lab results / records: "pending_item": {"label": "Lab results for fiber sample", "resolution_minutes": 240, "reveals": ["ev-01"]}
+- Warrants (player must physically search the scene): "pending_item": {"label": "Warrant for Rusk Salvage Yard", "resolution_minutes": 480, "reveals": ["ev-05", "ev-06"], "is_warrant": true, "location": "Rusk Recovery & Salvage"}
+Set is_warrant: true ONLY for warrants that involve executing a physical search at a named location. The evidence will NOT be auto-added — the player must enter the scene. For lab results, fingerprint runs, record requests, and any non-physical resolution, omit is_warrant or set it to false. Do NOT include warrant-reveal IDs in discovered; they are locked until the player searches the scene. If you introduce interviewable characters, set witnesses_present to an array of {name, role} objects; otherwise set it to null.
 7. If the action is vague or nonsensical, ask for clarification in the narrative field. Set cost to 0.
 8. Never reveal information the player has not earned through their actions. No freebies.
 9. If the player has already taken this exact action, note it in the narrative and reference the prior result. Set cost to 0.
@@ -2766,6 +3276,21 @@ function renderActionCard(action, idx) {
     return `<div class="feed-card pending-card">
       <div class="feed-card-top"><span class="feed-tag pending-item">Pending</span></div>
       <div class="feed-narrative" style="margin-bottom:0">${esc(action.label)} — ready at <strong>${clockMinutesToDisplay(action.readyAt)}</strong>.</div>
+    </div>`;
+  }
+
+  // Warrant ready — player must enter the scene to discover evidence
+  if (action.type === 'warrant_ready') {
+    const loc = action.location || action.label;
+    // Check if warrant has already been entered at least once
+    const wEntry = G.readyWarrants.find(w => w.id === action.id);
+    const btnLabel = (wEntry && wEntry.status === 'visited') ? 'Return to Scene' : 'Enter Scene';
+    return `<div class="feed-card" style="border-color:rgba(200,130,40,0.3);background:rgba(30,18,4,0.55)">
+      <div class="feed-card-top"><span class="feed-tag warrant">Warrant Executed</span></div>
+      <div class="feed-narrative"><strong>${esc(loc)}</strong> — scene secured and awaiting your arrival.</div>
+      <div class="feed-witnesses">
+        <button class="iview-btn scene-enter-btn" data-warrant-id="${esc(action.id)}">&#128682; ${esc(btnLabel)}</button>
+      </div>
     </div>`;
   }
 
@@ -2890,15 +3415,27 @@ function processActionResult(input, narrative, cost, cost_label, discovered, tim
     witnesses_present: Array.isArray(witnesses_present) && witnesses_present.length ? witnesses_present : null,
   });
 
-  // Push remaining clock events (day_end, item_resolved) — appear above main action
+  // Push remaining clock events (day_end, item_resolved, warrant_ready) — appear above main action
   for (const ev of otherClockEvents) {
     G.actions.push(ev);
-    // Fire a toast for each resolved item
     if (ev.type === 'item_resolved') {
       const count = (ev.evidence_ids || []).length + (ev.document_ids || []).length;
       const note  = count > 0 ? ` <strong>${count} item${count > 1 ? 's' : ''}</strong> added to Case File.` : '';
       showToast(`&#9989; <strong>${esc(ev.label)}</strong> is ready.${note}`);
       updateCaseFileBadge();
+      const phoneText = count > 0
+        ? `${ev.label} is ready. ${count} item${count > 1 ? 's' : ''} added to your Case File.`
+        : `${ev.label} is ready.`;
+      addPhoneMessage('Dispatch', phoneText, { type: 'navigate', target: 'casefile' });
+    }
+    if (ev.type === 'warrant_ready') {
+      const loc = ev.location || ev.label;
+      showToast(`&#128682; Warrant executed at <strong>${esc(loc)}</strong>. Scene secured.`);
+      addPhoneMessage(
+        'Field Unit',
+        `Warrant executed at ${loc}. Scene secured, requesting your presence.`,
+        { type: 'navigate', target: 'scene', warrantId: ev.id }
+      );
     }
   }
 
@@ -3127,21 +3664,28 @@ document.getElementById('action-in').addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) resolveAction(e.target.value);
 });
 
-// Delegated listener for "Interview Witness" buttons rendered inside feed cards.
+// Delegated listener for dynamically-rendered feed card buttons.
 // Uses event delegation because refreshActionResults() rebuilds innerHTML each time.
 document.getElementById('action-results').addEventListener('click', e => {
-  const btn = e.target.closest('.witness-interview-btn');
-  if (!btn) return;
-  const witnessName = btn.dataset.witnessName;
-  const witnessRole = btn.dataset.witnessRole || '';
-  if (!witnessName) return;
+  // "Interview Witness" button
+  const witnessBtn = e.target.closest('.witness-interview-btn');
+  if (witnessBtn) {
+    const witnessName = witnessBtn.dataset.witnessName;
+    const witnessRole = witnessBtn.dataset.witnessRole || '';
+    if (!witnessName) return;
+    const caseWitness = (G.case && G.case.witnesses || []).find(w => w.name === witnessName);
+    const witness = caseWitness || G.aiWitnesses[witnessName] || {
+      name: witnessName, role: witnessRole, knowledge: [], reliability: 'honest',
+    };
+    openWitnessInterview(witness);
+    return;
+  }
 
-  // Prefer case-level witness definition; fall back to AI-generated registry
-  const caseWitness = (G.case && G.case.witnesses || []).find(w => w.name === witnessName);
-  const witness = caseWitness || G.aiWitnesses[witnessName] || {
-    name: witnessName, role: witnessRole, knowledge: [], reliability: 'honest',
-  };
-  openWitnessInterview(witness);
+  // "Enter Scene" button on warrant_ready cards
+  const sceneBtn = e.target.closest('.scene-enter-btn');
+  if (sceneBtn) {
+    openScene(sceneBtn.dataset.warrantId);
+  }
 });
 
 // ============================================================
@@ -3608,6 +4152,276 @@ async function callWitness(witness, history) {
   return data.content[0].text;
 }
 
+// ============================================================
+// SCENE SYSTEM
+// ============================================================
+
+function renderSceneClock() {
+  const el = document.getElementById('scene-clock');
+  if (el) el.textContent = clockMinutesToDisplay(G.clockMinutes);
+}
+
+function renderSceneChat() {
+  const chatEl = document.getElementById('scene-chat');
+  if (!chatEl || !G.currentScene) return;
+  const chatKey = 'scene_' + G.currentScene.id;
+  const history = G.chats[chatKey] || [];
+
+  if (!history.length) {
+    chatEl.innerHTML = '<div class="msg system">Entering scene…</div>';
+    return;
+  }
+
+  chatEl.innerHTML = history.map(m => {
+    if (m._hidden) return '';   // arrival trigger — not rendered
+    if (m.role === 'user') {
+      return `<div class="msg user">${esc(m.content)}</div>`;
+    }
+    // assistant turn: stored as { role:'assistant', content: narrative, evidence_found: [], critical: bool }
+    const critCls = m.critical ? ' critical' : '';
+    let html = `<div class="msg scene-narration${critCls}">${esc(m.content)}</div>`;
+    if (m.evidence_found && m.evidence_found.length) {
+      const items = m.evidence_found.map(id => {
+        const ev = (G.case.evidence || []).find(e => e.id === id);
+        return `<div class="ev-item">&#128269; [${esc(id)}] ${esc(ev ? ev.description : id)}</div>`;
+      }).join('');
+      html += `<div class="scene-evidence-found">${items}</div>`;
+    }
+    return html;
+  }).join('');
+
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function openScene(warrantId) {
+  const warrant = G.readyWarrants.find(w => w.id === warrantId);
+  if (!warrant) return;
+
+  G.currentScene = warrant;
+  if (warrant.status === 'ready') warrant.status = 'visited';
+  saveState(G.caseKey);
+
+  const chatKey = 'scene_' + warrantId;
+  if (!G.chats[chatKey]) G.chats[chatKey] = [];
+
+  // Populate header
+  const locName = warrant.location || warrant.label;
+  document.getElementById('scene-location-name').textContent = locName;
+
+  // Look up case location entry for sub-description
+  const caseLoc = (G.case.locations || []).find(
+    l => l.name === warrant.location || l.id === warrant.location
+  );
+  document.getElementById('scene-location-sub').textContent =
+    caseLoc ? (caseLoc.description || '') : '';
+
+  document.getElementById('scene-err').textContent = '';
+  document.getElementById('scene-in').value        = '';
+  renderSceneClock();
+  renderSceneChat();
+  show('scene');
+
+  // On first entry, trigger arrival description automatically
+  if (G.chats[chatKey].length === 0) {
+    // Push a hidden arrival trigger so the messages array is valid (user → assistant)
+    G.chats[chatKey].push({ role: 'user', content: '[Arrival]', _hidden: true });
+    _sendSceneMessage(null); // null = arrival, matches the hidden turn
+  }
+}
+
+let _sceneInFlight = false;
+
+async function _sendSceneMessage(input) {
+  if (_sceneInFlight) return;
+  const warrant = G.currentScene;
+  if (!warrant) return;
+
+  const chatKey  = 'scene_' + warrant.id;
+  const isArrival = (input === null);
+  const sendBtn  = document.getElementById('scene-send');
+  const inputEl  = document.getElementById('scene-in');
+  const errEl    = document.getElementById('scene-err');
+
+  if (!isArrival) {
+    if (!input || !input.trim()) return;
+    G.chats[chatKey].push({ role: 'user', content: input });
+  }
+
+  _sceneInFlight = true;
+  if (sendBtn)  sendBtn.disabled  = true;
+  if (inputEl)  inputEl.disabled  = true;
+  if (errEl)    errEl.textContent = '';
+
+  // Typing indicator
+  const chatEl = document.getElementById('scene-chat');
+  if (chatEl) {
+    chatEl.innerHTML += '<div class="msg system" id="scene-typing">Searching…</div>';
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  try {
+    const rawReply = await callScene(warrant, G.chats[chatKey]);
+    const parsed   = _extractActionJson(rawReply) || { narrative: rawReply, evidence_found: [], critical_discovery: false, time_cost: 20 };
+
+    const narrative     = String(parsed.narrative || '');
+    const evidenceFound = Array.isArray(parsed.evidence_found) ? parsed.evidence_found : [];
+    const critical      = parsed.critical_discovery === true;
+    const timeCost      = typeof parsed.time_cost === 'number' ? Math.max(0, parsed.time_cost) : 20;
+
+    // Unlock evidence discovered in scene; tag as scene-found for double-weight in evaluator
+    const evidenceSet = new Set((G.case.evidence  || []).map(e => e.id));
+    const docSet      = new Set((G.case.documents || []).map(d => d.id));
+    const newlyFound  = [];
+    for (const id of evidenceFound) {
+      if (evidenceSet.has(id) && !G.discoveredInfo.evidence_ids.includes(id)) {
+        G.discoveredInfo.evidence_ids.push(id);
+        G.unlocked.add(id);
+        newlyFound.push(id);
+        // Tag as warrant-scene evidence so the evaluator can apply maximum weight
+        if (!G.discoveredInfo.scene_evidence_ids.includes(id)) {
+          G.discoveredInfo.scene_evidence_ids.push(id);
+        }
+      } else if (docSet.has(id) && !G.discoveredInfo.document_ids.includes(id)) {
+        G.discoveredInfo.document_ids.push(id);
+        G.unlocked.add(id);
+        newlyFound.push(id);
+      }
+    }
+    if (newlyFound.length) {
+      updateCaseFileBadge();
+      for (const id of newlyFound) {
+        const ev = (G.case.evidence || []).find(e => e.id === id)
+                || (G.case.documents || []).find(d => d.id === id);
+        const desc = ev ? ev.description : id;
+        addPhoneMessage('You',
+          `Recovered: ${desc} at ${warrant.location || warrant.label}.`,
+          { type: 'navigate', target: 'casefile' }
+        );
+      }
+    }
+
+    // Critical discovery phone alert
+    if (critical) {
+      addPhoneMessage('Field Unit',
+        `Critical discovery at ${warrant.location || warrant.label}. Review findings immediately.`,
+        { type: 'navigate', target: 'casefile' }
+      );
+    }
+
+    // Store narration in chat history
+    G.chats[chatKey].push({
+      role: 'assistant',
+      content: narrative,
+      evidence_found: newlyFound,
+      critical,
+    });
+
+    // Advance clock
+    const generalDefault = (G.case.default_time_costs && G.case.default_time_costs.general_action) || 20;
+    advanceClock(timeCost || generalDefault, null);
+    renderSceneClock();
+    renderClockDisplay();
+
+    saveState(G.caseKey);
+    renderSceneChat();
+
+  } catch (e) {
+    if (!isArrival) G.chats[chatKey].pop(); // undo user turn on error
+    if (errEl) errEl.textContent = 'Error: ' + e.message;
+    renderSceneChat();
+  } finally {
+    const loader = document.getElementById('scene-typing');
+    if (loader) loader.remove();
+    _sceneInFlight = false;
+    if (sendBtn) sendBtn.disabled  = false;
+    if (inputEl) { inputEl.disabled = false; inputEl.focus(); }
+  }
+}
+
+async function callScene(warrant, history) {
+  // Build scoped evidence list for this warrant's reveals
+  const allEvidence  = G.case.evidence  || [];
+  const allDocuments = G.case.documents || [];
+  const revealIds    = new Set([...(warrant.evidence_ids || []), ...(warrant.document_ids || [])]);
+  const scopedEvidence = allEvidence .filter(e => revealIds.has(e.id));
+  const scopedDocs     = allDocuments.filter(d => revealIds.has(d.id));
+
+  // Look up case location entry for scene_details / ambient_details
+  const caseLoc = (G.case.locations || []).find(
+    l => l.name === warrant.location || l.id === warrant.location
+  );
+  const ambientBlock = caseLoc
+    ? `\nLocation description: ${caseLoc.description || ''}\nAmbient details: ${caseLoc.ambient_details || ''}`
+    : '';
+  const sceneDetailsBlock = (caseLoc && caseLoc.scene_details)
+    ? `\nScene layout: ${caseLoc.scene_details.layout || ''}\nAreas: ${(caseLoc.scene_details.areas || []).join(', ')}`
+    : '';
+
+  const roleNote = ({
+    pi:        'The investigator is a private investigator who obtained this warrant via law enforcement cooperation.',
+    detective: 'The investigator is the lead police detective executing the warrant.',
+    fbi:       'The investigator is an FBI agent executing a federal warrant.',
+  })[G.role] || 'The investigator is executing a valid search warrant.';
+
+  const system = [
+    `You are narrating a crime scene search at ${warrant.location || warrant.label}. The investigator has arrived with a valid warrant.`,
+    ambientBlock,
+    sceneDetailsBlock,
+    '',
+    'DISCOVERABLE EVIDENCE at this location:',
+    JSON.stringify([...scopedEvidence, ...scopedDocs], null, 2),
+    '',
+    'RULES:',
+    '1. Describe the environment when they arrive (for the first message). When the investigator directs you to examine something, reveal evidence from the provided evidence list ONLY if their action would logically uncover it. Do not volunteer evidence — the investigator must look in the right place.',
+    '2. You may describe ambient details, layout, and atmosphere freely, but you must not introduce physical evidence, objects, or clues not in the provided evidence list.',
+    '3. When a critical discovery is made (victim found, key evidence recovered), set critical_discovery: true in your response.',
+    '4. Keep narrative to 3–5 sentences unless a critical discovery warrants more.',
+    `5. ${roleNote}`,
+    '6. ALWAYS respond in valid JSON: {"narrative": "...", "evidence_found": [], "critical_discovery": false, "time_cost": 20}',
+    '   evidence_found: array of evidence IDs from the list above that this specific action uncovers. Empty array if nothing found.',
+    '   time_cost: minutes this action takes (default 20, up to 60 for thorough searches).',
+    `Current in-game time: ${clockMinutesToDisplay(G.clockMinutes)}`,
+  ].filter(Boolean).join('\n');
+
+  // Build messages — reuse _compressHistory for context window management
+  const compressedHistory = _compressHistory(history);
+  const messages = compressedHistory
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .map(m => {
+      // Map the hidden arrival trigger to a real API message
+      if (m._hidden && m.role === 'user') return { role: 'user', content: 'Describe the scene as you arrive.' };
+      return { role: m.role, content: m.content };
+    });
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key':                              G.apiKey,
+      'anthropic-version':                      '2023-06-01',
+      'content-type':                           'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-6',
+      max_tokens: 500,
+      system,
+      messages,
+    }),
+  });
+
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { msg = (await res.json()).error.message; } catch {}
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ============================================================
+// INTERVIEW CONTEXT COMPRESSION
+// ============================================================
 // Compress old interview turns into a bullet-list summary string.
 // Returns the full history unchanged if under threshold.
 // Advisor messages are excluded before counting and compressing.
@@ -4021,13 +4835,11 @@ function renderAccuse() {
   if (G.role === 'pi') {
     // PI mode: submit evidence package — no suspect selection
     document.getElementById('acc-confirm').disabled = false;
-    const guilty = (G.case.suspects || []).find(s => s.guilty === true);
-    const guiltyName = guilty ? guilty.name.split(' ')[0].toLowerCase() : null;
-    const guiltyEv = guiltyName
-      ? (G.case.evidence || []).filter(e => (e.points_to || '').toLowerCase().includes(guiltyName))
-      : [];
-    const discoveredCount = guiltyEv.filter(e => G.discoveredInfo.evidence_ids.includes(e.id)).length;
-    const pct = guiltyEv.length > 0 ? Math.round(discoveredCount / guiltyEv.length * 100) : 100;
+    const guilty  = (G.case.suspects || []).find(s => s.guilty === true);
+    const tokens  = guilty ? _nameTokens(guilty.name) : [];
+    // Use same weighted calculation as the evaluator for display consistency
+    const { total: evTotal, discovered: evDisc } = _guiltyEvidenceStats();
+    const pct = evTotal > 0 ? Math.round(evDisc / evTotal * 100) : 100;
     document.getElementById('acc-body').innerHTML = `
       <p class="dim" style="margin-bottom:16px">You are preparing to hand your findings to law enforcement. They will only act if your evidence is compelling enough.</p>
       <div class="accuse-card sel" style="cursor:default;pointer-events:none">
@@ -4068,20 +4880,48 @@ function renderAccuse() {
 }
 
 // Helpers for resolution threshold checks
+
+// Returns all significant tokens from the suspect's name (length > 2 to skip particles like "de").
+function _nameTokens(fullName) {
+  return (fullName || '').toLowerCase().split(/\s+/).filter(t => t.length > 2);
+}
+
+function _matchesName(text, tokens) {
+  const lower = (text || '').toLowerCase();
+  return tokens.some(t => lower.includes(t));
+}
+
 function _guiltyEvidenceStats() {
   const guilty = (G.case.suspects || []).find(s => s.guilty === true);
   if (!guilty) return { total: 0, discovered: 0, firstName: null };
+
   const firstName = guilty.name.split(' ')[0].toLowerCase();
-  const total = (G.case.evidence || []).filter(e => (e.points_to || '').toLowerCase().includes(firstName));
-  const discovered = total.filter(e => G.discoveredInfo.evidence_ids.includes(e.id));
-  return { total: total.length, discovered: discovered.length, firstName };
+  const tokens    = _nameTokens(guilty.name);
+
+  // Evidence pool: anything whose points_to references any name token (first OR last name)
+  const pool = (G.case.evidence || []).filter(e => _matchesName(e.points_to, tokens));
+
+  // Warrant-scene-discovered evidence carries double weight ("maximum weight" per spec)
+  const sceneIds = new Set(G.discoveredInfo.scene_evidence_ids || []);
+
+  let total = 0, discovered = 0;
+  for (const e of pool) {
+    const weight = sceneIds.has(e.id) ? 2 : 1;
+    total      += weight;
+    if (G.discoveredInfo.evidence_ids.includes(e.id)) discovered += weight;
+  }
+
+  return { total, discovered, firstName };
 }
 
 function _guiltyAlibiDisproven(firstName) {
+  const guilty = (G.case.suspects || []).find(s => s.guilty === true);
+  const tokens = guilty ? _nameTokens(guilty.name) : [firstName];
   return (G.case.evidence || []).some(e => {
     if (!G.discoveredInfo.evidence_ids.includes(e.id)) return false;
     const pt = (e.points_to || '').toLowerCase();
-    return pt.includes(firstName) && (pt.includes('alibi') || pt.includes('staged') || pt.includes('false'));
+    return _matchesName(pt, tokens) &&
+           (pt.includes('alibi') || pt.includes('staged') || pt.includes('false'));
   });
 }
 

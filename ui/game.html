@@ -3680,6 +3680,99 @@ function buildActionSystemPrompt() {
   return ACTION_SYSTEM_PROMPT_BASE + '\n' + injection;
 }
 
+function buildActiveOpsBlock() {
+  const lines = [];
+
+  (G.pendingItems || []).forEach(item => {
+    const readyStr = clockMinutesToDisplay(item.readyAt);
+    const where    = item.is_warrant && item.warrant_location ? ` at ${item.warrant_location}` : '';
+    lines.push(`- ${item.label}${where} — resolves at ${readyStr}`);
+  });
+
+  (G.readyWarrants || []).forEach(w => {
+    const loc = w.location ? ` at ${w.location}` : '';
+    lines.push(`- ${w.label}${loc} — warrant approved, not yet executed`);
+  });
+
+  if (!lines.length) return '';
+  return 'ACTIVE OPERATIONS CARRIED FORWARD:\n' + lines.join('\n');
+}
+
+const WAIT_SYSTEM_PROMPT = `You are the game engine for a detective investigation game. The player is waiting — skipping forward in time without taking an action. Narrate what happens during the wait.
+
+OUTPUT: Respond with valid JSON only, no markdown:
+{"narrative":"...","cost":0,"cost_label":"","time_cost":<EXACT wait_minutes VALUE>,"time_label":"...","pending_item":null,"witnesses_present":null,"discovered":{"names":[],"locations":[],"times":[],"evidence_ids":[],"document_ids":[]}}
+
+RULES:
+1. Set time_cost to EXACTLY the wait_minutes value from the user message — do not change it.
+2. cost is always 0 — waiting is free.
+3. Narrate 2-4 sentences. If items resolved during the wait, describe their arrival naturally in the narrative.
+4. If the player has active operations (cameras, stakeouts, alarms), describe what they observed — but only if the case JSON data contains an event during this time window. If the case JSON has no such event, nothing noteworthy happened.
+5. Only add to discovered if the case JSON explicitly supports a reveal during this window. Otherwise leave all discovered arrays empty.
+6. time_label should be a brief phrase like "Waiting until 10:00 PM" or "Waiting for lab results".`;
+
+const WAIT_ACTION_PATTERNS = [
+  /\bwait\b/i,
+  /\bskip\s+(to|ahead|forward)\b/i,
+  /\bfast[\s-]?forward\b/i,
+  /\badvance\s+(to|time)\b/i,
+  /\bhold\s+(on\s+)?(until|for)\b/i,
+  /\bstand\s+by\b/i,
+  /\bsit\s+tight\b/i,
+  /\bpass\s+the\s+time\b/i,
+  /\bkill\s+time\b/i,
+];
+
+function isWaitAction(input) {
+  return WAIT_ACTION_PATTERNS.some(p => p.test(input));
+}
+
+function parseWaitMinutes(input) {
+  const lower = input.toLowerCase();
+
+  // End of day keywords
+  if (/end of day|tonight|closing time|close up|shut down/.test(lower)) {
+    return clockRemainingToday(G.clockMinutes);
+  }
+
+  // Explicit time: "10 PM", "8:30 AM", etc.
+  const timeMatch = lower.match(/(1[0-2]|[1-9])(?::([0-5][0-9]))?\s*(a\.?m\.?|p\.?m\.?)/);
+  if (timeMatch) {
+    let hour     = parseInt(timeMatch[1]);
+    const mins   = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+    const mer    = timeMatch[3].replace(/\./g, '');
+    if (mer === 'pm' && hour < 12) hour += 12;
+    if (mer === 'am' && hour === 12) hour = 0;
+    const dayStart  = Math.floor(G.clockMinutes / CLOCK_DAY_LEN) * CLOCK_DAY_LEN;
+    const curTod    = G.clockMinutes - dayStart;
+    const targetTod = (hour - CLOCK_DAY_START) * 60 + mins;
+    if (targetTod > curTod) return targetTod - curTod;
+    // Target already passed today — advance to tomorrow's occurrence
+    return (CLOCK_DAY_LEN - curTod) + targetTod;
+  }
+
+  // Relative: "2 hours", "90 minutes", "an hour"
+  const hoursMatch = lower.match(/(\d+(?:\.\d+)?)\s*h(?:our)?s?/);
+  const minsMatch  = lower.match(/(\d+)\s*min(?:ute)?s?/);
+  if (hoursMatch || minsMatch) {
+    let total = 0;
+    if (hoursMatch) total += Math.round(parseFloat(hoursMatch[1]) * 60);
+    if (minsMatch)  total += parseInt(minsMatch[1]);
+    return Math.max(5, Math.min(total, CLOCK_DAY_LEN));
+  }
+
+  // Event-based: wait for the next pending item to resolve
+  if (/warrant|lab|forensic|result|something|next|event|happen|come\s+in/.test(lower)) {
+    if (G.pendingItems && G.pendingItems.length > 0) {
+      const nearest = G.pendingItems.reduce((a, b) => a.readyAt < b.readyAt ? a : b);
+      return Math.max(5, nearest.readyAt - G.clockMinutes);
+    }
+  }
+
+  // Default: rest of today
+  return clockRemainingToday(G.clockMinutes);
+}
+
 let _actionInFlight = false;
 
 function renderActionCard(action, idx) {
@@ -3976,6 +4069,7 @@ async function resolveAction(input) {
   const remainingToday = clockRemainingToday(G.clockMinutes);
   const currentTimeStr = `${clockMinutesToDisplay(G.clockMinutes)} (${remainingToday} min remaining today)`;
 
+  const activeOpsBlock = buildActiveOpsBlock();
   const userMsg = [
     `CASE DATA:\n${JSON.stringify(G.case, null, 2)}`,
     '',
@@ -3987,6 +4081,7 @@ async function resolveAction(input) {
     '',
     `REMAINING BUDGET: $${G.budget.toLocaleString()}`,
     `CURRENT TIME: ${currentTimeStr}`,
+    ...(activeOpsBlock ? ['', activeOpsBlock] : []),
     '',
     `PLAYER'S ACTION: "${input}"`,
   ].join('\n');
@@ -4032,6 +4127,89 @@ async function resolveAction(input) {
         return;
       }
     }
+  }
+
+  // Wait action intercept — player wants to skip forward in time
+  if (isWaitAction(input)) {
+    const waitMinutes   = parseWaitMinutes(input);
+    const waitStartDisp = clockMinutesToDisplay(G.clockMinutes);
+    const waitEndDisp   = clockMinutesToDisplay(G.clockMinutes + waitMinutes);
+
+    // Items that will resolve during the wait window (snapshot before clock advances)
+    const willResolve = (G.pendingItems || []).filter(it => it.readyAt <= G.clockMinutes + waitMinutes);
+    const resolvingLines = willResolve.length
+      ? willResolve.map(it => {
+          const where = it.is_warrant && it.warrant_location ? ` at ${it.warrant_location}` : '';
+          return `- ${it.label}${where} (resolves at ${clockMinutesToDisplay(it.readyAt)})`;
+        }).join('\n')
+      : '(none)';
+
+    const waitMsg = [
+      `CASE DATA:\n${JSON.stringify(G.case, null, 2)}`,
+      '',
+      `PLAYER'S STARTING BRIEFING:\n${briefingText}`,
+      '',
+      `INVESTIGATOR'S DISCOVERED INFORMATION:\n${diSummary}`,
+      '',
+      `ACTION HISTORY:\n${actionHistory}`,
+      '',
+      `REMAINING BUDGET: $${G.budget.toLocaleString()}`,
+      `CURRENT TIME: ${waitStartDisp}`,
+      ...(activeOpsBlock ? ['', activeOpsBlock] : []),
+      '',
+      `WAIT REQUEST: Player is waiting from ${waitStartDisp} to ${waitEndDisp} (${waitMinutes} minutes).`,
+      `ITEMS RESOLVING DURING THIS WAIT:\n${resolvingLines}`,
+      `wait_minutes: ${waitMinutes}`,
+      '',
+      `PLAYER'S ACTION: "${input}"`,
+    ].join('\n');
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key':                              G.apiKey,
+          'anthropic-version':                      '2023-06-01',
+          'content-type':                           'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model:      'claude-sonnet-4-6',
+          max_tokens: 400,
+          system:     WAIT_SYSTEM_PROMPT,
+          messages:   [{ role: 'user', content: waitMsg }],
+        }),
+      });
+
+      typingCard.remove();
+
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try { msg = (await res.json()).error.message; } catch {}
+        throw new Error(msg);
+      }
+
+      const data    = await res.json();
+      const rawText = data.content[0].text.trim();
+      const parsed  = _extractActionJson(rawText) ||
+        { narrative: rawText, cost: 0, time_cost: waitMinutes, time_label: `Waited until ${waitEndDisp}` };
+
+      const narrative  = String(parsed.narrative  || 'Time passes quietly.');
+      const time_label = String(parsed.time_label || `Waited until ${waitEndDisp}`);
+      const discovered = parsed.discovered || {};
+
+      processActionResult(input, narrative, 0, '', discovered, waitMinutes, time_label, null, null);
+
+    } catch (e) {
+      if (typingCard.parentNode) typingCard.remove();
+      errEl.textContent = 'Wait failed: ' + e.message;
+    } finally {
+      _actionInFlight  = false;
+      btn.disabled     = false;
+      inputEl.disabled = false;
+      inputEl.focus();
+    }
+    return;
   }
 
   try {

@@ -990,6 +990,12 @@
     .item-type { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; background: var(--teal-dim); display: inline-block; padding: 2px 6px; border-radius: 3px; }
     .item-desc { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 5px; }
     .item-points { font-size: 13px; color: var(--text-muted); }
+    .item-analysis { margin-top: 8px; padding: 8px 10px; background: rgba(160,120,200,0.07); border-left: 2px solid rgba(160,120,200,0.4); border-radius: 3px; }
+    .item-analysis-label { font-family: var(--mono); font-size: 10px; font-weight: 600; color: #a88cc8; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .item-analysis-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+    .item-analysis-pending { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+    .lab-request-btn { margin-top: 8px; font-family: var(--mono); font-size: 11px; color: #a88cc8; background: rgba(160,120,200,0.08); border: 1px solid rgba(160,120,200,0.3); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+    .lab-request-btn:hover { background: rgba(160,120,200,0.15); border-color: rgba(160,120,200,0.5); }
 
     /* ===========================
        SUSPECTS SCREEN
@@ -2021,10 +2027,11 @@ const G = {
   entityRegistry: { names: [], locations: [], times: [] },
   pendingAdvisorContext: null,  // set when advisor buttons are shown
   clockMinutes: 0,     // total minutes elapsed since Day 1, 8:00 AM
-  pendingItems:   [],    // [{id, label, readyAt, evidence_ids, document_ids, is_warrant, warrant_location}]
+  pendingItems:   [],    // [{id, label, readyAt, evidence_ids, document_ids, analysis_ids, is_warrant, warrant_location}]
   readyWarrants:  [],    // warrants fully served and awaiting player scene entry
   currentScene:   null,  // warrant object currently being explored in the scene screen
   seenUnlocked:   new Set(), // IDs the player has seen in the Case File (clears "new" badges)
+  analysisUnlocked: new Set(), // evidence IDs whose lab analysis text has been revealed
   phoneMessages:  [],   // [{id, time, sender, text, read, action}]
 };
 
@@ -2050,11 +2057,12 @@ function saveState(key) {
       accused:       G.accused,
       journal:       G.journal,
       clockMinutes:  G.clockMinutes,
-      pendingItems:  G.pendingItems,
-      seenUnlocked:  [...G.seenUnlocked],
-      aiWitnesses:   G.aiWitnesses,
-      readyWarrants: G.readyWarrants,
-      phoneMessages: G.phoneMessages,
+      pendingItems:    G.pendingItems,
+      seenUnlocked:    [...G.seenUnlocked],
+      analysisUnlocked:[...G.analysisUnlocked],
+      aiWitnesses:     G.aiWitnesses,
+      readyWarrants:   G.readyWarrants,
+      phoneMessages:   G.phoneMessages,
     };
     localStorage.setItem(_LS_PREFIX + key, JSON.stringify(state));
   } catch (e) {
@@ -2147,6 +2155,7 @@ function advanceClock(minutes, pendingItem) {
       readyAt,
       evidence_ids:    reveals.filter(id => evidenceIds.has(id)),
       document_ids:    reveals.filter(id => docIds.has(id)),
+      analysis_ids:    Array.isArray(pendingItem.analysis_ids) ? pendingItem.analysis_ids : [],
       is_warrant:      pendingItem.is_warrant === true,
       warrant_location: pendingItem.location || '',
     });
@@ -2191,6 +2200,10 @@ function advanceClock(minutes, pendingItem) {
             G.discoveredInfo.document_ids.push(id);
             G.unlocked.add(id);
           }
+        }
+        for (const id of (item.analysis_ids || [])) {
+          G.analysisUnlocked.add(id);
+          addPhoneMessage('Crime Lab', `Forensic analysis complete for evidence item ${id}. Results are now in your Case File.`, { type: 'navigate', target: 'casefile' });
         }
         events.push({ type: 'item_resolved', label: item.label,
                       evidence_ids: item.evidence_ids, document_ids: item.document_ids });
@@ -2616,8 +2629,9 @@ function loadCase(key) {
     G.setupRole    = G.role;
     G.pendingAdvisorContext = null;
     G.clockMinutes  = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
-    G.pendingItems  = Array.isArray(saved.pendingItems)  ? saved.pendingItems  : [];
-    G.seenUnlocked  = new Set(Array.isArray(saved.seenUnlocked) ? saved.seenUnlocked : []);
+    G.pendingItems      = Array.isArray(saved.pendingItems)      ? saved.pendingItems      : [];
+    G.seenUnlocked      = new Set(Array.isArray(saved.seenUnlocked)      ? saved.seenUnlocked      : []);
+    G.analysisUnlocked  = new Set(Array.isArray(saved.analysisUnlocked)  ? saved.analysisUnlocked  : []);
     G.aiWitnesses   = (saved.aiWitnesses && typeof saved.aiWitnesses === 'object') ? saved.aiWitnesses : {};
     G.readyWarrants = Array.isArray(saved.readyWarrants) ? saved.readyWarrants : [];
     G.currentScene  = null;
@@ -2657,9 +2671,10 @@ function loadCase(key) {
   };
   G.pendingAdvisorContext = null;
   G.clockMinutes  = 0;
-  G.pendingItems  = [];
-  G.seenUnlocked  = new Set();
-  G.readyWarrants = [];
+  G.pendingItems      = [];
+  G.seenUnlocked      = new Set();
+  G.analysisUnlocked  = new Set();
+  G.readyWarrants     = [];
   G.currentScene  = null;
   G.phoneMessages = [];
   renderSetup();
@@ -3687,10 +3702,21 @@ function renderCaseFile() {
     const unlocked = G.unlocked.has(e.id);
     if (unlocked) {
       const isNew = !G.seenUnlocked.has(e.id);
+      let analysisHtml = '';
+      if (e.analysis) {
+        if (G.analysisUnlocked.has(e.id)) {
+          analysisHtml = `<div class="item-analysis"><div class="item-analysis-label">Lab Analysis</div><div class="item-analysis-text">${esc(e.analysis)}</div></div>`;
+        } else if (G.pendingItems.some(p => (p.analysis_ids || []).includes(e.id))) {
+          analysisHtml = `<div class="item-analysis-pending">⏳ Lab analysis in progress…</div>`;
+        } else {
+          analysisHtml = `<button class="lab-request-btn" onclick="requestAnalysis('${esc(e.id)}')">Request Lab Analysis ($250)</button>`;
+        }
+      }
       return `<div class="item-card${isNew ? ' new-item' : ''}">
         <div class="item-id">${esc(e.id)}${isNew ? '<span class="new-badge">new</span>' : ''}<span class="phase-tag">phase ${e.available_at_phase}</span></div>
         <div class="item-type">${esc(e.type || '')}</div>
         <div class="item-desc">${esc(e.description || '')}</div>
+        ${analysisHtml}
         <div class="item-points">→ ${esc(e.points_to || '')}</div>
       </div>`;
     }
@@ -3719,6 +3745,32 @@ function renderCaseFile() {
 
   document.getElementById('cf-ev-list') .innerHTML = evHtml;
   document.getElementById('cf-doc-list').innerHTML = docHtml;
+}
+
+function requestAnalysis(evidenceId) {
+  const LAB_COST       = 250;
+  const LAB_MINUTES    = 20;   // clock time consumed by submission
+  const LAB_RESOLUTION = 120;  // minutes until results are ready
+
+  if (G.analysisUnlocked.has(evidenceId)) return;
+  if (G.pendingItems.some(p => (p.analysis_ids || []).includes(evidenceId))) {
+    showToast(`Lab analysis for <strong>${evidenceId}</strong> is already in progress.`); return;
+  }
+  if (G.budget < LAB_COST) {
+    showToast(`Insufficient funds — lab analysis costs $${LAB_COST}.`); return;
+  }
+
+  G.budget -= LAB_COST;
+  const events = advanceClock(LAB_MINUTES, {
+    label:            `Lab analysis — ${evidenceId}`,
+    resolution_minutes: LAB_RESOLUTION,
+    reveals:          [],
+    analysis_ids:     [evidenceId],
+  });
+  for (const ev of events) G.actions.push(ev);
+  refreshActionResults();
+  renderCaseFile();
+  saveState(G.caseKey);
 }
 
 // ============================================================

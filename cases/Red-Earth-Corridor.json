@@ -218,7 +218,8 @@
     {
       "id": "E-06",
       "type": "hardware recovery",
-      "description": "A buried seismic sensor recovered near Windmill Road bears a High Prairie Risk asset serial registered to Cole Danner's operations batch",
+      "description": "A buried seismic sensor recovered near Windmill Road bears an asset serial number stamped into the housing",
+      "analysis": "Serial number traced through High Prairie Risk equipment records to an operations batch assigned to Cole Danner",
       "points_to": "Cole Danner and High Prairie Risk",
       "available_at_phase": 2
     },
@@ -232,7 +233,8 @@
     {
       "id": "E-08",
       "type": "telematics",
-      "description": "Camera outage windows and GPS drift events align with beacon pings from a High Prairie service truck assigned to Cole Danner",
+      "description": "Camera outage windows and GPS drift events align with beacon pings logged from a High Prairie Risk service truck",
+      "analysis": "Fleet records identify the truck as unit assigned to Cole Danner's active operations batch during all logged disturbance windows",
       "points_to": "High Prairie field presence during the technical disturbances",
       "available_at_phase": 2
     },

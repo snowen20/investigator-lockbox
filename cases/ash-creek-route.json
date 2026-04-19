@@ -163,7 +163,8 @@
     {
       "id": "E-02",
       "type": "forensic trace",
-      "description": "Orange clay and salvage-yard metal dust found on the driver's step and rear bumper of RM-214",
+      "description": "Orange clay-like residue and dark metallic dust found on the driver's step and rear bumper of RM-214",
+      "analysis": "Residue composition matches clay deposits from the Ash Creek weigh station area; metallic dust is consistent with particulates from salvage yard operations",
       "points_to": "Contact with a vehicle or location consistent with Rusk Recovery & Salvage",
       "available_at_phase": 1
     },
@@ -198,14 +199,16 @@
     {
       "id": "E-07",
       "type": "cell analysis",
-      "description": "Rusk's phone remained active at the Rusted Rail Bar while another device linked to his truck moved toward the salvage yard",
+      "description": "Carrier records show Rusk's registered phone active near the Rusted Rail Bar while a second device on his account was active and moving east during the same window",
+      "analysis": "The moving device identifier matches the transponder registration for Rusk's tow truck, placing it toward Ash Creek during Lena's disappearance window — inconsistent with Rusk being stationary at the bar",
       "points_to": "Calvin Rusk's alibi was staged",
       "available_at_phase": 2
     },
     {
       "id": "E-08",
       "type": "fiber and restraint marks",
-      "description": "Parallel abrasion marks and strap fibers on the postal truck bumper match the commercial ratchet straps used on rollback tow trucks",
+      "description": "Parallel abrasion marks and synthetic strap fibers collected from the rear bumper of postal truck RM-214",
+      "analysis": "Fiber composition and abrasion spacing are consistent with commercial ratchet straps of the type standard on rollback tow trucks",
       "points_to": "Victim or equipment was transferred using a rollback truck",
       "available_at_phase": 2
     },

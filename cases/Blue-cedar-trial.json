@@ -197,14 +197,16 @@
     {
       "id": "E-07",
       "type": "cell and credential analysis",
-      "description": "Quill's phone remained active at the conference hotel while his clinic master credential opened a service elevator at Blue Cedar",
+      "description": "Quill's registered mobile device showed activity near the conference hotel while the clinic access log records a service elevator activation using his master credential during the same window",
+      "analysis": "Badge reader timestamps confirm the master credential was used inside Blue Cedar while Quill's phone was transmitting from the conference venue — the elevator access was not made by Quill in person",
       "points_to": "Dr. Quill's alibi was staged",
       "available_at_phase": 2
     },
     {
       "id": "E-08",
       "type": "forensic trace",
-      "description": "Midazolam residue, adhesive transfer, and a torn badge lanyard are recovered from Records Annex B",
+      "description": "A chemical residue, adhesive transfer material, and a torn badge lanyard are recovered from Records Annex B",
+      "analysis": "Lab analysis identifies the chemical residue as midazolam, a short-acting sedative; adhesive transfer is consistent with restraint tape applied and removed from skin",
       "points_to": "Sonia was chemically subdued and removed against her will",
       "available_at_phase": 2
     },

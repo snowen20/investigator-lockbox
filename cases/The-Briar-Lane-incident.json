@@ -232,7 +232,8 @@
     {
       "id": "E-10",
       "type": "forensic comparison",
-      "description": "Fibers and touch DNA from the closet hatch and mylar blanket are consistent with Miles Kerr and his work jacket",
+      "description": "Fibers and a biological trace sample collected from the closet hatch and the surface of the mylar emergency blanket",
+      "analysis": "Touch DNA profile from the biological sample matches Miles Kerr; fiber composition is consistent with his documented work jacket",
       "points_to": "Miles Kerr"
     },
     {

@@ -81,7 +81,7 @@
   "timeline": [
     {
       "datetime": "2026-09-14T07:18:00",
-      "event": "Lena begins Route 17A and signs out vehicle RM-214",
+      "event": "Lena begins Route 17A and signs out the mail truck",
       "location": "Cottonwood County Mail Annex",
       "source": "Postal dispatch log"
     },
@@ -135,7 +135,7 @@
     },
     {
       "datetime": "2026-09-14T22:11:00",
-      "event": "Lena is reported overdue when RM-214 is found abandoned with mail tubs intact",
+      "event": "Lena is reported overdue when the mail truck is found abandoned with mail tubs intact",
       "location": "Ash Creek turnout",
       "source": "Deputy incident report"
     },
@@ -163,7 +163,7 @@
     {
       "id": "E-02",
       "type": "forensic trace",
-      "description": "Orange clay-like residue and dark metallic dust found on the driver's step and rear bumper of RM-214",
+      "description": "Orange clay-like residue and dark metallic dust found on the driver's step and rear bumper of the mail truck",
       "analysis": "Residue composition matches clay deposits from the Ash Creek weigh station area; metallic dust is consistent with particulates from salvage yard operations",
       "points_to": "Contact with a vehicle or location consistent with Rusk Recovery & Salvage",
       "available_at_phase": 1
@@ -207,7 +207,7 @@
     {
       "id": "E-08",
       "type": "fiber and restraint marks",
-      "description": "Parallel abrasion marks and synthetic strap fibers collected from the rear bumper of postal truck RM-214",
+      "description": "Parallel abrasion marks and synthetic strap fibers collected from the rear bumper of the mail truck",
       "analysis": "Fiber composition and abrasion spacing are consistent with commercial ratchet straps of the type standard on rollback tow trucks",
       "points_to": "Victim or equipment was transferred using a rollback truck",
       "available_at_phase": 2
@@ -255,7 +255,7 @@
     {
       "id": "D-05",
       "type": "forensic_note",
-      "content": "Field exam of RM-214 found orange clay, ferrous dust, and empty dashcam card slot. Pattern suggests deliberate evidence removal rather than routine loss.",
+      "content": "Field exam of the mail truck found orange clay, ferrous dust, and empty dashcam card slot. Pattern suggests deliberate evidence removal rather than routine loss.",
       "phase": 2
     },
     {
@@ -304,7 +304,7 @@
       ]
     },
     "narrative": {
-      "opening_scene": "The call comes in at 10:47 PM — RM-214 found abandoned at a dirt turnout near Ash Creek, engine cold, wallet still on the seat. Lena Mercer signed out of the annex at seven-eighteen that morning and was supposed to be back by six. Nobody reported her missing for four hours. Now it's your case.",
+      "opening_scene": "The call comes in at 10:47 PM — the mail truck found abandoned at a dirt turnout near Ash Creek, engine cold, wallet still on the seat. Lena Mercer signed out of the annex at seven-eighteen that morning and was supposed to be back by six. Nobody reported her missing for four hours. Now it's your case.",
       "reveal_fields": [
         "victim",
         "briefing"
@@ -392,7 +392,7 @@
     {
       "id": "ash_creek_turnout",
       "name": "Ash Creek Turnout",
-      "description": "Gravel pulloff on Ash Creek Road where Lena's postal vehicle RM-214 was found abandoned.",
+      "description": "Gravel pulloff on Ash Creek Road where Lena's mail truck was found abandoned.",
       "searchable": true,
       "ambient_details": "Tire tracks from a heavy vehicle. Broken fence post. Orange clay near rear bumper."
     },

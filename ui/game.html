@@ -889,6 +889,13 @@
       padding: 10px 12px; background: rgba(160,120,200,0.07);
       border-left: 2px solid rgba(160,120,200,0.35); border-radius: 3px; flex-shrink: 0;
     }
+    .assistant-intro p { margin: 0 0 8px; }
+    .assistant-intro p:last-child { margin-bottom: 0; }
+    .assistant-solo {
+      font-size: 13px; color: var(--text-dim); line-height: 1.6;
+      padding: 10px 12px; background: rgba(255,255,255,0.03);
+      border-left: 2px solid rgba(255,255,255,0.12); border-radius: 3px;
+    }
     .assistant-modal-footer {
       padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.06);
       display: flex; gap: 8px; flex-shrink: 0;
@@ -2485,13 +2492,19 @@ document.addEventListener('keydown', e => {
 // ============================================================
 // ASSISTANT MODAL
 // ============================================================
-const ASSISTANT_INTRO = "I'm your case assistant. You can ask me for help at any time — how to approach an interview, what to investigate next, or how the tools in your case file work. I won't solve the case for you, but I can point you in the right direction.";
+const ASSISTANT_INTRO = [
+  "I'm your case assistant. Here are the basics:",
+  "If you don't know where to start, talk to people. Suspects and witnesses are your foundation — they give you names, places, timelines, and contradictions to follow up on.",
+  "Once you have leads, investigate them — visit locations, request records, check cameras, canvass for more witnesses.",
+  "Everything builds on everything else. A suspect gives you a name, that name leads to a location, that location gives you evidence.",
+  "You can ask me for help at any time — how to approach an interview, what to look into next, or how your tools work. I won't solve the case for you, but I can point you in the right direction.",
+];
 
 function updateAssistantBadge() {
   const tile = document.getElementById('nav-assistant');
   const val  = document.getElementById('nav-assistant-val');
   if (!tile) return;
-  if (G.assistantUnread) {
+  if (advisorActive() && G.assistantUnread) {
     tile.classList.add('has-unread', 'pulsing');
     if (val) val.textContent = 'New message';
   } else {
@@ -2503,7 +2516,12 @@ function updateAssistantBadge() {
 function renderAssistantMessages() {
   const body = document.getElementById('assistant-modal-body');
   if (!body) return;
-  let html = `<div class="assistant-intro">${esc(ASSISTANT_INTRO)}</div>`;
+  let html = '';
+  if (!advisorActive()) {
+    html = `<div class="assistant-solo"><p>You're working this case solo. The assistant is not available for your role.</p></div>`;
+  } else if (G.assistantMessages.length === 0) {
+    html = `<div class="assistant-intro">${ASSISTANT_INTRO.map(p => `<p>${esc(p)}</p>`).join('')}</div>`;
+  }
   html += G.assistantMessages.map(m => {
     if (m.role === 'user') return `<div class="msg user">${esc(m.content)}</div>`;
     return `<div class="msg advisor"><div class="advisor-role-tag">[ASSISTANT]</div>${esc(m.content)}</div>`;
@@ -2518,8 +2536,10 @@ function openAssistantModal() {
   saveState(G.caseKey);
   renderAssistantMessages();
   document.getElementById('assistant-err').textContent = '';
+  const footer = document.querySelector('.assistant-modal-footer');
+  if (footer) footer.style.display = advisorActive() ? '' : 'none';
   document.getElementById('assistant-modal-backdrop').style.display = 'flex';
-  document.getElementById('assistant-in').focus();
+  if (advisorActive()) document.getElementById('assistant-in').focus();
 }
 
 function closeAssistantModal() {
@@ -2532,6 +2552,7 @@ async function sendAssistantMessage() {
   const errEl    = document.getElementById('assistant-err');
   const question = inputEl.value.trim();
   if (!question) return;
+  if (!advisorActive()) return;
   if (!G.case || !G.apiKey) { errEl.textContent = 'No active case or API key.'; return; }
 
   inputEl.value    = '';

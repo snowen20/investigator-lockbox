@@ -3084,6 +3084,13 @@ function renderHub() {
     hasSavedState(G.caseKey) ? '' : 'none';
 
   renderClockDisplay();
+
+  const actionIn = document.getElementById('action-in');
+  if (actionIn) {
+    actionIn.placeholder = G.actions.some(a => a.type === 'action' || !a.type)
+      ? 'What do you want to do next?'
+      : buildPlaceholder('action');
+  }
 }
 
 // Brief modal
@@ -3512,6 +3519,7 @@ async function resolveAction(input) {
   _actionInFlight = true;
   btn.disabled = true;
   inputEl.disabled = true;
+  inputEl.placeholder = 'What do you want to do next?';
 
   // Build action history summary (investigation actions only)
   const actionHistory = G.actions
@@ -3813,6 +3821,61 @@ function renderSuspects() {
 // ============================================================
 // INTERVIEW
 // ============================================================
+function buildPlaceholder(screenType) {
+  const c = G.case;
+
+  if (screenType === 'suspect') {
+    let dateStr = 'the day of the incident';
+    let timeStr = 'that evening';
+    if (c && c.timeline && c.timeline.length) {
+      const first = c.timeline[0].datetime;
+      if (first) {
+        const d = new Date(first);
+        dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+        const dayPrefix = first.slice(0, 10);
+        const sameDay   = c.timeline.filter(t => t.datetime && t.datetime.startsWith(dayPrefix));
+        const last      = sameDay[sameDay.length - 1];
+        if (last && last.datetime) {
+          const ld = new Date(last.datetime);
+          timeStr = ld.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+      }
+    }
+    return `Example: Where were you on ${dateStr} around ${timeStr}?`;
+  }
+
+  if (screenType === 'witness') {
+    const loc = (G.witness && G.witness.location) || 'the scene';
+    return `Example: Did you notice anything unusual at ${loc}?`;
+  }
+
+  if (screenType === 'action') {
+    let locName = null;
+    if (c && c.locations && c.locations.length) {
+      locName = c.locations[0].name;
+    } else if (c && c.timeline && c.timeline.length && c.timeline[0].location) {
+      locName = c.timeline[0].location;
+    }
+    return locName
+      ? `Example: Check ${locName} for security cameras`
+      : `Example: Check the scene for security cameras`;
+  }
+
+  if (screenType === 'scene') {
+    const warrant = G.currentScene;
+    if (!warrant) return 'Example: Look around the room';
+    const caseLoc = (c && c.locations || []).find(
+      l => l.name === warrant.location || l.id === warrant.location
+    );
+    const firstArea = caseLoc && caseLoc.scene_details && (caseLoc.scene_details.areas || [])[0];
+    return firstArea
+      ? `Example: Look inside the ${firstArea}`
+      : `Example: Look around ${warrant.location || warrant.label}`;
+  }
+
+  return 'Type your question...';
+}
+
 function openWitnessInterview(witness) {
   G.witness = witness;
   G.interviewMode = 'witness';
@@ -3824,6 +3887,10 @@ function openWitnessInterview(witness) {
   renderInterviewClock();
   document.getElementById('iview-err').textContent = '';
   document.getElementById('chat-in').value = '';
+  document.getElementById('chat-in').placeholder =
+    G.chats[witness.name] && G.chats[witness.name].length
+      ? 'Type your question...'
+      : buildPlaceholder('witness');
 
   // Populate collapsible witness info; start collapsed
   const knowledgeList = (witness.knowledge || [])
@@ -3859,6 +3926,10 @@ function openInterview(name) {
   renderInterviewClock();
   document.getElementById('iview-err').textContent  = '';
   document.getElementById('chat-in').value = '';
+  document.getElementById('chat-in').placeholder =
+    G.chats[name] && G.chats[name].length
+      ? 'Type your question...'
+      : buildPlaceholder('suspect');
 
   // Populate collapsible suspect info; start collapsed
   document.getElementById('si-body').innerHTML = `
@@ -4005,6 +4076,7 @@ async function sendMessage() {
   inputEl.disabled = true;
   sendBtn.disabled = true;
   errorEl.textContent = '';
+  inputEl.placeholder = 'Type your question...';
 
   const name = subject.name;
   G.chats[name].push({ role: 'user', content: question });
@@ -4250,6 +4322,10 @@ function openScene(warrantId) {
 
   document.getElementById('scene-err').textContent = '';
   document.getElementById('scene-in').value        = '';
+  document.getElementById('scene-in').placeholder  =
+    G.chats['scene_' + warrantId] && G.chats['scene_' + warrantId].length
+      ? 'Type your question...'
+      : buildPlaceholder('scene');
   renderSceneClock();
   renderSceneChat();
   show('scene');
@@ -4278,6 +4354,7 @@ async function _sendSceneMessage(input) {
   if (!isArrival) {
     if (!input || !input.trim()) return;
     G.chats[chatKey].push({ role: 'user', content: input });
+    if (inputEl) inputEl.placeholder = 'What do you examine or do?';
   }
 
   _sceneInFlight = true;

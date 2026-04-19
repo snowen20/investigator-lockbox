@@ -696,7 +696,14 @@
       letter-spacing: 0.02em;
     }
     .hub-restart-btn:hover { color: var(--text-muted); }
-
+    .hub-abandon { margin-top: 2px; text-align: center; }
+    .hub-abandon-btn {
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      background: none; border: none; color: rgba(220,80,80,0.55);
+      cursor: pointer; padding: 4px 0; text-decoration: underline;
+      letter-spacing: 0.02em; transition: color 0.15s;
+    }
+    .hub-abandon-btn:hover { color: rgba(220,80,80,0.9); }
 
     /* In-progress badge on case library cards */
     .inprogress-badge {
@@ -1903,6 +1910,11 @@
           <button class="hub-restart-btn" id="hub-restart-btn">Restart Case</button>
         </div>
 
+        <!-- Abandon -->
+        <div class="hub-abandon">
+          <button class="hub-abandon-btn" id="hub-abandon-btn">Abandon Case</button>
+        </div>
+
       </div><!-- /.hub-sidebar -->
 
     </div><!-- /.hub-layout -->
@@ -2843,18 +2855,60 @@ function renderCategories() {
   });
 }
 
+// Reset all case-specific G fields to clean defaults.
+// Called before loading any case (new or resumed) to prevent cross-case contamination.
+function _resetCaseState() {
+  G.budget              = 0;
+  G.unlocked            = new Set();
+  G.actions             = [];
+  G.chats               = {};
+  G.suspect             = null;
+  G.witness             = null;
+  G.interviewMode       = 'suspect';
+  G.aiWitnesses         = {};
+  G.accused             = null;
+  G.tab                 = 'ev';
+  G.journal             = { tabs: [], activeIdx: -1 };
+  G.setupFormat         = 'briefing';
+  G.setupAdvisor        = true;
+  G.setupRole           = 'rookie';
+  G.role                = 'rookie';
+  G.startBudget         = 0;
+  G.discoveredInfo      = {
+    names: [], locations: [], times: [],
+    evidence_ids: [], document_ids: [],
+    scene_evidence_ids: [],
+    raw_statements: {},
+  };
+  G.entityRegistry      = { names: [], locations: [], times: [] };
+  G.pendingAdvisorContext = null;
+  G.clockMinutes        = 0;
+  G.pendingItems        = [];
+  G.readyWarrants       = [];
+  G.currentScene        = null;
+  G.seenUnlocked        = new Set();
+  G.analysisUnlocked    = new Set();
+  G.assistantMessages   = [];
+  G.assistantUnread     = false;
+  G.phoneMessages       = [];
+}
+
 function loadCase(key) {
   const caseData = G.cases && G.cases[key];
   if (!caseData) {
     console.error('Case data not found for key:', key);
     return;
   }
+
+  // Always wipe all case state before loading — prevents cross-case contamination
+  _resetCaseState();
+  refreshActionResults();
+
   G.case    = caseData;
   G.caseKey = key;
-  // Build entity registry from case data (always needed)
   G.entityRegistry = buildEntityRegistry();
 
-  // Check for a saved state and restore if found
+  // Restore saved progress if it exists
   const saved = _loadSavedState(key);
   if (saved) {
     G.actions      = saved.actions      || [];
@@ -2879,13 +2933,9 @@ function loadCase(key) {
     if (G.role === 'fbi')       G.role = 'veteran';
     G.startBudget  = saved.startBudget  || 0;
     G.journal      = saved.journal      || { tabs: [], activeIdx: -1 };
-    G.accused      = null;
-    G.suspect      = null;
-    G.tab          = 'ev';
     G.setupRole    = G.role;
     if (G.setupRole === 'detective') G.setupRole = G.setupAdvisor ? 'rookie' : 'veteran';
     if (G.setupRole === 'fbi')       G.setupRole = 'veteran';
-    G.pendingAdvisorContext = null;
     G.clockMinutes  = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
     G.pendingItems      = Array.isArray(saved.pendingItems)      ? saved.pendingItems      : [];
     G.seenUnlocked      = new Set(Array.isArray(saved.seenUnlocked)      ? saved.seenUnlocked      : []);
@@ -2894,10 +2944,7 @@ function loadCase(key) {
     G.assistantUnread   = saved.assistantUnread === true;
     G.aiWitnesses   = (saved.aiWitnesses && typeof saved.aiWitnesses === 'object') ? saved.aiWitnesses : {};
     G.readyWarrants = Array.isArray(saved.readyWarrants) ? saved.readyWarrants : [];
-    G.currentScene  = null;
     G.phoneMessages = Array.isArray(saved.phoneMessages) ? saved.phoneMessages : [];
-    G.witness       = null;
-    G.interviewMode = 'suspect';
     refreshActionResults();
     updatePhoneBadge();
     updateAssistantBadge();
@@ -2906,40 +2953,8 @@ function loadCase(key) {
     return;
   }
 
-  // Fresh start — reset all state to defaults
-  G.budget   = typeof caseData.budget === 'number' ? caseData.budget : 0;
-  G.unlocked = new Set();
-  G.actions  = [];
-  refreshActionResults();
-  G.chats        = {};
-  G.suspect      = null;
-  G.witness      = null;
-  G.interviewMode = 'suspect';
-  G.aiWitnesses  = {};
-  G.accused      = null;
-  G.tab          = 'ev';
-  G.journal  = { tabs: [], activeIdx: -1 };
-  G.setupFormat  = 'briefing';
-  G.setupAdvisor = true;
-  G.setupRole    = 'rookie';
-  G.role         = 'rookie';
-  G.startBudget  = 0;
-  G.discoveredInfo = {
-    names: [], locations: [], times: [],
-    evidence_ids: [], document_ids: [],
-    scene_evidence_ids: [],
-    raw_statements: {},
-  };
-  G.pendingAdvisorContext = null;
-  G.clockMinutes  = 0;
-  G.pendingItems      = [];
-  G.seenUnlocked      = new Set();
-  G.analysisUnlocked  = new Set();
-  G.assistantMessages = [];
-  G.assistantUnread   = false;
-  G.readyWarrants     = [];
-  G.currentScene  = null;
-  G.phoneMessages = [];
+  // Fresh start — set budget from case data and go to setup screen
+  G.budget = typeof caseData.budget === 'number' ? caseData.budget : 0;
   renderSetup();
   show('setup');
 }
@@ -3407,11 +3422,21 @@ document.getElementById('hub-home')  .addEventListener('click', () => show('cate
 
 document.getElementById('hub-restart-btn').addEventListener('click', () => {
   if (!confirm('Restart this case from scratch? Your progress will be lost.')) return;
-  clearState(G.caseKey);
-  // Re-load the case as a fresh start
   const key = G.caseKey;
-  G.caseKey = null; // prevent re-entry into save path
+  clearState(key);
   loadCase(key);
+});
+
+document.getElementById('hub-abandon-btn').addEventListener('click', () => {
+  if (!confirm(
+    'Abandon this case?\n\nYou will permanently lose all notes, discoveries, evidence, and progress. This cannot be undone.'
+  )) return;
+  clearState(G.caseKey);
+  _resetCaseState();
+  refreshActionResults();
+  G.case    = null;
+  G.caseKey = null;
+  show('categories');
 });
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
 document.getElementById('setup-back').addEventListener('click', () => show('categories'));
@@ -4506,7 +4531,7 @@ async function callWitness(witness, history) {
     veteran: 'The person questioning you is the lead police detective on this case.',
   })[G.role] || 'The person questioning you is the lead investigator on this case.';
 
-  const system = [
+  const sysLines = [
     `You are ${witness.name}, ${witness.role || 'a witness'}.`,
     '',
     reliabilityNote,
@@ -4520,8 +4545,19 @@ async function callWitness(witness, history) {
     '2. If asked about something outside your knowledge, say so naturally: "I don\'t know," "I didn\'t see that," "You\'d have to ask someone else."',
     '3. Keep responses to 2–4 sentences. Do not break character or acknowledge this is a game.',
     `4. ${roleNote}`,
+    `5. React naturally to how the investigator speaks to you. If they are aggressive, confrontational, or accusatory without basis, become defensive, guarded, or shut down. If they build rapport, you relax and share more freely. Your cooperation level is not fixed — it shifts based on how you are treated in this conversation. You are a person, not a database.`,
     `Current in-game time: ${clockMinutesToDisplay(G.clockMinutes)}`,
-  ].join('\n');
+  ];
+  if (witness.temperament) {
+    const tMap = {
+      guarded:  'Your default disposition is guarded. You need the investigator to build rapport before you open up.',
+      open:     'Your default disposition is open. You talk freely and do not need to be coaxed.',
+      hostile:  'Your default disposition is hostile. You are uncooperative by nature and require significant patience.',
+      nervous:  'Your default disposition is nervous. You are anxious and may shut down or go silent if pressed too hard.',
+    };
+    sysLines.push('', `CHARACTER NOTE: ${tMap[witness.temperament] || 'Temperament: ' + witness.temperament}`);
+  }
+  const system = sysLines.join('\n');
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -4912,7 +4948,18 @@ async function callClaude(suspect, history) {
       rookie:  `10. The person interviewing you is a police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
       veteran: `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting and their experience. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
     })[G.role] || `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
+    `11. React naturally to how the investigator speaks to you. If they are aggressive, confrontational, or accusatory without basis, become defensive, guarded, or shut down. If they build rapport — ease into the topic, show empathy — you relax and share more freely. If they ask leading or obvious questions, you may become suspicious of their motives. Your cooperation level is not fixed — it shifts based on how you are treated in this conversation. You are a person, not a database.`,
   ];
+
+  if (suspect.temperament) {
+    const tMap = {
+      guarded:  'Your default disposition is guarded. You need the investigator to build rapport before you open up.',
+      open:     'Your default disposition is open. You talk freely and do not need to be coaxed.',
+      hostile:  'Your default disposition is hostile. You are uncooperative by nature and require significant patience from the investigator before you will say anything useful.',
+      nervous:  'Your default disposition is nervous. You are anxious and may shut down or go silent if the investigator presses too hard.',
+    };
+    lines.push('', `CHARACTER NOTE: ${tMap[suspect.temperament] || 'Temperament: ' + suspect.temperament}`);
+  }
 
   if (presented.length > 0) {
     lines.push('');

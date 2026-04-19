@@ -695,6 +695,16 @@
     }
     .hub-restart-btn:hover { color: var(--text-muted); }
 
+    /* Hub notes panel */
+    .hub-notes {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .hub-notes .journal-area { min-height: 200px; }
+
     /* In-progress badge on case library cards */
     .inprogress-badge {
       display: inline-block;
@@ -1846,6 +1856,14 @@
         <!-- Investigation Feed -->
         <div class="feed-label" id="feed-label" style="display:none">Investigation Log</div>
         <div id="action-results"></div>
+
+        <!-- Notes Panel -->
+        <div class="hub-notes">
+          <div class="journal-heading">Notes</div>
+          <div class="journal-tabs" id="hub-journal-tabs"></div>
+          <div class="journal-empty" id="hub-journal-empty">No notes yet. Click "+ New Tab" to start.</div>
+          <textarea class="journal-area" id="hub-journal-area" placeholder="Take notes here..." style="display:none"></textarea>
+        </div>
 
       </div><!-- /.hub-main -->
 
@@ -3318,6 +3336,8 @@ function renderHub() {
       ? 'What do you want to do next?'
       : buildPlaceholder('action');
   }
+
+  renderJournal('hub');
 }
 
 // Brief modal
@@ -4136,7 +4156,7 @@ function openWitnessInterview(witness) {
   document.getElementById('briefing-content').innerHTML = renderCaseOpening();
 
   renderChatWindow();
-  renderJournal();
+  renderJournal('interview');
   show('interview');
 }
 
@@ -4170,7 +4190,7 @@ function openInterview(name) {
   document.getElementById('briefing-content').innerHTML = renderCaseOpening();
 
   renderChatWindow();
-  renderJournal();
+  renderJournal('interview');
   show('interview');
 }
 
@@ -4226,62 +4246,80 @@ document.getElementById('si-toggle-btn').addEventListener('click', () => {
 // ============================================================
 // JOURNAL
 // ============================================================
-function renderJournal() {
+function _journalEls(scope) {
+  const p = scope === 'hub' ? 'hub-' : '';
+  return {
+    tabs:  document.getElementById(p + 'journal-tabs'),
+    empty: document.getElementById(p + 'journal-empty'),
+    area:  document.getElementById(p + 'journal-area'),
+  };
+}
+
+function renderJournal(scope) {
+  scope = scope || 'interview';
+  const els = _journalEls(scope);
+  if (!els.tabs) return;
   const { tabs, activeIdx } = G.journal;
-  const tabsEl  = document.getElementById('journal-tabs');
-  const emptyEl = document.getElementById('journal-empty');
-  const areaEl  = document.getElementById('journal-area');
 
   let html = tabs.map((tab, i) =>
     `<button class="jtab${i === activeIdx ? ' active' : ''}" data-idx="${i}">${esc(tab.name)}</button>`
   ).join('');
-  html += `<button class="jtab-new" id="journal-new-tab">+ New Tab</button>`;
-  tabsEl.innerHTML = html;
+  html += `<button class="jtab-new">+ New Tab</button>`;
+  els.tabs.innerHTML = html;
 
-  tabsEl.querySelectorAll('.jtab[data-idx]').forEach(btn => {
-    btn.addEventListener('click', () => selectJournalTab(parseInt(btn.dataset.idx, 10)));
+  els.tabs.querySelectorAll('.jtab[data-idx]').forEach(btn => {
+    btn.addEventListener('click', () => selectJournalTab(parseInt(btn.dataset.idx, 10), scope));
   });
-  document.getElementById('journal-new-tab').addEventListener('click', createJournalTab);
+  els.tabs.querySelector('.jtab-new').addEventListener('click', () => createJournalTab(scope));
 
   if (activeIdx >= 0 && tabs[activeIdx]) {
-    emptyEl.style.display = 'none';
-    areaEl.style.display  = '';
-    areaEl.value = tabs[activeIdx].content;
+    els.empty.style.display = 'none';
+    els.area.style.display  = '';
+    els.area.value = tabs[activeIdx].content;
   } else {
-    emptyEl.style.display = '';
-    areaEl.style.display  = 'none';
+    els.empty.style.display = '';
+    els.area.style.display  = 'none';
   }
 }
 
 function syncJournalContent() {
   const { tabs, activeIdx } = G.journal;
-  if (activeIdx >= 0 && tabs[activeIdx]) {
-    tabs[activeIdx].content = document.getElementById('journal-area').value;
-  }
+  if (activeIdx < 0 || !tabs[activeIdx]) return;
+  // Sync from whichever textarea is on the currently active screen
+  const hubScreen = document.getElementById('s-hub');
+  const isHub     = hubScreen && hubScreen.classList.contains('active');
+  const area      = document.getElementById(isHub ? 'hub-journal-area' : 'journal-area');
+  if (area) tabs[activeIdx].content = area.value;
 }
 
-function createJournalTab() {
+function createJournalTab(scope) {
+  scope = scope || 'interview';
   const name = (window.prompt('Tab name:') || '').trim();
   if (!name) return;
   syncJournalContent();
   G.journal.tabs.push({ name, content: '' });
   G.journal.activeIdx = G.journal.tabs.length - 1;
-  renderJournal();
+  renderJournal(scope);
   saveState(G.caseKey);
-  document.getElementById('journal-area').focus();
+  const els = _journalEls(scope);
+  if (els.area) els.area.focus();
 }
 
-function selectJournalTab(idx) {
+function selectJournalTab(idx, scope) {
+  scope = scope || 'interview';
   if (idx === G.journal.activeIdx) return;
   syncJournalContent();
   G.journal.activeIdx = idx;
-  renderJournal();
+  renderJournal(scope);
   saveState(G.caseKey);
-  document.getElementById('journal-area').focus();
+  const els = _journalEls(scope);
+  if (els.area) els.area.focus();
 }
 
-document.getElementById('journal-area').addEventListener('input', syncJournalContent);
-document.getElementById('journal-area').addEventListener('blur', () => saveState(G.caseKey));
+document.getElementById('journal-area')    .addEventListener('input', syncJournalContent);
+document.getElementById('journal-area')    .addEventListener('blur',  () => saveState(G.caseKey));
+document.getElementById('hub-journal-area').addEventListener('input', syncJournalContent);
+document.getElementById('hub-journal-area').addEventListener('blur',  () => saveState(G.caseKey));
 
 document.getElementById('chat-send').addEventListener('click', sendMessage);
 document.getElementById('chat-in').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });

@@ -532,6 +532,8 @@
     @media (max-width: 680px) {
       .brief-modal { width: min(700px, 92vw); }
     }
+    .notes-modal-body { display: flex; flex-direction: column; gap: 0; }
+    .notes-modal-area { flex: 1; min-height: 320px; margin-top: 8px; }
 
     /* --- ACTION BOX (CENTERPIECE) --- */
     .action-box {
@@ -695,15 +697,6 @@
     }
     .hub-restart-btn:hover { color: var(--text-muted); }
 
-    /* Hub notes panel */
-    .hub-notes {
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-    }
-    .hub-notes .journal-area { min-height: 200px; }
 
     /* In-progress badge on case library cards */
     .inprogress-badge {
@@ -1786,21 +1779,6 @@
       <div id="setup-role-opts" class="option-grid cols-3"></div>
     </div>
 
-    <!-- Advisor Toggle -->
-    <div class="setup-section">
-      <div class="setup-section-label">Advisor</div>
-      <div class="toggle-row" id="setup-advisor-row">
-        <div class="toggle-row-text">
-          <h4 id="setup-advisor-label">AI Advisor</h4>
-          <p id="setup-advisor-note">An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.</p>
-        </div>
-        <label style="cursor:pointer;flex-shrink:0">
-          <input type="checkbox" id="setup-advisor-toggle" checked style="display:none">
-          <div class="toggle-switch" id="setup-advisor-switch"></div>
-        </label>
-      </div>
-    </div>
-
     <div class="setup-actions">
       <button class="primary" id="setup-begin-btn">Begin Case</button>
     </div>
@@ -1857,14 +1835,6 @@
         <div class="feed-label" id="feed-label" style="display:none">Investigation Log</div>
         <div id="action-results"></div>
 
-        <!-- Notes Panel -->
-        <div class="hub-notes">
-          <div class="journal-heading">Notes</div>
-          <div class="journal-tabs" id="hub-journal-tabs"></div>
-          <div class="journal-empty" id="hub-journal-empty">No notes yet. Click "+ New Tab" to start.</div>
-          <textarea class="journal-area" id="hub-journal-area" placeholder="Take notes here..." style="display:none"></textarea>
-        </div>
-
       </div><!-- /.hub-main -->
 
       <!-- Persistent Sidebar: nav + brief + accusation -->
@@ -1905,6 +1875,13 @@
             <div class="tile-info">
               <div class="tile-label">Assistant</div>
               <div class="tile-count" id="nav-assistant-val">Ask for help</div>
+            </div>
+          </div>
+          <div class="hub-nav-tile" id="nav-notes">
+            <div class="tile-icon">&#128221;</div>
+            <div class="tile-info">
+              <div class="tile-label">Notes</div>
+              <div class="tile-count" id="nav-notes-val">Open notebook</div>
             </div>
           </div>
         </div>
@@ -2091,6 +2068,21 @@
   </div>
 </div>
 
+<!-- ===================== NOTES MODAL ===================== -->
+<div id="notes-modal-backdrop" class="brief-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-label="Notes">
+  <div class="brief-modal" id="notes-modal">
+    <div class="brief-modal-header">
+      <span class="brief-modal-title">Notes</span>
+      <button class="brief-modal-close" id="notes-modal-close" aria-label="Close notes">&#10005;</button>
+    </div>
+    <div class="brief-modal-body notes-modal-body">
+      <div class="journal-tabs" id="hub-journal-tabs"></div>
+      <div class="journal-empty" id="hub-journal-empty">No notes yet. Click "+ New Tab" to start.</div>
+      <textarea class="journal-area notes-modal-area" id="hub-journal-area" placeholder="Take notes here..." style="display:none"></textarea>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -2117,9 +2109,9 @@ const G = {
   selectedCat: null,    // currently selected category object
   // Setup options (chosen on setup screen)
   setupFormat:  'briefing',   // selected delivery format key
-  setupAdvisor: true,         // advisor on/off toggle
-  setupRole:    'detective',  // selected investigator role
-  role:         'detective',  // active role — set from setupRole when "Begin Case" is clicked
+  setupAdvisor: true,         // derived from role: rookie=true, veteran/pi=false
+  setupRole:    'rookie',     // selected investigator role
+  role:         'rookie',     // active role — set from setupRole when "Begin Case" is clicked
   startBudget:  0,            // budget at game start (after role modifier), used for "spent" display
   // Discovered information registry
   discoveredInfo: {
@@ -2858,15 +2850,20 @@ function loadCase(key) {
       G.discoveredInfo.scene_evidence_ids = [];
     }
     G.budget       = typeof saved.budget === 'number' ? saved.budget : (caseData.budget || 0);
-    G.role         = saved.role         || 'detective';
+    G.role         = saved.role         || 'rookie';
     G.setupFormat  = saved.setupFormat  || 'briefing';
     G.setupAdvisor = saved.setupAdvisor !== undefined ? saved.setupAdvisor : true;
+    // Migrate legacy role keys from earlier versions
+    if (G.role === 'detective') G.role = G.setupAdvisor ? 'rookie' : 'veteran';
+    if (G.role === 'fbi')       G.role = 'veteran';
     G.startBudget  = saved.startBudget  || 0;
     G.journal      = saved.journal      || { tabs: [], activeIdx: -1 };
     G.accused      = null;
     G.suspect      = null;
     G.tab          = 'ev';
     G.setupRole    = G.role;
+    if (G.setupRole === 'detective') G.setupRole = G.setupAdvisor ? 'rookie' : 'veteran';
+    if (G.setupRole === 'fbi')       G.setupRole = 'veteran';
     G.pendingAdvisorContext = null;
     G.clockMinutes  = typeof saved.clockMinutes === 'number' ? saved.clockMinutes : 0;
     G.pendingItems      = Array.isArray(saved.pendingItems)      ? saved.pendingItems      : [];
@@ -2903,8 +2900,8 @@ function loadCase(key) {
   G.journal  = { tabs: [], activeIdx: -1 };
   G.setupFormat  = 'briefing';
   G.setupAdvisor = true;
-  G.setupRole    = 'detective';
-  G.role         = 'detective';
+  G.setupRole    = 'rookie';
+  G.role         = 'rookie';
   G.startBudget  = 0;
   G.discoveredInfo = {
     names: [], locations: [], times: [],
@@ -2950,7 +2947,7 @@ function renderBrief() {
   document.getElementById('brief-budget-val').textContent = '$' + G.budget.toLocaleString();
 
   // Sidebar — role
-  const roleLabels = { pi: 'Private Investigator', detective: 'Detective', fbi: 'FBI Agent' };
+  const roleLabels = { pi: 'Private Investigator', rookie: 'Rookie Detective', veteran: 'Veteran Detective' };
   document.getElementById('brief-role-badge').textContent = roleLabels[G.role] || G.role;
 }
 
@@ -3145,7 +3142,8 @@ document.getElementById('begin-btn').addEventListener('click', () => {
 });
 
 document.getElementById('setup-begin-btn').addEventListener('click', () => {
-  G.role = G.setupRole || 'detective';
+  G.role         = G.setupRole || 'rookie';
+  G.setupAdvisor = (G.role === 'rookie');
   if (G.role === 'pi') G.budget = Math.floor(G.budget * 0.75);
   G.startBudget = G.budget;
   renderBrief();
@@ -3221,9 +3219,9 @@ function updateDiscoveredFromUnlocked() {
 // SETUP SCREEN
 // ============================================================
 const ROLE_OPTIONS = [
-  { key: 'pi',        icon: '../images/background images/icons/private investigator.png', label: 'Private Investigator', desc: 'No badge. No warrant power. Harder mode with 75% budget.' },
-  { key: 'detective', icon: '../images/background images/icons/police detective.png',     label: 'Police Detective',     desc: 'Standard law enforcement authority. Department resources and warrants available.' },
-  { key: 'fbi',       icon: '../images/background images/icons/FBI.png',                  label: 'FBI Agent',            desc: "Federal authority. Fast warrants, reduced costs, high cooperation." },
+  { key: 'rookie',  icon: '../images/background images/icons/police detective.png',     label: 'Rookie Detective',    desc: 'Badge, warrants, and department resources. Full AI assistant included — for investigators still learning the ropes.' },
+  { key: 'veteran', icon: '../images/background images/icons/police detective.png',     label: 'Veteran Detective',   desc: 'Badge, warrants, and department resources. No AI coaching. You know how to run an investigation.' },
+  { key: 'pi',      icon: '../images/background images/icons/private investigator.png', label: 'Private Investigator', desc: 'No badge. No warrant power. Observe, ask willing participants, submit findings. Starts with 75% budget.' },
 ];
 
 const FORMAT_OPTIONS = [
@@ -3251,29 +3249,14 @@ function renderSetup() {
     </div>`
   ).join('');
 
-  // Role cards — FBI visible but disabled for non-federal cases
-  const isFederal = G.case && G.case.jurisdiction === 'federal';
-  if (!isFederal && G.setupRole === 'fbi') G.setupRole = 'detective';
-
-  document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt => {
-    const isDisabled = opt.key === 'fbi' && !isFederal;
-    return `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}${isDisabled ? ' disabled' : ''}" data-role="${esc(opt.key)}">
+  document.getElementById('setup-role-opts').innerHTML = ROLE_OPTIONS.map(opt =>
+    `<div class="option-card${G.setupRole === opt.key ? ' selected' : ''}" data-role="${esc(opt.key)}">
       <span class="check">&#10003;</span>
       <img class="option-icon" src="${opt.icon}" alt="${esc(opt.label)}">
       <h4>${esc(opt.label)}</h4>
       <p>${esc(opt.desc)}</p>
-    </div>`;
-  }).join('');
-
-  // Advisor toggle state
-  const toggle    = document.getElementById('setup-advisor-toggle');
-  const switchDiv = document.getElementById('setup-advisor-switch');
-  const note      = document.getElementById('setup-advisor-note');
-  toggle.checked = G.setupAdvisor;
-  switchDiv.classList.toggle('on', G.setupAdvisor);
-  note.textContent = G.setupAdvisor
-    ? 'An investigative partner helps you think through the case. After key moments, you can ask for their take before deciding your next move.'
-    : "You're on your own. No one to bounce ideas off of. Every call is yours.";
+    </div>`
+  ).join('');
 
   // Format card clicks
   document.querySelectorAll('#setup-format-opts .option-card').forEach(el => {
@@ -3283,18 +3266,13 @@ function renderSetup() {
     });
   });
 
-  // Role card clicks
+  // Role card clicks — advisor access is baked into role
   document.querySelectorAll('#setup-role-opts .option-card').forEach(el => {
     el.addEventListener('click', () => {
-      G.setupRole = el.dataset.role;
+      G.setupRole    = el.dataset.role;
+      G.setupAdvisor = (G.setupRole === 'rookie');
       renderSetup();
     });
-  });
-
-  // Advisor toggle
-  toggle.addEventListener('change', () => {
-    G.setupAdvisor = toggle.checked;
-    renderSetup();
   });
 }
 
@@ -3305,7 +3283,7 @@ function renderHub() {
   const c = G.case;
   document.getElementById('hub-title').textContent = c.title || 'Untitled';
 
-  const roleLabels = { pi: 'Private Investigator', detective: 'Detective', fbi: 'FBI Agent' };
+  const roleLabels = { pi: 'Private Investigator', rookie: 'Rookie Detective', veteran: 'Veteran Detective' };
   document.getElementById('hub-role-badge').textContent = roleLabels[G.role] || G.role;
 
   const bEl = document.getElementById('hub-budget');
@@ -3337,7 +3315,6 @@ function renderHub() {
       : buildPlaceholder('action');
   }
 
-  renderJournal('hub');
 }
 
 // Brief modal
@@ -3361,6 +3338,36 @@ document.getElementById('brief-modal-backdrop').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('brief-modal-backdrop').style.display !== 'none') {
     closeBriefModal();
+  }
+});
+
+// Notes modal
+function openNotesModal() {
+  syncJournalContent();
+  renderJournal('hub');
+  const val = document.getElementById('nav-notes-val');
+  if (val) val.textContent = G.journal.tabs.length ? `${G.journal.tabs.length} tab${G.journal.tabs.length > 1 ? 's' : ''}` : 'Open notebook';
+  document.getElementById('notes-modal-backdrop').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeNotesModal() {
+  syncJournalContent();
+  saveState(G.caseKey);
+  document.getElementById('notes-modal-backdrop').style.display = 'none';
+  document.body.style.overflow = '';
+  // Keep tile count current
+  const val = document.getElementById('nav-notes-val');
+  if (val) val.textContent = G.journal.tabs.length ? `${G.journal.tabs.length} tab${G.journal.tabs.length > 1 ? 's' : ''}` : 'Open notebook';
+}
+
+document.getElementById('nav-notes')        .addEventListener('click', openNotesModal);
+document.getElementById('notes-modal-close').addEventListener('click', closeNotesModal);
+document.getElementById('notes-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('notes-modal-backdrop')) closeNotesModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('notes-modal-backdrop').style.display !== 'none') {
+    closeNotesModal();
   }
 });
 
@@ -3482,21 +3489,20 @@ ROLE: The player is a private investigator with no legal authority.
 - If the action involves talking to someone, that person may refuse, ask who the PI is, or demand credentials. Not every time, but regularly enough that the player feels the lack of a badge. Use your judgment — cooperative witnesses exist, but uncooperative ones are common.
 - Records limited to: public records, business filings, social media, anything a civilian can legally access. Deny requests for cell tower data, sealed records, or criminal history.
 - The player cannot make arrests or detain anyone.`,
-  detective: `
+  rookie: `
 ROLE: The player is a police detective with standard law enforcement authority.
 - Warrants are available but require budget and processing time. Note the delay in your response (e.g., "The warrant will be ready in the morning").
 - Suspects and witnesses generally cooperate at the station, though they can request a lawyer or decline to answer specific questions.
 - All records requests are available with appropriate legal process.`,
-  fbi: `
-ROLE: The player is an FBI agent with federal authority.
-- Warrants are available, move quickly, and cost less (50% of normal warrant cost). Do not add processing delays.
-- Records requests are available and routine (50% of normal cost). Do not add delays.
-- Suspects and witnesses are generally cooperative and take the player seriously. Refusal is rare but possible (lawyer requests).
-- If the player invokes "jurisdiction" or "federal authority" on a specific person, that person cooperates fully for this interaction but becomes noticeably hostile and less forthcoming in all future interactions.`,
+  veteran: `
+ROLE: The player is a veteran police detective with standard law enforcement authority.
+- Warrants are available but require budget and processing time. Note the delay in your response (e.g., "The warrant will be ready in the morning").
+- Suspects and witnesses generally cooperate at the station, though they can request a lawyer or decline to answer specific questions.
+- All records requests are available with appropriate legal process.`,
 };
 
 function buildActionSystemPrompt() {
-  const injection = ACTION_ROLE_INJECTIONS[G.role] || ACTION_ROLE_INJECTIONS.detective;
+  const injection = ACTION_ROLE_INJECTIONS[G.role] || ACTION_ROLE_INJECTIONS.rookie;
   return ACTION_SYSTEM_PROMPT_BASE + '\n' + injection;
 }
 
@@ -4474,9 +4480,9 @@ async function callWitness(witness, history) {
     ? `\nObservable details about you:\n${physicalLines}` : '';
 
   const roleNote = ({
-    pi:        'The person questioning you is a private investigator — not a police officer. You are under no legal obligation to speak with them.',
-    detective: 'The person questioning you is the lead police detective on this case.',
-    fbi:       'The person questioning you is an FBI agent. You take this seriously.',
+    pi:      'The person questioning you is a private investigator — not a police officer. You are under no legal obligation to speak with them.',
+    rookie:  'The person questioning you is a police detective on this case. Relatively new to the role, but carries full authority.',
+    veteran: 'The person questioning you is the lead police detective on this case.',
   })[G.role] || 'The person questioning you is the lead investigator on this case.';
 
   const system = [
@@ -4733,9 +4739,9 @@ async function callScene(warrant, history) {
     : '';
 
   const roleNote = ({
-    pi:        'The investigator is a private investigator who obtained this warrant via law enforcement cooperation.',
-    detective: 'The investigator is the lead police detective executing the warrant.',
-    fbi:       'The investigator is an FBI agent executing a federal warrant.',
+    pi:      'The investigator is a private investigator who obtained this warrant via law enforcement cooperation.',
+    rookie:  'The investigator is a police detective executing the warrant.',
+    veteran: 'The investigator is the lead police detective executing the warrant.',
   })[G.role] || 'The investigator is executing a valid search warrant.';
 
   const system = [
@@ -4881,9 +4887,9 @@ async function callClaude(suspect, history) {
     `8. If guilty is true, you are hiding your involvement. If guilty is false, you are genuinely uninvolved but may still be nervous, defensive, or dishonest about the things in what_they_lie_about.`,
     `9. Keep responses to 2–4 sentences. Do not acknowledge this is a game or break character.`,
     ({
-      pi:        `10. The person interviewing you is a private investigator, not law enforcement. You are not legally required to answer their questions. You can refuse to talk, ask who they work for, or tell them to leave. Cooperate only if it seems in your interest or if you have nothing to hide.`,
-      detective: `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
-      fbi:       `10. The person interviewing you is an FBI agent. You take this seriously. Federal involvement signals this is bigger than a local matter. You are generally cooperative unless directly incriminating yourself. You can request a lawyer.`,
+      pi:      `10. The person interviewing you is a private investigator, not law enforcement. You are not legally required to answer their questions. You can refuse to talk, ask who they work for, or tell them to leave. Cooperate only if it seems in your interest or if you have nothing to hide.`,
+      rookie:  `10. The person interviewing you is a police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
+      veteran: `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting and their experience. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
     })[G.role] || `10. The person interviewing you is the lead police detective on this case. You are at the station. You feel the pressure of the setting. You can request a lawyer or decline specific questions, but outright refusal to engage is unusual.`,
   ];
 
@@ -5237,7 +5243,7 @@ function renderAccuse() {
     document.getElementById('acc-subtitle').textContent = 'Law enforcement will only act if your evidence package is strong enough.';
     document.getElementById('acc-confirm').textContent  = 'Submit to Law Enforcement';
   } else {
-    // Detective / FBI mode: select a suspect to accuse
+    // Detective mode: select a suspect to accuse
     document.getElementById('acc-confirm').disabled = true;
     document.getElementById('acc-title').textContent    = 'Make Your Accusation';
     document.getElementById('acc-subtitle').textContent = 'Select the suspect you believe is responsible. This cannot be undone.';
@@ -5338,7 +5344,7 @@ document.getElementById('acc-confirm').addEventListener('click', () => {
     show('result');
 
   } else {
-    // Detective / FBI mode: threshold = ≥50% of guilty suspect's evidence
+    // Detective mode: threshold = ≥50% of guilty suspect's evidence
     if (!G.accused) return;
     const suspect = (G.case.suspects || []).find(s => s.name === G.accused);
     if (!suspect) return;

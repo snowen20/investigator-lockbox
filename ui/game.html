@@ -843,6 +843,69 @@
     }
     #nav-phone.pulsing { animation: phone-ring 1.4s ease-out infinite; }
 
+    /* Assistant tab unread — slow ambient pulse in advisor purple */
+    #nav-assistant { position: relative; }
+    #nav-assistant.has-unread { border-color: #a88cc8; }
+    @keyframes assistant-pulse {
+      0%   { box-shadow: 0 0 0 0   rgba(160,120,200,0.55), 0 0 0 1px rgba(160,120,200,0.45); }
+      60%  { box-shadow: 0 0 0 14px rgba(160,120,200,0),   0 0 0 1px rgba(160,120,200,0.45); }
+      100% { box-shadow: 0 0 0 0   rgba(160,120,200,0),   0 0 0 1px rgba(160,120,200,0.45); }
+    }
+    #nav-assistant.pulsing { animation: assistant-pulse 2.4s ease-out infinite; }
+
+    /* Assistant modal */
+    #assistant-modal-backdrop {
+      position: fixed; inset: 0; z-index: 450;
+      background: rgba(10,10,20,0.75); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+    }
+    #assistant-modal {
+      width: min(700px, 65vw); max-height: 85vh;
+      background: #0c1420; border: 1px solid rgba(160,120,200,0.25);
+      border-radius: var(--radius-lg); display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+      animation: phone-modal-in 0.18s ease;
+    }
+    .assistant-modal-header {
+      padding: 14px 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px;
+    }
+    .assistant-modal-title {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; color: #a88cc8; text-transform: uppercase;
+    }
+    .assistant-modal-close {
+      background: none; border: none; color: var(--text-dim); font-size: 16px;
+      cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .assistant-modal-close:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+    .assistant-modal-body { overflow-y: auto; flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .assistant-intro {
+      font-size: 13px; color: var(--text-muted); line-height: 1.6;
+      padding: 10px 12px; background: rgba(160,120,200,0.07);
+      border-left: 2px solid rgba(160,120,200,0.35); border-radius: 3px; flex-shrink: 0;
+    }
+    .assistant-modal-footer {
+      padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
+    .assistant-modal-footer input {
+      flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; color: var(--text); font-size: 14px; padding: 8px 12px;
+    }
+    .assistant-modal-footer input:focus { outline: none; border-color: rgba(160,120,200,0.5); }
+    .assistant-modal-footer button {
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 8px 14px; background: rgba(160,120,200,0.12);
+      border: 1px solid rgba(160,120,200,0.3); border-radius: 6px; color: #a88cc8; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .assistant-modal-footer button:hover { background: rgba(160,120,200,0.22); border-color: rgba(160,120,200,0.5); }
+    .assistant-modal-footer button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .assistant-err { font-size: 12px; color: var(--red); padding: 4px 0; flex-shrink: 0; min-height: 18px; }
+    @media (max-width: 400px) { #assistant-modal { width: calc(100vw - 32px); border-radius: 16px; } }
+
     /* ====================================================
        PHONE MODAL (styled as phone screen, bottom-right)
        ==================================================== */
@@ -1819,6 +1882,13 @@
               <div class="tile-count">Review briefing</div>
             </div>
           </div>
+          <div class="hub-nav-tile" id="nav-assistant">
+            <div class="tile-icon">&#129309;</div>
+            <div class="tile-info">
+              <div class="tile-label">Assistant</div>
+              <div class="tile-count" id="nav-assistant-val">Ask for help</div>
+            </div>
+          </div>
         </div>
 
         <!-- Accusation -->
@@ -1976,6 +2046,22 @@
   </div>
 </div>
 
+<!-- ===================== ASSISTANT MODAL ===================== -->
+<div id="assistant-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-label="Case Assistant">
+  <div id="assistant-modal">
+    <div class="assistant-modal-header">
+      <span class="assistant-modal-title">Case Assistant</span>
+      <button class="assistant-modal-close" id="assistant-modal-close" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="assistant-modal-body" id="assistant-modal-body"></div>
+    <div class="assistant-modal-footer">
+      <input type="text" id="assistant-in" placeholder="Ask anything about the investigation..." autocomplete="off">
+      <button id="assistant-send">Ask</button>
+    </div>
+    <div class="assistant-err" id="assistant-err"></div>
+  </div>
+</div>
+
 <!-- ===================== BRIEF MODAL ===================== -->
 <div id="brief-modal-backdrop" class="brief-modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="brief-modal-title-el">
   <div class="brief-modal" id="brief-modal">
@@ -2031,7 +2117,9 @@ const G = {
   readyWarrants:  [],    // warrants fully served and awaiting player scene entry
   currentScene:   null,  // warrant object currently being explored in the scene screen
   seenUnlocked:   new Set(), // IDs the player has seen in the Case File (clears "new" badges)
-  analysisUnlocked: new Set(), // evidence IDs whose lab analysis text has been revealed
+  analysisUnlocked:  new Set(), // evidence IDs whose lab analysis text has been revealed
+  assistantMessages: [],        // [{role:'user'|'assistant', content}] — persistent assistant chat
+  assistantUnread:   false,     // true when assistant has content the player hasn't seen
   phoneMessages:  [],   // [{id, time, sender, text, read, action}]
 };
 
@@ -2059,8 +2147,10 @@ function saveState(key) {
       clockMinutes:  G.clockMinutes,
       pendingItems:    G.pendingItems,
       seenUnlocked:    [...G.seenUnlocked],
-      analysisUnlocked:[...G.analysisUnlocked],
-      aiWitnesses:     G.aiWitnesses,
+      analysisUnlocked:  [...G.analysisUnlocked],
+      assistantMessages: G.assistantMessages,
+      assistantUnread:   G.assistantUnread,
+      aiWitnesses:       G.aiWitnesses,
       readyWarrants:   G.readyWarrants,
       phoneMessages:   G.phoneMessages,
     };
@@ -2383,6 +2473,138 @@ document.addEventListener('keydown', e => {
 });
 
 // ============================================================
+// ASSISTANT MODAL
+// ============================================================
+const ASSISTANT_INTRO = "I'm your case assistant. You can ask me for help at any time — how to approach an interview, what to investigate next, or how the tools in your case file work. I won't solve the case for you, but I can point you in the right direction.";
+
+function updateAssistantBadge() {
+  const tile = document.getElementById('nav-assistant');
+  const val  = document.getElementById('nav-assistant-val');
+  if (!tile) return;
+  if (G.assistantUnread) {
+    tile.classList.add('has-unread', 'pulsing');
+    if (val) val.textContent = 'New message';
+  } else {
+    tile.classList.remove('has-unread', 'pulsing');
+    if (val) val.textContent = G.assistantMessages.length ? 'View conversation' : 'Ask for help';
+  }
+}
+
+function renderAssistantMessages() {
+  const body = document.getElementById('assistant-modal-body');
+  if (!body) return;
+  let html = `<div class="assistant-intro">${esc(ASSISTANT_INTRO)}</div>`;
+  html += G.assistantMessages.map(m => {
+    if (m.role === 'user') return `<div class="msg user">${esc(m.content)}</div>`;
+    return `<div class="msg advisor"><div class="advisor-role-tag">[ASSISTANT]</div>${esc(m.content)}</div>`;
+  }).join('');
+  body.innerHTML = html;
+  body.scrollTop = body.scrollHeight;
+}
+
+function openAssistantModal() {
+  G.assistantUnread = false;
+  updateAssistantBadge();
+  saveState(G.caseKey);
+  renderAssistantMessages();
+  document.getElementById('assistant-err').textContent = '';
+  document.getElementById('assistant-modal-backdrop').style.display = 'flex';
+  document.getElementById('assistant-in').focus();
+}
+
+function closeAssistantModal() {
+  document.getElementById('assistant-modal-backdrop').style.display = 'none';
+}
+
+async function sendAssistantMessage() {
+  const inputEl  = document.getElementById('assistant-in');
+  const sendBtn  = document.getElementById('assistant-send');
+  const errEl    = document.getElementById('assistant-err');
+  const question = inputEl.value.trim();
+  if (!question) return;
+  if (!G.case || !G.apiKey) { errEl.textContent = 'No active case or API key.'; return; }
+
+  inputEl.value    = '';
+  inputEl.disabled = true;
+  sendBtn.disabled = true;
+  errEl.textContent = '';
+
+  G.assistantMessages.push({ role: 'user', content: question });
+  renderAssistantMessages();
+
+  const body = document.getElementById('assistant-modal-body');
+  body.innerHTML += `<div class="msg system" id="assistant-typing">[ASSISTANT] thinking...</div>`;
+  body.scrollTop   = body.scrollHeight;
+
+  const c = G.case;
+  const evLines = (c.evidence || [])
+    .filter(e => G.discoveredInfo.evidence_ids.includes(e.id))
+    .map(e => `  [${e.id}] ${e.description}`)
+    .join('\n') || '  (none viewed yet)';
+  const docLines = (c.documents || [])
+    .filter(d => G.discoveredInfo.document_ids.includes(d.id))
+    .map(d => `  [${d.id}] ${d.content}`)
+    .join('\n') || '  (none viewed yet)';
+
+  const userMsg = `CASE: ${c.title}\n\nPLAYER QUESTION: ${question}\n\nEVIDENCE SEEN BY INVESTIGATOR:\n${evLines}\n\nDOCUMENTS SEEN BY INVESTIGATOR:\n${docLines}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key':  G.apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 300,
+        system:     ADVISOR_SYSTEM_PROMPT,
+        messages:   [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    const loader = document.getElementById('assistant-typing');
+    if (loader) loader.remove();
+
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { msg = (await res.json()).error.message; } catch {}
+      throw new Error(msg);
+    }
+
+    const data  = await res.json();
+    const reply = data.content[0].text;
+    G.assistantMessages.push({ role: 'assistant', content: reply });
+    renderAssistantMessages();
+    saveState(G.caseKey);
+
+  } catch (e) {
+    const loader = document.getElementById('assistant-typing');
+    if (loader) loader.remove();
+    errEl.textContent = 'Assistant error — ' + e.message;
+  } finally {
+    inputEl.disabled = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+document.getElementById('nav-assistant')        .addEventListener('click', openAssistantModal);
+document.getElementById('assistant-modal-close').addEventListener('click', closeAssistantModal);
+document.getElementById('assistant-send')       .addEventListener('click', sendAssistantMessage);
+document.getElementById('assistant-in')         .addEventListener('keydown', e => { if (e.key === 'Enter') sendAssistantMessage(); });
+document.getElementById('assistant-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('assistant-modal-backdrop')) closeAssistantModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('assistant-modal-backdrop').style.display !== 'none') {
+    closeAssistantModal();
+  }
+});
+
+// ============================================================
 // CASE FILE BADGE
 // ============================================================
 // Count unlocked IDs not yet in G.seenUnlocked
@@ -2632,6 +2854,8 @@ function loadCase(key) {
     G.pendingItems      = Array.isArray(saved.pendingItems)      ? saved.pendingItems      : [];
     G.seenUnlocked      = new Set(Array.isArray(saved.seenUnlocked)      ? saved.seenUnlocked      : []);
     G.analysisUnlocked  = new Set(Array.isArray(saved.analysisUnlocked)  ? saved.analysisUnlocked  : []);
+    G.assistantMessages = Array.isArray(saved.assistantMessages) ? saved.assistantMessages : [];
+    G.assistantUnread   = saved.assistantUnread === true;
     G.aiWitnesses   = (saved.aiWitnesses && typeof saved.aiWitnesses === 'object') ? saved.aiWitnesses : {};
     G.readyWarrants = Array.isArray(saved.readyWarrants) ? saved.readyWarrants : [];
     G.currentScene  = null;
@@ -2640,6 +2864,7 @@ function loadCase(key) {
     G.interviewMode = 'suspect';
     refreshActionResults();
     updatePhoneBadge();
+    updateAssistantBadge();
     renderHub();
     show('hub');
     return;
@@ -2674,6 +2899,8 @@ function loadCase(key) {
   G.pendingItems      = [];
   G.seenUnlocked      = new Set();
   G.analysisUnlocked  = new Set();
+  G.assistantMessages = [];
+  G.assistantUnread   = false;
   G.readyWarrants     = [];
   G.currentScene  = null;
   G.phoneMessages = [];
@@ -4841,7 +5068,9 @@ HARD RULES:
 - Never mention charges, legal exposure, or specific crimes unless they are directly supported by evidence the investigator has seen.
 - Stick to the observed facts. If you want to suggest a next step, suggest it based only on what is in front of the investigator right now.
 
-Keep responses to one to three sentences. Prioritize the single most useful observation grounded in what the investigator has actually seen.`;
+Keep responses to one to three sentences. Prioritize the single most useful observation grounded in what the investigator has actually seen.
+
+The player may also ask you general questions about how to investigate, how interviews work, what kinds of questions are effective, or how game mechanics function. Answer these helpfully without revealing case-specific solutions. You are a mentor, not a spoiler.`;
 
 async function fireAdvisorCall(role, context, screen) {
   screen = screen || activeAdvisorScreen();
@@ -4920,6 +5149,14 @@ async function fireAdvisorCall(role, context, screen) {
         respEl.innerHTML = `<div class="msg advisor"><div class="advisor-role-tag">[ADVISOR]</div>${esc(reply)}</div>`;
       }
     }
+
+    // Push to assistant tab history and mark unread if modal is not open
+    G.assistantMessages.push({ role: 'assistant', content: reply });
+    if (document.getElementById('assistant-modal-backdrop').style.display === 'none') {
+      G.assistantUnread = true;
+      updateAssistantBadge();
+    }
+    saveState(G.caseKey);
 
   } catch (e) {
     const loader = document.getElementById(typingId);

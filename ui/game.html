@@ -1630,7 +1630,8 @@
       display: block;
       object-fit: contain;
     }
-    .option-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+    .option-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: var(--text); }
+    .role-difficulty { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
     .option-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
     .option-card.selected h4 { color: var(--amber); }
     .option-card .check {
@@ -3376,9 +3377,9 @@ function updateDiscoveredFromUnlocked() {
 // SETUP SCREEN
 // ============================================================
 const ROLE_OPTIONS = [
-  { key: 'rookie',  icon: '../images/background images/icons/police detective.png',     label: 'Rookie Detective',    desc: 'Badge, warrants, and department resources. Full AI assistant included — for investigators still learning the ropes.' },
-  { key: 'veteran', icon: '../images/background images/icons/police detective.png',     label: 'Veteran Detective',   desc: 'Badge, warrants, and department resources. No AI coaching. You know how to run an investigation.' },
-  { key: 'pi',      icon: '../images/background images/icons/private investigator.png', label: 'Private Investigator', desc: 'No badge. No warrant power. Observe, ask willing participants, submit findings. Starts with 75% budget.' },
+  { key: 'rookie',  icon: '../images/background images/icons/police detective.png',     label: 'Rookie Detective',    difficulty: 'Easy',   desc: 'Badge, warrants, and department resources. Full AI assistant included — for investigators still learning the ropes.' },
+  { key: 'veteran', icon: '../images/background images/icons/police detective.png',     label: 'Veteran Detective',   difficulty: 'Medium', desc: 'Badge, warrants, and department resources. No AI coaching. You know how to run an investigation.' },
+  { key: 'pi',      icon: '../images/background images/icons/private investigator.png', label: 'Private Investigator', difficulty: 'Hard',   desc: 'No badge. No warrant power. Observe, ask willing participants, submit findings. Starts with 75% budget.' },
 ];
 
 const FORMAT_OPTIONS = [
@@ -3411,6 +3412,7 @@ function renderSetup() {
       <span class="check">&#10003;</span>
       <img class="option-icon" src="${opt.icon}" alt="${esc(opt.label)}">
       <h4>${esc(opt.label)}</h4>
+      <span class="role-difficulty">${esc(opt.difficulty)}</span>
       <p>${esc(opt.desc)}</p>
     </div>`
   ).join('');

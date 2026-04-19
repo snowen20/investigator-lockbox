@@ -535,6 +535,52 @@
     .notes-modal-body { display: flex; flex-direction: column; gap: 0; }
     .notes-modal-area { flex: 1; min-height: 320px; margin-top: 8px; }
 
+    /* ====================================================
+       DIALOG MODAL (replaces confirm / prompt)
+       ==================================================== */
+    #dialog-backdrop {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(10,10,20,0.82); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+    }
+    .dialog-modal { width: min(420px, 90vw); }
+    .dialog-body { padding: 20px 24px 8px; }
+    .dialog-body p {
+      margin: 0 0 4px; color: var(--text-muted); font-size: 14px;
+      line-height: 1.6; white-space: pre-line;
+    }
+    .dialog-body input {
+      width: 100%; box-sizing: border-box; margin-top: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border-light);
+      border-radius: var(--radius); color: var(--text); font-size: 14px;
+      padding: 8px 12px; font-family: var(--sans);
+    }
+    .dialog-body input:focus { outline: none; border-color: rgba(160,120,200,0.5); }
+    .dialog-footer {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 16px 24px 20px;
+    }
+    .dialog-footer button {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 18px;
+      border-radius: var(--radius); cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    #dialog-cancel {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-muted);
+    }
+    #dialog-cancel:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    #dialog-confirm {
+      background: rgba(160,120,200,0.15); border: 1px solid rgba(160,120,200,0.4);
+      color: #a88cc8;
+    }
+    #dialog-confirm:hover { background: rgba(160,120,200,0.28); }
+    #dialog-confirm.dialog-danger {
+      background: rgba(200,60,60,0.13); border: 1px solid rgba(200,60,60,0.4);
+      color: #e07070;
+    }
+    #dialog-confirm.dialog-danger:hover { background: rgba(200,60,60,0.26); }
+
     /* --- ACTION BOX (CENTERPIECE) --- */
     .action-box {
       background: rgba(10, 10, 20, 0.6);
@@ -2102,6 +2148,23 @@
   </div>
 </div>
 
+<!-- ===================== DIALOG MODAL ===================== -->
+<div id="dialog-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dialog-title-el">
+  <div class="brief-modal dialog-modal">
+    <div class="brief-modal-header">
+      <span class="brief-modal-title" id="dialog-title-el"></span>
+    </div>
+    <div class="dialog-body">
+      <p id="dialog-message"></p>
+      <input type="text" id="dialog-input" style="display:none" autocomplete="off">
+    </div>
+    <div class="dialog-footer">
+      <button id="dialog-cancel">Cancel</button>
+      <button id="dialog-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -2644,6 +2707,64 @@ document.getElementById('assistant-modal-backdrop').addEventListener('click', e 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('assistant-modal-backdrop').style.display !== 'none') {
     closeAssistantModal();
+  }
+});
+
+// ============================================================
+// DIALOG MODAL (replaces native confirm / prompt)
+// ============================================================
+let _dialogCb = null;
+
+function _closeDialog() {
+  document.getElementById('dialog-backdrop').style.display = 'none';
+  _dialogCb = null;
+}
+
+function showConfirm(title, message, onConfirm, opts) {
+  opts = opts || {};
+  document.getElementById('dialog-title-el').textContent   = title;
+  const msgEl = document.getElementById('dialog-message');
+  msgEl.textContent     = message || '';
+  msgEl.style.display   = message ? '' : 'none';
+  document.getElementById('dialog-input').style.display    = 'none';
+  const btn = document.getElementById('dialog-confirm');
+  btn.textContent = opts.confirmLabel || 'Confirm';
+  btn.classList.toggle('dialog-danger', !!opts.danger);
+  _dialogCb = onConfirm;
+  document.getElementById('dialog-backdrop').style.display = 'flex';
+}
+
+function showPrompt(title, placeholder, onSubmit) {
+  document.getElementById('dialog-title-el').textContent = title;
+  const msgEl = document.getElementById('dialog-message');
+  msgEl.style.display = 'none';
+  const inp = document.getElementById('dialog-input');
+  inp.value       = '';
+  inp.placeholder = placeholder || '';
+  inp.style.display = '';
+  const btn = document.getElementById('dialog-confirm');
+  btn.textContent = 'OK';
+  btn.classList.remove('dialog-danger');
+  _dialogCb = onSubmit;
+  document.getElementById('dialog-backdrop').style.display = 'flex';
+  setTimeout(() => inp.focus(), 30);
+}
+
+document.getElementById('dialog-cancel').addEventListener('click', _closeDialog);
+document.getElementById('dialog-confirm').addEventListener('click', () => {
+  const inp = document.getElementById('dialog-input');
+  const val = inp.style.display !== 'none' ? inp.value.trim() : null;
+  const cb  = _dialogCb;
+  _closeDialog();
+  if (cb) cb(val);
+});
+document.getElementById('dialog-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter')  document.getElementById('dialog-confirm').click();
+  if (e.key === 'Escape') _closeDialog();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('dialog-backdrop').style.display !== 'none') {
+    _closeDialog();
   }
 });
 
@@ -3421,22 +3542,27 @@ document.getElementById('nav-accuse')  .addEventListener('click', () => { render
 document.getElementById('hub-home')  .addEventListener('click', () => show('categories'));
 
 document.getElementById('hub-restart-btn').addEventListener('click', () => {
-  if (!confirm('Restart this case from scratch? Your progress will be lost.')) return;
-  const key = G.caseKey;
-  clearState(key);
-  loadCase(key);
+  showConfirm(
+    'Restart Case',
+    'Restart this case from scratch? Your current progress will be lost.',
+    () => { const key = G.caseKey; clearState(key); loadCase(key); }
+  );
 });
 
 document.getElementById('hub-abandon-btn').addEventListener('click', () => {
-  if (!confirm(
-    'Abandon this case?\n\nYou will permanently lose all notes, discoveries, evidence, and progress. This cannot be undone.'
-  )) return;
-  clearState(G.caseKey);
-  _resetCaseState();
-  refreshActionResults();
-  G.case    = null;
-  G.caseKey = null;
-  show('categories');
+  showConfirm(
+    'Abandon Case',
+    'You will permanently lose all notes, discoveries, evidence, and progress. This cannot be undone.',
+    () => {
+      clearState(G.caseKey);
+      _resetCaseState();
+      refreshActionResults();
+      G.case    = null;
+      G.caseKey = null;
+      show('categories');
+    },
+    { danger: true, confirmLabel: 'Abandon' }
+  );
 });
 document.getElementById('cat-back')  .addEventListener('click', () => show('start'));
 document.getElementById('setup-back').addEventListener('click', () => show('categories'));
@@ -4346,15 +4472,16 @@ function syncJournalContent() {
 
 function createJournalTab(scope) {
   scope = scope || 'interview';
-  const name = (window.prompt('Tab name:') || '').trim();
-  if (!name) return;
-  syncJournalContent();
-  G.journal.tabs.push({ name, content: '' });
-  G.journal.activeIdx = G.journal.tabs.length - 1;
-  renderJournal(scope);
-  saveState(G.caseKey);
-  const els = _journalEls(scope);
-  if (els.area) els.area.focus();
+  showPrompt('New Tab', 'Tab name', (name) => {
+    if (!name) return;
+    syncJournalContent();
+    G.journal.tabs.push({ name, content: '' });
+    G.journal.activeIdx = G.journal.tabs.length - 1;
+    renderJournal(scope);
+    saveState(G.caseKey);
+    const els = _journalEls(scope);
+    if (els.area) els.area.focus();
+  });
 }
 
 function selectJournalTab(idx, scope) {

@@ -2210,6 +2210,7 @@ const G = {
   clockMinutes: 0,     // total minutes elapsed since Day 1, 8:00 AM
   pendingItems:   [],    // [{id, label, readyAt, evidence_ids, document_ids, analysis_ids, is_warrant, warrant_location}]
   readyWarrants:  [],    // warrants fully served and awaiting player scene entry
+  activeOps:      [],    // [{id, label, location, watching_for, placed_at}] — ongoing equipment/surveillance
   currentScene:   null,  // warrant object currently being explored in the scene screen
   seenUnlocked:   new Set(), // IDs the player has seen in the Case File (clears "new" badges)
   analysisUnlocked:  new Set(), // evidence IDs whose lab analysis text has been revealed
@@ -2247,6 +2248,7 @@ function saveState(key) {
       assistantUnread:   G.assistantUnread,
       aiWitnesses:       G.aiWitnesses,
       readyWarrants:   G.readyWarrants,
+      activeOps:       G.activeOps,
       phoneMessages:   G.phoneMessages,
     };
     localStorage.setItem(_LS_PREFIX + key, JSON.stringify(state));
@@ -3009,6 +3011,7 @@ function _resetCaseState() {
   G.clockMinutes        = 0;
   G.pendingItems        = [];
   G.readyWarrants       = [];
+  G.activeOps           = [];
   G.currentScene        = null;
   G.seenUnlocked        = new Set();
   G.analysisUnlocked    = new Set();
@@ -3068,6 +3071,7 @@ function loadCase(key) {
     G.assistantUnread   = saved.assistantUnread === true;
     G.aiWitnesses   = (saved.aiWitnesses && typeof saved.aiWitnesses === 'object') ? saved.aiWitnesses : {};
     G.readyWarrants = Array.isArray(saved.readyWarrants) ? saved.readyWarrants : [];
+    G.activeOps     = Array.isArray(saved.activeOps)     ? saved.activeOps     : [];
     G.phoneMessages = Array.isArray(saved.phoneMessages) ? saved.phoneMessages : [];
     refreshActionResults();
     updatePhoneBadge();
@@ -3611,11 +3615,15 @@ RULES:
 2. If the action targets something defined in the case data (a location with evidence, a verifiable claim, a named entity), return what the player would realistically find or learn. Use the case data as the source of truth.
 3. If the action targets something NOT in the case data, return a plausible dead-end. Examples: "Nothing relevant there." / "Office is closed." / "No one matching that description." Do NOT fabricate new information.
 4. If a suspect made a claim (alibi, timeline, fact), and the case data contains the ground truth, the player CAN verify it through a reasonable action. Return whether the claim checks out based on the case data.
-5. Speak as a partner, not a narrator. Use "we" not "you." Never write the player's internal monologue or routine physical actions ("You drive over," "You make a note to bring gloves"). Report what was found, not what the player did. Keep it short, practical, forensic — slightly tense, controlled, active casework. Separate what's confirmed, what's likely, and what's still open. 2–5 sentences unless a significant evidence item warrants more detail.
-6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items use one of these forms:
+5. Speak as a partner, not a storyteller. Use "we" not "you." Never write the player's internal monologue, routine physical actions, or decisions for them ("You drive over," "You make a note to bring gloves," "You decide to wait until dark"). Report what was found, not what the player did. Keep it short, practical, directional. Slightly tense, forensic, controlled — active casework under pressure, not a story being read aloud. Separate what's confirmed, what's likely, and what's still open. 2–5 sentences unless a significant evidence item warrants more detail.
+WRONG: "You station yourself inside the house. You keep your movement quiet. You make a note to arrive before Mara leaves for her shift."
+RIGHT: "We're set up inside, ground floor, back door access to the garage wall. Alarm is live on the hatch, exterior camera is running. Mara leaves at 10:30. Once she's gone it's just us and whatever shows up."
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "active_op": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items use one of these forms:
 - Lab results / records: "pending_item": {"label": "Lab results for fiber sample", "resolution_minutes": 240, "reveals": ["ev-01"]}
 - Warrants (player must physically search the scene): "pending_item": {"label": "Warrant for Rusk Salvage Yard", "resolution_minutes": 480, "reveals": ["ev-05", "ev-06"], "is_warrant": true, "location": "Rusk Recovery & Salvage"}
 Set is_warrant: true ONLY for warrants that involve executing a physical search at a named location. The evidence will NOT be auto-added — the player must enter the scene. For lab results, fingerprint runs, record requests, and any non-physical resolution, omit is_warrant or set it to false. Do NOT include warrant-reveal IDs in discovered; they are locked until the player searches the scene. If you introduce interviewable characters, set witnesses_present to an array of {name, role} objects; otherwise set it to null.
+- Active monitoring operations (cameras, stakeouts, alarms, surveillance): "active_op": {"label": "Surveillance camera", "location": "Front entrance of Rusk Salvage Yard", "watching_for": "vehicles or persons arriving after hours"}
+  Use active_op when the player places equipment or establishes an ongoing monitoring operation that should persist across time skips. The system stores the op and checks it during wait actions. Set active_op: null for all other actions. Do NOT use active_op for one-time actions.
 7. If the action is vague or nonsensical, ask for clarification in the narrative field. Set cost to 0.
 8. Never reveal information the player has not earned through their actions. No freebies.
 9. If the player has already taken this exact action, note it in the narrative and reference the prior result. Set cost to 0.
@@ -3645,10 +3653,12 @@ TIME COST GUIDELINES (always include time_cost in minutes and time_label in the 
 - Expert consultation in person: 30–60 min
 The CURRENT TIME is in the user message. Use it for time-appropriate context (e.g., "It's 9:40 PM — the bar is closing soon" or "It's 9:00 AM on Day 2"). When the day is running short, acknowledge it if relevant to the action.
 
-Stay factual, not novelistic. Do not advance the plot. Do not introduce twists. Report what was found based on the case data — no drama added, no internal monologue written for the player.
+Stay factual, not novelistic. Do not advance the plot. Do not introduce twists or emotional beats. Report what was found based on the case data — no drama added, no internal monologue written for the player, no decisions made on the player's behalf.
 11. You may introduce incidental characters (witnesses, bystanders, clerks) who can corroborate, partially observe, or be unaware of facts established in the case data. These characters must not introduce new evidence, new suspects, new vehicles, new locations, new motives, or new events not present in the case schema. They exist to give the player another angle on existing facts, not to expand the fact set. When you introduce an interviewable character, include a witnesses_present array in your JSON response with objects containing name and role fields.
 12. After reporting findings or outcomes, end the narrative with 2–3 logical next moves surfaced as natural suggestions — not a numbered menu, not a forced choice. Frame them as options a partner sees from where you're standing. Example: "We could dust this for prints, check with the neighbor about their camera, or sit on the house tonight." The player can follow one, all, or none.
 13. If you present an action as a valid option for the player, you are committed to it. If the player chooses that action, follow through — do not reverse, contradict, or undermine it. If an action is not actually valid or available, do not suggest it in the first place. Consistency between what you offer and what you deliver is mandatory.
+If the player challenges something you said, check your own prior statements. If you made an error, admit it immediately and correct yourself. Do not deny, deflect, reframe, or claim you said something different. Own it and move on.
+14. Do not invent legal procedures, jurisdictional rules, or institutional protocols. If the correct procedure for something (serving a warrant, chain of custody, evidence admissibility, search authority) is not defined in the case JSON, defer to the player or present it as an open question: "We should confirm the procedure for this before we move." Never state a legal process as fact unless the case data explicitly defines it. When in doubt, flag it as something to verify rather than improvising an answer.
 
 INFORMATION SCOPING — CRITICAL:
 Your response text may ONLY reference three categories of information:
@@ -3692,18 +3702,106 @@ function buildActionSystemPrompt() {
   return ACTION_SYSTEM_PROMPT_BASE + '\n' + injection;
 }
 
+// ============================================================
+// UNIFIED KNOWLEDGE PIPELINE
+// Builds a cross-screen investigation record injected into
+// every AI system prompt so no interaction can contradict or
+// deny facts established in any other screen.
+// ============================================================
+
+function buildInvestigationRecord() {
+  const c  = G.case;
+  const di = G.discoveredInfo;
+  const parts = [];
+
+  if (di.names.length)
+    parts.push(`Known persons: ${di.names.join(', ')}`);
+  if (di.locations.length)
+    parts.push(`Known locations: ${di.locations.join(', ')}`);
+  if (di.times.length)
+    parts.push(`Established times: ${di.times.join(', ')}`);
+
+  if (di.evidence_ids.length) {
+    const evLines = di.evidence_ids.map(id => {
+      const ev = (c.evidence || []).find(e => e.id === id);
+      return `  - [${id}] ${ev ? ev.description : id}`;
+    });
+    parts.push('Physical evidence recovered:\n' + evLines.join('\n'));
+  }
+
+  if (di.document_ids.length) {
+    const docLines = di.document_ids.map(id => {
+      const doc = (c.documents || []).find(d => d.id === id);
+      return `  - [${id}] ${doc ? (doc.title || doc.description || id) : id}`;
+    });
+    parts.push('Documents obtained:\n' + docLines.join('\n'));
+  }
+
+  // Warrant scenes that have been physically entered
+  const executedScenes = (G.readyWarrants || []).filter(w => w.status === 'visited');
+  if (executedScenes.length) {
+    const sceneLines = executedScenes.map(w => {
+      const loc = w.location || w.label;
+      const sceneChat = G.chats['scene_' + w.id] || [];
+      const narratives = sceneChat
+        .filter(m => m.role === 'assistant' && m.content)
+        .map(m => m.content.slice(0, 150) + (m.content.length > 150 ? '…' : ''));
+      return narratives.length
+        ? `  - ${loc} (searched): ${narratives.slice(-2).join(' | ')}`
+        : `  - ${loc} (searched)`;
+    });
+    parts.push('Warrant scenes searched:\n' + sceneLines.join('\n'));
+  }
+
+  // Statements recorded from suspect and witness interviews
+  const interviewKeys = Object.keys(di.raw_statements || {}).filter(k => !k.startsWith('action_'));
+  if (interviewKeys.length) {
+    const stmtLines = [];
+    for (const name of interviewKeys) {
+      const stmts = di.raw_statements[name] || [];
+      if (!stmts.length) continue;
+      const recent = stmts.slice(-2).map(s => s.slice(0, 120) + (s.length > 120 ? '…' : ''));
+      stmtLines.push(`  ${name}: "${recent.join('" / "')}"`);
+    }
+    if (stmtLines.length)
+      parts.push('Interview statements on record:\n' + stmtLines.join('\n'));
+  }
+
+  // Brief summary of recent investigation actions
+  const actionEntries = (G.actions || []).filter(a => a.type === 'action' || !a.type);
+  if (actionEntries.length) {
+    const recent = actionEntries.slice(-4).map(a => {
+      const narr = (a.narrative || '').slice(0, 100) + ((a.narrative || '').length > 100 ? '…' : '');
+      return `  - "${a.input}": ${narr}`;
+    });
+    parts.push('Investigation actions taken:\n' + recent.join('\n'));
+  }
+
+  return parts.length ? parts.join('\n') : null;
+}
+
 function buildActiveOpsBlock() {
   const lines = [];
 
+  // Player-placed equipment and surveillance operations
+  (G.activeOps || []).forEach(op => {
+    const loc      = op.location     ? ` at ${op.location}`               : '';
+    const watching = op.watching_for ? ` — watching for: ${op.watching_for}` : '';
+    const placed   = op.placed_at    ? ` (placed ${clockMinutesToDisplay(op.placed_at)})` : '';
+    lines.push(`- [ACTIVE OP] ${op.label}${loc}${watching}${placed}`);
+  });
+
+  // Time-gated pending requests (lab results, records, non-physical warrants)
   (G.pendingItems || []).forEach(item => {
     const readyStr = clockMinutesToDisplay(item.readyAt);
     const where    = item.is_warrant && item.warrant_location ? ` at ${item.warrant_location}` : '';
-    lines.push(`- ${item.label}${where} — resolves at ${readyStr}`);
+    lines.push(`- [PENDING] ${item.label}${where} — resolves at ${readyStr}`);
   });
 
+  // Approved warrants awaiting physical execution
   (G.readyWarrants || []).forEach(w => {
     const loc = w.location ? ` at ${w.location}` : '';
-    lines.push(`- ${w.label}${loc} — warrant approved, not yet executed`);
+    lines.push(`- [WARRANT READY] ${w.label}${loc} — not yet executed`);
   });
 
   if (!lines.length) return '';
@@ -3719,9 +3817,10 @@ RULES:
 1. Set time_cost to EXACTLY the wait_minutes value from the user message — do not change it.
 2. cost is always 0 — waiting is free.
 3. Narrate 2-4 sentences. If items resolved during the wait, describe their arrival naturally in the narrative.
-4. If the player has active operations (cameras, stakeouts, alarms), describe what they observed — but only if the case JSON data contains an event during this time window. If the case JSON has no such event, nothing noteworthy happened.
-5. Only add to discovered if the case JSON explicitly supports a reveal during this window. Otherwise leave all discovered arrays empty.
-6. time_label should be a brief phrase like "Waiting until 10:00 PM" or "Waiting for lab results".`;
+4. ACTIVE OPERATIONS CHECK: The user message includes an "ACTIVE OPERATIONS CARRIED FORWARD" block listing all [ACTIVE OP] entries (cameras, stakeouts, alarms, surveillance). For each active op, check the case JSON for any event, movement, or activity at that location during the wait window (between CURRENT TIME and CURRENT TIME + wait_minutes). If the case JSON defines an event during that window that the operation would have captured — narrate what it recorded. If the case JSON has no such event, the operation ran silently; note briefly that monitoring was uneventful. Do not invent events that are not in the case JSON.
+5. Only add to discovered if the case JSON explicitly supports a reveal during this window — e.g., an active op captured something, or a pending item resolved and reveals evidence. Otherwise leave all discovered arrays empty.
+6. time_label should be a brief phrase like "Waiting until 10:00 PM" or "Waiting for lab results".
+7. PENDING ITEMS: The user message lists [PENDING] items and when they resolve. If any resolve during the wait window, acknowledge their arrival in the narrative. Their evidence is automatically unlocked by the game system — do not add those IDs to discovered yourself.`;
 
 const WAIT_ACTION_PATTERNS = [
   /\bwait\b/i,
@@ -3876,7 +3975,7 @@ function refreshActionResults() {
   ).join('');
 }
 
-function processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item, witnesses_present) {
+function processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item, witnesses_present, active_op) {
   // --- Budget ---
   const actualCost = Math.min(cost, G.budget);
   G.budget -= actualCost;
@@ -3928,6 +4027,17 @@ function processActionResult(input, narrative, cost, cost_label, discovered, tim
         };
       }
     }
+  }
+
+  // --- Register active monitoring operations (cameras, stakeouts, surveillance) ---
+  if (active_op && typeof active_op === 'object' && active_op.label) {
+    G.activeOps.push({
+      id:           'op_' + Date.now(),
+      label:        String(active_op.label        || ''),
+      location:     String(active_op.location     || ''),
+      watching_for: String(active_op.watching_for || ''),
+      placed_at:    G.clockMinutes,
+    });
   }
 
   // --- Advance clock (may register pending item, trigger day-ends, resolve items) ---
@@ -4062,18 +4172,8 @@ async function resolveAction(input) {
       return `[Action ${i + 1}] Player: "${a.input}" → Result: "${a.narrative.slice(0, 120)}${a.narrative.length > 120 ? '…' : ''}"${costStr}${timeStr}`;
     }).join('\n') || '(none yet)';
 
-  // Build discovered info summary
-  const diSummary = [
-    G.discoveredInfo.names.length     ? `Known names: ${G.discoveredInfo.names.join(', ')}`         : '',
-    G.discoveredInfo.locations.length ? `Known locations: ${G.discoveredInfo.locations.join(', ')}` : '',
-    G.discoveredInfo.times.length     ? `Known times: ${G.discoveredInfo.times.join(', ')}`         : '',
-    G.discoveredInfo.evidence_ids.length
-      ? `Evidence seen: ${G.discoveredInfo.evidence_ids.map(id => {
-          const e = (G.case.evidence || []).find(ev => ev.id === id);
-          return e ? `[${id}] ${e.description.slice(0, 80)}` : id;
-        }).join('; ')}`
-      : '',
-  ].filter(Boolean).join('\n') || '(none yet)';
+  // Build unified investigation record (cross-screen: interviews, scenes, actions)
+  const diSummary = buildInvestigationRecord() || '(none yet)';
 
   // Build briefing text the player started with
   const briefingText = G.case.briefing || '(no briefing)';
@@ -4262,10 +4362,11 @@ async function resolveAction(input) {
     const time_cost    = typeof parsed.time_cost  === 'number' ? Math.max(0, Math.round(parsed.time_cost)) : 0;
     const time_label   = String(parsed.time_label || '');
     const pending_item      = (parsed.pending_item && typeof parsed.pending_item === 'object') ? parsed.pending_item : null;
+    const active_op         = (parsed.active_op   && typeof parsed.active_op   === 'object') ? parsed.active_op   : null;
     const discovered        = parsed.discovered || {};
     const witnesses_present = Array.isArray(parsed.witnesses_present) ? parsed.witnesses_present : null;
 
-    processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item, witnesses_present);
+    processActionResult(input, narrative, cost, cost_label, discovered, time_cost, time_label, pending_item, witnesses_present, active_op);
 
   } catch (e) {
     typingCard.remove();
@@ -4901,6 +5002,14 @@ async function callWitness(witness, history) {
     };
     sysLines.push('', `CHARACTER NOTE: ${tMap[witness.temperament] || 'Temperament: ' + witness.temperament}`);
   }
+
+  const _witnessRecord = buildInvestigationRecord();
+  if (_witnessRecord) {
+    sysLines.push('');
+    sysLines.push('ESTABLISHED INVESTIGATION RECORD — The investigator has confirmed the following through their prior work. Do not contradict these established facts. Only reference them if the investigator raises them directly:');
+    sysLines.push(_witnessRecord);
+  }
+
   const system = sysLines.join('\n');
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5145,6 +5254,8 @@ async function callScene(warrant, history) {
     veteran: 'The investigator is the lead police detective executing the warrant.',
   })[G.role] || 'The investigator is executing a valid search warrant.';
 
+  const _sceneRecord = buildInvestigationRecord();
+
   const system = [
     `You are narrating a crime scene search at ${warrant.location || warrant.label}. The investigator has arrived with a valid warrant.`,
     ambientBlock,
@@ -5153,6 +5264,7 @@ async function callScene(warrant, history) {
     'DISCOVERABLE EVIDENCE at this location:',
     JSON.stringify([...scopedEvidence, ...scopedDocs], null, 2),
     '',
+    ...(_sceneRecord ? ['ESTABLISHED INVESTIGATION RECORD — treat these as confirmed facts; do not contradict or deny any prior discoveries:', _sceneRecord, ''] : []),
     'RULES:',
     '1. Describe the environment when they arrive (for the first message). When the investigator directs you to examine something, reveal evidence from the provided evidence list ONLY if their action would logically uncover it. Do not volunteer evidence — the investigator must look in the right place.',
     '2. You may describe ambient details, layout, and atmosphere freely, but you must not introduce physical evidence, objects, or clues not in the provided evidence list.',
@@ -5315,6 +5427,13 @@ async function callClaude(suspect, history) {
   if (bluffIds.length > 0) {
     lines.push('');
     lines.push(`NOTE: The investigator has referenced evidence (${bluffIds.join(', ')}) that they have not produced. This may be a bluff. React with appropriate skepticism — do not fabricate knowledge of what that evidence might contain.`);
+  }
+
+  const _suspectRecord = buildInvestigationRecord();
+  if (_suspectRecord) {
+    lines.push('');
+    lines.push('ESTABLISHED INVESTIGATION RECORD — The investigator has confirmed the following through their work prior to this interview. These are facts, not claims. Do not deny or contradict them. Only reference them if the investigator raises them directly:');
+    lines.push(_suspectRecord);
   }
 
   const system = lines.join('\n');

@@ -1381,6 +1381,8 @@
     .msg.user    { align-self: flex-end;   background: rgba(212, 168, 67, 0.1); border: 1px solid var(--amber-dim); color: var(--text); }
     .msg.suspect { align-self: flex-start; background: rgba(10, 10, 20, 0.6);  border: 1px solid var(--border-light); color: #c8c8d4; }
     .msg.system  { align-self: center; color: var(--text-muted); font-size: 13px; font-style: italic; }
+    .interview-gate-msg { display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; font-size: 15px; line-height: 1.6; color: var(--text); }
+    .interview-gate-msg strong { color: var(--amber); }
     .suspect-bubble-row {
       display: flex;
       align-items: flex-start;
@@ -4537,7 +4539,18 @@ function openInterview(name) {
     const clientChat = G.chats[clientName] || [];
     const hasSpoken  = clientChat.some(m => m.role === 'user');
     if (!hasSpoken) {
-      showToast(`Talk to the client first — get the full picture before approaching anyone else.`);
+      hideAdvisorPrompt();
+      document.getElementById('iview-name').textContent          = suspect.name;
+      document.getElementById('iview-role').textContent          = suspect.relationship_to_victim || '';
+      document.getElementById('iview-err').textContent           = '';
+      document.getElementById('si-body').style.display           = 'none';
+      document.getElementById('si-toggle-btn').style.visibility  = 'hidden';
+      document.querySelector('.chat-row').style.display          = 'none';
+      document.getElementById('chat-win').innerHTML =
+        `<div class="interview-gate-msg">You haven't spoken to <strong>${esc(clientName)}</strong> yet — get the full picture before approaching anyone else.</div>`;
+      document.getElementById('briefing-content').innerHTML = renderCaseOpening();
+      renderJournal('interview');
+      show('interview');
       return;
     }
   }
@@ -4547,8 +4560,10 @@ function openInterview(name) {
   if (!G.chats[name]) G.chats[name] = [];
 
   hideAdvisorPrompt();
-  document.getElementById('iview-name').textContent = suspect.name;
-  document.getElementById('iview-role').textContent = suspect.relationship_to_victim || '';
+  document.getElementById('iview-name').textContent          = suspect.name;
+  document.getElementById('iview-role').textContent          = suspect.relationship_to_victim || '';
+  document.getElementById('si-toggle-btn').style.visibility  = '';
+  document.querySelector('.chat-row').style.display          = '';
   renderInterviewClock();
   document.getElementById('iview-err').textContent  = '';
   document.getElementById('chat-in').value = '';

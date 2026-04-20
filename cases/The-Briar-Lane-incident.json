@@ -5,11 +5,28 @@
   "suspect_count": 5,
   "briefing": "Mara Ellison, 34, hospice nurse. Works overnight shifts. She moved into a house on Briar Lane about two months ago. Over the last two weeks she's been experiencing things she can't explain — faint sounds above the garage at night, small objects not where she left them, and twice when coming home after midnight she saw what looked like a figure standing in the upper window. She called the police. They walked through, found nothing, told her it was probably the house settling. She had a security system installed three weeks ago by a local company — the cameras have picked up nothing definitive. She doesn't know what's going on, but she knows something isn't right. She's hired you to find out what it is.",
   "solution": "Mara Ellison's house was not haunted. Miles Kerr, the alarm installer from Sentinel Ridge Security, had developed an unhealthy fixation on the house during the installation and began secretly returning at night. He used a loose soffit gap above the garage, climbed up the exterior wall using the brick joints and gutter line, and squeezed into the eaves cavity over the bonus room. From there he could lie silently for hours and later descend through the closet attic access after Mara fell asleep or left for work. He avoided detection by wrapping himself in a mylar emergency blanket to distort thermal readings and by moving only when the HVAC cycled or adjacent lights shifted. Colin Wren, the next-door neighbor, saw suspicious movement near the roofline on multiple nights but concealed it because Mara had already accused him once of watching her house too closely, which made him look guilty without being the intruder. The case is solved by the exterior shoe scuffs, attic insulation path, service logs proving Miles returned alone after the install, the hidden supplies in the eaves, Colin's window photos, and the final thermal sweep showing a man-sized heat signature above the garage.",
+  "client": "Mara Ellison",
   "victim": {
     "name": "Mara Ellison",
     "age": "34",
     "occupation": "Hospice nurse"
   },
+  "witnesses": [
+    {
+      "name": "Mara Ellison",
+      "role": "Client — hospice nurse, resident at 14 Briar Lane",
+      "reliability": "honest",
+      "knowledge": [
+        "She has heard faint sounds above the garage on multiple nights after returning from overnight shifts",
+        "She has twice seen what looked like a person standing in the upper window above the garage — once photographed it",
+        "Small objects have been slightly displaced on multiple occasions; she is certain she did not move them",
+        "She had a security system installed three weeks ago by Sentinel Ridge Security; the cameras have picked up only shifting shadows",
+        "The police walked through once, found nothing, and told her it was probably the house settling",
+        "The sounds happen most often between midnight and 3 AM, after she comes home from work",
+        "She does not know how anyone could be entering — doors and windows are locked and the alarm has not triggered"
+      ]
+    }
+  ],
   "suspects": [
     {
       "name": "Dylan Rook",

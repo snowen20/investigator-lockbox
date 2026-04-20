@@ -4530,6 +4530,18 @@ function openWitnessInterview(witness) {
 function openInterview(name) {
   const suspect = (G.case.suspects || []).find(s => s.name === name);
   if (!suspect) return;
+
+  // Gate: if the case has a client, require at least one message with them first
+  const clientName = G.case && G.case.client;
+  if (clientName) {
+    const clientChat = G.chats[clientName] || [];
+    const hasSpoken  = clientChat.some(m => m.role === 'user');
+    if (!hasSpoken) {
+      showToast(`Talk to the client first — get the full picture before approaching anyone else.`);
+      return;
+    }
+  }
+
   G.suspect = suspect;
   G.interviewMode = 'suspect';
   if (!G.chats[name]) G.chats[name] = [];

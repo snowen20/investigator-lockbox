@@ -2204,6 +2204,7 @@ const G = {
     evidence_ids: [], document_ids: [],
     scene_evidence_ids: [],  // subset of evidence_ids found via warrant scene searches (double-weighted)
     raw_statements: {},      // suspectName -> [raw response string, ...]
+    discovered_motives: [],  // suspect names whose motive has been revealed through investigation
   },
   entityRegistry: { names: [], locations: [], times: [] },
   pendingAdvisorContext: null,  // set when advisor buttons are shown
@@ -3005,6 +3006,7 @@ function _resetCaseState() {
     evidence_ids: [], document_ids: [],
     scene_evidence_ids: [],
     raw_statements: {},
+    discovered_motives: [],
   };
   G.entityRegistry      = { names: [], locations: [], times: [] };
   G.pendingAdvisorContext = null;
@@ -3050,6 +3052,9 @@ function loadCase(key) {
     // Backward compat: old saves lack scene_evidence_ids
     if (!Array.isArray(G.discoveredInfo.scene_evidence_ids)) {
       G.discoveredInfo.scene_evidence_ids = [];
+    }
+    if (!Array.isArray(G.discoveredInfo.discovered_motives)) {
+      G.discoveredInfo.discovered_motives = [];
     }
     G.budget       = typeof saved.budget === 'number' ? saved.budget : (caseData.budget || 0);
     G.role         = saved.role         || 'rookie';
@@ -3618,7 +3623,7 @@ RULES:
 5. Speak as a partner, not a storyteller. Use "we" not "you." Never write the player's internal monologue, routine physical actions, or decisions for them ("You drive over," "You make a note to bring gloves," "You decide to wait until dark"). Report what was found, not what the player did. Keep it short, practical, directional. Slightly tense, forensic, controlled — active casework under pressure, not a story being read aloud. Separate what's confirmed, what's likely, and what's still open. 2–5 sentences unless a significant evidence item warrants more detail.
 WRONG: "You station yourself inside the house. You keep your movement quiet. You make a note to arrive before Mara leaves for her shift."
 RIGHT: "We're set up inside, ground floor, back door access to the garage wall. Alarm is live on the hatch, exterior camera is running. Mara leaves at 10:30. Once she's gone it's just us and whatever shows up."
-6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "active_op": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": []}}. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items use one of these forms:
+6. ALWAYS respond in valid JSON with exactly this structure: {"narrative": "...", "cost": 0, "cost_label": "", "time_cost": 20, "time_label": "General investigation — 20 min", "pending_item": null, "active_op": null, "witnesses_present": null, "discovered": {"names": [], "locations": [], "times": [], "evidence_ids": [], "document_ids": [], "motives": []}}. The "motives" array contains suspect name strings (matching the case JSON exactly) whose motive has been revealed by this action. Only populate it when the action directly uncovers why a specific suspect had reason to commit the crime — not for vague suspicion, but for concrete motive information drawn from the case data. If cost is 0 set cost_label to "". If there is no time-gated pending item, set pending_item to null. For time-gated items use one of these forms:
 - Lab results / records: "pending_item": {"label": "Lab results for fiber sample", "resolution_minutes": 240, "reveals": ["ev-01"]}
 - Warrants (player must physically search the scene): "pending_item": {"label": "Warrant for Rusk Salvage Yard", "resolution_minutes": 480, "reveals": ["ev-05", "ev-06"], "is_warrant": true, "location": "Rusk Recovery & Salvage"}
 Set is_warrant: true ONLY for warrants that involve executing a physical search at a named location. The evidence will NOT be auto-added — the player must enter the scene. For lab results, fingerprint runs, record requests, and any non-physical resolution, omit is_warrant or set it to false. Do NOT include warrant-reveal IDs in discovered; they are locked until the player searches the scene. If you introduce interviewable characters, set witnesses_present to an array of {name, role} objects; otherwise set it to null.
@@ -3989,9 +3994,10 @@ function processActionResult(input, narrative, cost, cost_label, discovered, tim
   const addUniq = (arr, items) => {
     for (const v of (items || [])) { if (v && !arr.includes(v)) arr.push(v); }
   };
-  addUniq(G.discoveredInfo.names,     discovered.names);
-  addUniq(G.discoveredInfo.locations, discovered.locations);
-  addUniq(G.discoveredInfo.times,     discovered.times);
+  addUniq(G.discoveredInfo.names,             discovered.names);
+  addUniq(G.discoveredInfo.locations,         discovered.locations);
+  addUniq(G.discoveredInfo.times,             discovered.times);
+  addUniq(G.discoveredInfo.discovered_motives, discovered.motives);
 
   // Unlock evidence/docs returned by this action
   const newlyUnlocked = [];
@@ -4675,10 +4681,11 @@ function openInterview(name) {
       : buildPlaceholder('suspect');
 
   // Populate collapsible suspect info; start collapsed
+  const motiveKnown = G.discoveredInfo.discovered_motives.includes(suspect.name);
   document.getElementById('si-body').innerHTML = `
     <div class="si-field"><span class="lbl">Alibi: </span>${esc(suspect.alibi || '—')}</div>
     <div class="si-field"><span class="lbl">Verifiable: </span>${suspect.alibi_verifiable ? 'Yes' : 'No'}</div>
-    <div class="si-field"><span class="lbl">Motive: </span>${esc(suspect.motive || '—')}</div>
+    <div class="si-field"><span class="lbl">Motive: </span>${motiveKnown ? esc(suspect.motive || '—') : 'Unknown'}</div>
   `;
   document.getElementById('si-body').style.display      = 'none';
   document.getElementById('si-toggle-btn').textContent  = 'Suspect Info ▸';
